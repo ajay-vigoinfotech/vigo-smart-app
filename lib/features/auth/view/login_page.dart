@@ -3,6 +3,7 @@ import '../../../core/strings/strings.dart';
 import '../../../core/theme/app_pallete.dart';
 import '../../home/view/home_page.dart';
 import '../model/login_model.dart';
+import '../session_manager/session_manager.dart';
 import '../viewmodel/login_view_model.dart';
 import '../widgets/auth_field.dart';
 import '../widgets/privacy_policy.dart';
@@ -36,9 +37,8 @@ class _LoginPageState extends State<LoginPage> {
       final success = await _viewModel.makeRequest(loginRequest);
 
       if (success) {
-        // Save username in SharedPreferences
-        // final prefs = await SharedPreferences.getInstance();
-        // await prefs.setString('username', username);
+        final sessionManager = SessionManager();
+        await sessionManager.saveLoginInfo(username);
 
         Navigator.pushReplacement(
           context,

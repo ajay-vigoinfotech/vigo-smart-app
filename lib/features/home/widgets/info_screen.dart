@@ -1,12 +1,55 @@
 import 'package:flutter/material.dart';
-
 import '../../../core/constants/constants.dart';
 import '../../../core/theme/app_pallete.dart';
-
+import '../../auth/session_manager/session_manager.dart';
+import '../../auth/view/login_page.dart';
 
 class InfoScreen extends StatelessWidget {
   final double barheight;
+
   const InfoScreen({super.key, required this.barheight});
+
+  Future<void> _logout(BuildContext context) async {
+    final sessionManager = SessionManager();
+    await sessionManager.logout();
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const LoginPage()),
+    );
+  }
+
+  void _showBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SizedBox(
+        height: 200, // Adjusted height for better responsiveness
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: AppConstants.settingsIcon,
+                title: const Text('Settings'),
+                onTap: () {
+                  // Handle settings action
+                },
+              ),
+              ListTile(
+                leading: AppConstants.logoutIcon,
+                title: const Text('Logout'),
+                onTap: () {
+                  Navigator.of(context).pop(); // Close the bottom sheet
+                  _logout(context);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,64 +72,42 @@ class InfoScreen extends StatelessWidget {
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(0, 20, 15, 0),
+        padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            IconButton(
-              iconSize: 30,
-              onPressed: () {
-                // refresh logic here
-              },
-              icon: const Icon(Icons.refresh),
-            ),
-            IconButton(
-              iconSize: 30,
-              onPressed: () {
-                // notification logic here
-              },
-              icon: const Icon(Icons.notifications),
-            ),
-            GestureDetector(
-              onTap: () {
-                //print("you tapped");
-                showModalBottomSheet(
-                  context: context,
-                  builder: (context) => BottomSheet(
-                    onClosing: () {},
-                    builder: (context) => SizedBox(
-                      height: 500,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            ListTile(
-                              leading: AppConstants.settingsIcon,
-                              title: const Text('Settings'),
-                              onTap: () {
-                                // Handle settings action
-                              },
-                            ),
-                            ListTile(
-                              leading: AppConstants.logoutIcon,
-                              title: const Text('Logout'),
-                              onTap: () {
-                                // Handle settings action
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
-              child: const CircleAvatar(
-                radius: 40,
-                // image or background color for the CircleAvatar
+            const Flexible(
+              child: Text(
+                'VIGO INFOTECH PVT LTD\nVIGO85',
+                style: TextStyle(
+                    fontSize: 16), // Adjusted font size for readability
+                overflow: TextOverflow.ellipsis, // Prevents text overflow
               ),
+            ),
+            Row(
+              children: [
+                IconButton(
+                  iconSize: 30,
+                  onPressed: () {
+                    // refresh logic here
+                  },
+                  icon: const Icon(Icons.refresh),
+                ),
+                IconButton(
+                  iconSize: 30,
+                  onPressed: () {
+                    // notification logic here
+                  },
+                  icon: const Icon(Icons.notifications),
+                ),
+                GestureDetector(
+                  onTap: () => _showBottomSheet(context),
+                  child: const CircleAvatar(
+                    radius: 30, // Adjusted radius for better UI balance
+                    //backgroundImage: AssetImage('assets/images/login_image.jpeg'), // Placeholder image
+                  ),
+                ),
+              ],
             ),
           ],
         ),

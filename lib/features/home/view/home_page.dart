@@ -20,24 +20,51 @@ class _HomePageState extends State<HomePage> {
       'name': Strings.markDuty,
       'color': Pallete.btn1,
       'page': const MarkDutyPage(),
-    },{
-      'icon' : AppConstants.settingsIcon,
-      'name' : Strings.login,
-      'color' : Pallete.btn1,
-      'page' : const MarkDutyPage(),
+    },
+    {
+      'icon': AppConstants.settingsIcon,
+      'name': Strings.login,
+      'color': Pallete.btn1,
+      'page': const MarkDutyPage(),
+    }, {
+      'icon': AppConstants.settingsIcon,
+      'name': Strings.login,
+      'color': Pallete.btn1,
+      'page': const MarkDutyPage(),
+    }, {
+      'icon': AppConstants.settingsIcon,
+      'name': Strings.login,
+      'color': Pallete.btn1,
+      'page': const MarkDutyPage(),
+    }, {
+      'icon': AppConstants.settingsIcon,
+      'name': Strings.login,
+      'color': Pallete.btn1,
+      'page': const MarkDutyPage(),
+    }, {
+      'icon': AppConstants.settingsIcon,
+      'name': Strings.login,
+      'color': Pallete.btn1,
+      'page': const MarkDutyPage(),
     },
     // Add more modules here
   ];
 
   @override
   Widget build(BuildContext context) {
+    // Calculate the available height dynamically
+    final screenHeight = MediaQuery.of(context).size.height;
+    final infoScreenHeight = screenHeight * 0.2; // 20% of the screen height
+    final gridPadding = screenHeight * 0.01; // 2% of the screen height
+
     return Scaffold(
       body: Column(
         children: [
-          const InfoScreen(barheight: 150),
+          InfoScreen(barheight: infoScreenHeight),
+          SizedBox(height: gridPadding),  // Dynamic space between InfoScreen and the grid
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: EdgeInsets.symmetric(horizontal: gridPadding),
               child: GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,

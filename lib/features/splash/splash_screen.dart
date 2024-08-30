@@ -1,33 +1,33 @@
 import 'package:flutter/material.dart';
-import '../auth/view/login_page.dart';
+import 'package:vigo_smart_app/features/auth/view/login_page.dart';
+import 'package:vigo_smart_app/features/home/view/home_page.dart';
+import 'package:vigo_smart_app/features/auth/session_manager/session_manager.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  SplashScreenState createState() => SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _startSplashScreenTimer();
+    _checkLoginStatus();
   }
 
-  // Starts the timer for the splash screen and navigates to the login page after the delay.
-  void _startSplashScreenTimer() async {
-    const duration = Duration(seconds: 3);
-    await Future.delayed(duration);
-    _navigateToLogin();
-  }
+  Future<void> _checkLoginStatus() async {
+    final sessionManager = SessionManager();
+    final isLoggedIn = await sessionManager.isLoggedIn();
 
-  // Navigates to the login page.
-  void _navigateToLogin() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginPage()),
-    );
+    Future.delayed(const Duration(seconds: 1), () {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => isLoggedIn ? const HomePage() : const LoginPage(),
+        ),
+      );
+    });
   }
 
   @override
@@ -44,4 +44,4 @@ class _SplashScreenState extends State<SplashScreen> {
       ),
     );
   }
-}
+ }

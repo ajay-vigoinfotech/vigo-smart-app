@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "522052562612",
+    "project_id": "vigo-smart-app",
+    "storage_bucket": "vigo-smart-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:522052562612:android:11d6fc815bb907b0fef1e1",
+        "android_client_info": {
+          "package_name": "com.vigosmartapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBjXi5MRNkoFWO_fpNfmSca3BTcMmoixjI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

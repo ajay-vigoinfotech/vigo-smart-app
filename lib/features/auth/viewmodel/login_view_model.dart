@@ -1,22 +1,26 @@
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import '../../../core/constants/constants.dart';
 import '../model/login_model.dart';
 
 class LoginViewModel {
+  final Dio _dio = Dio();
+
   Future<bool> makeRequest(LoginRequest request) async {
-    final uri = Uri.parse('${AppConstants.baseUrl}/token');
+    const uri = '${AppConstants.baseUrl}/token';
 
     try {
-      final response = await http.post(
+      final response = await _dio.post(
         uri,
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: request.toMap(),
+        options: Options(
+          contentType: Headers.formUrlEncodedContentType,
+        ),
+        data: request.toMap(),
       );
 
       if (response.statusCode == 200) {
-        // Handle success scenario
-        //print('Response: ${response.body}');
+        print('Response: ${response.data}');
         return true;
+
       } else {
         // Handle unsuccessful response
         //print('Failed with status code: ${response.statusCode}');
@@ -28,3 +32,4 @@ class LoginViewModel {
     }
   }
 }
+
