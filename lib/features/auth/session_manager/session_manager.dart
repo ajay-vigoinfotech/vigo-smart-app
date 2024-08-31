@@ -3,17 +3,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 class SessionManager {
   static const String _isLoggedInKey = 'is_logged_in';
   static const String _usernameKey = 'username';
-  // final _tokenKey = 'token';
-  //
-  // Future<void> saveToken(token) async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   await prefs.setString(_tokenKey, token);
-  // }
-  //
-  // Future<String?> getToken() async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   return prefs.getString(_tokenKey);
-  // }
+  static const String _tokenKey = 'token';
+  static const String _accessToken = 'access_token';
+
+  Future<void> saveToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_accessToken, token);
+  }
+
+  Future<String?> getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    var token = prefs.getString(_accessToken);
+    return token;
+  }
 
   Future<void> saveLoginInfo(String username) async {
     final prefs = await SharedPreferences.getInstance();
@@ -35,6 +37,6 @@ class SessionManager {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_isLoggedInKey);
     await prefs.remove(_usernameKey);
-    //await prefs.remove(_tokenKey);
+    await prefs.remove(_tokenKey);
   }
 }

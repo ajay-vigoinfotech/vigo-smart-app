@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
+import '../../../core/theme/app_pallete.dart';
 import '../widgets/in_out_btn.dart';
 import '../widgets/map_page.dart';
-
 
 class MarkDutyPage extends StatefulWidget {
   const MarkDutyPage({super.key});
@@ -20,8 +20,10 @@ class _MarkDutyState extends State<MarkDutyPage> {
   void initState() {
     super.initState();
     _updateTime();
-    _timer =
-        Timer.periodic(const Duration(seconds: 1), (Timer t) => _updateTime());
+    _timer = Timer.periodic(
+      const Duration(seconds: 1),
+          (Timer t) => _updateTime(),
+    );
   }
 
   @override
@@ -32,10 +34,8 @@ class _MarkDutyState extends State<MarkDutyPage> {
 
   void _updateTime() {
     final DateTime now = DateTime.now();
-    final String formattedDateTime =
-    DateFormat('dd-MMM-yyyy - hh:mm a').format(now);
     setState(() {
-      _formattedDateTime = formattedDateTime;
+      _formattedDateTime = DateFormat('dd-MMM-yyyy \n  hh:mm a').format(now);
     });
   }
 
@@ -44,11 +44,9 @@ class _MarkDutyState extends State<MarkDutyPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mark Duty'),
-        centerTitle: false,
       ),
       body: SingleChildScrollView(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.all(16.0),
@@ -56,9 +54,9 @@ class _MarkDutyState extends State<MarkDutyPage> {
                 child: Text(
                   _formattedDateTime,
                   style: const TextStyle(
-                    fontSize: 24,
+                    fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: Pallete.dark,
                   ),
                 ),
               ),
@@ -66,7 +64,7 @@ class _MarkDutyState extends State<MarkDutyPage> {
             const SizedBox(
               height: 400,
               width: double.infinity,
-              child: Center(child: MapPage()),
+              child: MapPage(),
             ),
             const SizedBox(height: 40),
             const Row(

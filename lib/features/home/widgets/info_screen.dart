@@ -78,10 +78,10 @@ class InfoScreen extends StatelessWidget {
           children: [
             const Flexible(
               child: Text(
-                'VIGO INFOTECH PVT LTD\nVIGO85',
+                'VIGO INFOTECH PVT LTD VIGO85',
                 style: TextStyle(
-                    fontSize: 16), // Adjusted font size for readability
-                overflow: TextOverflow.ellipsis, // Prevents text overflow
+                    fontSize: 14), // Adjusted font size for readability
+                overflow: TextOverflow.visible // Prevents text overflow
               ),
             ),
             Row(
@@ -113,5 +113,12 @@ class InfoScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  getToken() async {
+    final SessionManager sessionManager = SessionManager();
+    // await sessionManager.saveToken("qwertyuiopasdfghjklzxcvbnm");
+    String token = await sessionManager.getToken().toString();
+    print("Called mytoken: $token");
   }
 }

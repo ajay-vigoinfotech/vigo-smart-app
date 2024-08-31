@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:vigo_smart_app/features/markduty/view/mark_duty_page.dart';
+import 'package:vigo_smart_app/features/auth/view/profile_page.dart';
 import '../../../core/constants/constants.dart';
 import '../../../core/strings/strings.dart';
 import '../../../core/theme/app_pallete.dart';
+import '../../markduty/view/mark_duty_page.dart';
 import '../widgets/home_screen_card.dart';
 import '../widgets/info_screen.dart';
 
@@ -20,32 +21,11 @@ class _HomePageState extends State<HomePage> {
       'name': Strings.markDuty,
       'color': Pallete.btn1,
       'page': const MarkDutyPage(),
-    },
-    {
-      'icon': AppConstants.settingsIcon,
-      'name': Strings.login,
+    },{
+      'icon': AppConstants.markDutyIcon,
+      'name': Strings.markDuty,
       'color': Pallete.btn1,
-      'page': const MarkDutyPage(),
-    }, {
-      'icon': AppConstants.settingsIcon,
-      'name': Strings.login,
-      'color': Pallete.btn1,
-      'page': const MarkDutyPage(),
-    }, {
-      'icon': AppConstants.settingsIcon,
-      'name': Strings.login,
-      'color': Pallete.btn1,
-      'page': const MarkDutyPage(),
-    }, {
-      'icon': AppConstants.settingsIcon,
-      'name': Strings.login,
-      'color': Pallete.btn1,
-      'page': const MarkDutyPage(),
-    }, {
-      'icon': AppConstants.settingsIcon,
-      'name': Strings.login,
-      'color': Pallete.btn1,
-      'page': const MarkDutyPage(),
+      'page': ProfilePage(),
     },
     // Add more modules here
   ];
@@ -61,7 +41,10 @@ class _HomePageState extends State<HomePage> {
       body: Column(
         children: [
           InfoScreen(barheight: infoScreenHeight),
-          SizedBox(height: gridPadding),  // Dynamic space between InfoScreen and the grid
+          SizedBox(
+              height:
+                  gridPadding),
+          // Dynamic space between InfoScreen and the grid
           Expanded(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: gridPadding),

@@ -36,7 +36,8 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: AppTheme.lightThemeMode,
       home: const SplashScreen(),
-      //isLoggedIn ? const HomePage() : const LoginPage(),
     );
   }
 }
+
+

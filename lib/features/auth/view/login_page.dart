@@ -4,6 +4,7 @@ import '../../../core/theme/app_pallete.dart';
 import '../../home/view/home_page.dart';
 import '../model/login_model.dart';
 import '../session_manager/session_manager.dart';
+import '../viewmodel/login_sucess.dart';
 import '../viewmodel/login_view_model.dart';
 import '../widgets/auth_field.dart';
 import '../widgets/privacy_policy.dart';
@@ -35,10 +36,22 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       final success = await _viewModel.makeRequest(loginRequest);
+      //final MarkLoginViewModel viewModel = MarkLoginViewModel();
+      //final sucess = await
 
       if (success) {
         final sessionManager = SessionManager();
         await sessionManager.saveLoginInfo(username);
+        // String getToken = sessionManager.getToken().toString();  //This token will be used for new api requests
+        //
+        // print("Login Success: $getToken");
+
+        sessionManager.getToken().then((token) {
+
+          print('Login Success: $token');
+        }).catchError((error) {
+          print('Error: $error');
+        });
 
         Navigator.pushReplacement(
           context,
