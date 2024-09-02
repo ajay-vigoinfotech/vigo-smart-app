@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:vigo_smart_app/features/auth/model/marklogin_model.dart';
 import '../../../core/strings/strings.dart';
 import '../../../core/theme/app_pallete.dart';
+import '../../../core/utils.dart';
 import '../../home/view/home_page.dart';
 import '../model/login_model.dart';
 import '../session_manager/session_manager.dart';
-import '../viewmodel/login_sucess.dart';
+import '../viewmodel/login_sucess_view_model.dart';
 import '../viewmodel/login_view_model.dart';
 import '../widgets/auth_field.dart';
 import '../widgets/privacy_policy.dart';
@@ -24,6 +26,7 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   bool isPasswordVisible = false;
   final LoginViewModel _viewModel = LoginViewModel();
+  final MarkLoginViewModel markLoginViewModel = MarkLoginViewModel();
 
   Future<void> _onSubmit() async {
     if (_formKey.currentState?.validate() ?? false) {
@@ -36,19 +39,31 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       final success = await _viewModel.makeRequest(loginRequest);
-      //final MarkLoginViewModel viewModel = MarkLoginViewModel();
-      //final sucess = await
 
       if (success) {
         final sessionManager = SessionManager();
         await sessionManager.saveLoginInfo(username);
-        // String getToken = sessionManager.getToken().toString();  //This token will be used for new api requests
-        //
-        // print("Login Success: $getToken");
 
-        sessionManager.getToken().then((token) {
+        sessionManager.getToken().then((token) async {
+          // Fetch required data using utility functions
+          final String formattedDateTime = Utils.getCurrentFormattedDateTime();
+          final String deviceDetails = await Utils.getDeviceDetails(context);
+          final String appVersion = await Utils.getAppVersion();
 
-          print('Login Success: $token');
+          final markLoginModel = MarkLoginModel(
+            deviceDetails: deviceDetails,
+            punchAction: 'LOGIN',
+            locationDetails: '',
+            batteryStatus: '100%',
+            time: formattedDateTime,
+            latLong: '',
+            version: 'v$appVersion',
+            fcmToken: '',
+            dataStatus: '',
+          );
+
+          final markLogin =
+              await markLoginViewModel.markLogin(token!, markLoginModel);
         }).catchError((error) {
           print('Error: $error');
         });

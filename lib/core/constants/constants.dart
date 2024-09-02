@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppConstants {
   //App URLs
-  static const String baseUrl = "http://smarterp.live";
+  static const String baseUrl = "http://tiger4.smarterp.live";
   static const String privacyPolicyUrl = "http://vigoinfotech.com/PrivacyPolicy.aspx";
 
   //App Icons

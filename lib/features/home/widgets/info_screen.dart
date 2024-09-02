@@ -101,7 +101,8 @@ class InfoScreen extends StatelessWidget {
                   icon: const Icon(Icons.notifications),
                 ),
                 GestureDetector(
-                  onTap: () => _showBottomSheet(context),
+                  onTap: () => //getToken(),
+                  _showBottomSheet(context),
                   child: const CircleAvatar(
                     radius: 30, // Adjusted radius for better UI balance
                     //backgroundImage: AssetImage('assets/images/login_image.jpeg'), // Placeholder image
@@ -117,8 +118,11 @@ class InfoScreen extends StatelessWidget {
 
   getToken() async {
     final SessionManager sessionManager = SessionManager();
-    // await sessionManager.saveToken("qwertyuiopasdfghjklzxcvbnm");
-    String token = await sessionManager.getToken().toString();
-    print("Called mytoken: $token");
+
+    sessionManager.getToken().then((token) async {
+
+    }).catchError((error) {
+      print('Error: $error');
+    });
   }
 }

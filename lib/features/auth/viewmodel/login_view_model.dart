@@ -27,11 +27,9 @@ class LoginViewModel {
         String getToken = sessionManager.getToken().toString();
         return true;
       } else {
-        // Handle unsuccessful response
         return false;
       }
     } catch (e) {
-      // Handle exceptions
       print('Exception: $e');
       return false;
     }
