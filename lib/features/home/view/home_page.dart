@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:vigo_smart_app/features/auth/view/profile_page.dart';
 import '../../../core/constants/constants.dart';
 import '../../../core/strings/strings.dart';
 import '../../../core/theme/app_pallete.dart';
@@ -17,34 +16,24 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final List<Map<String, dynamic>> modules = [
     {
+      'code': 'SupervisorDutyManagementApp',
       'icon': AppConstants.markDutyIcon,
       'name': Strings.markDuty,
       'color': Pallete.btn1,
       'page': const MarkDutyPage(),
-    },{
-      'icon': AppConstants.markDutyIcon,
-      'name': Strings.markDuty,
-      'color': Pallete.btn1,
-      'page': ProfilePage(),
     },
-    // Add more modules here
   ];
-
   @override
   Widget build(BuildContext context) {
-    // Calculate the available height dynamically
     final screenHeight = MediaQuery.of(context).size.height;
-    final infoScreenHeight = screenHeight * 0.2; // 20% of the screen height
-    final gridPadding = screenHeight * 0.01; // 2% of the screen height
+    final infoScreenHeight = screenHeight * 0.2;
+    final gridPadding = screenHeight * 0.01;
 
     return Scaffold(
       body: Column(
         children: [
           InfoScreen(barheight: infoScreenHeight),
-          SizedBox(
-              height:
-                  gridPadding),
-          // Dynamic space between InfoScreen and the grid
+          SizedBox(height: gridPadding),
           Expanded(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: gridPadding),

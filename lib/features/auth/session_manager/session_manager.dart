@@ -5,6 +5,7 @@ class SessionManager {
   static const String _usernameKey = 'username';
   static const String _tokenKey = 'token';
   static const String _accessToken = 'access_token';
+  static const String _moduleCodesKey = 'module_codes';
 
   Future<void> saveToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
@@ -38,5 +39,15 @@ class SessionManager {
     await prefs.remove(_isLoggedInKey);
     await prefs.remove(_usernameKey);
     await prefs.remove(_tokenKey);
+  }
+
+  Future<void> saveModuleCodes(List<String> moduleCodes) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_moduleCodesKey, moduleCodes);
+  }
+
+  Future<List<String>?> getModuleCodes() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getStringList(_moduleCodesKey);
   }
 }

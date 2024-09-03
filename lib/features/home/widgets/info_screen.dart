@@ -77,12 +77,11 @@ class InfoScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Flexible(
-              child: Text(
-                'VIGO INFOTECH PVT LTD VIGO85',
-                style: TextStyle(
-                    fontSize: 14), // Adjusted font size for readability
-                overflow: TextOverflow.visible // Prevents text overflow
-              ),
+              child: Text('VIGO INFOTECH PVT LTD VIGO85',
+                  style: TextStyle(
+                      fontSize: 14), // Adjusted font size for readability
+                  overflow: TextOverflow.visible // Prevents text overflow
+                  ),
             ),
             Row(
               children: [
@@ -102,7 +101,7 @@ class InfoScreen extends StatelessWidget {
                 ),
                 GestureDetector(
                   onTap: () => //getToken(),
-                  _showBottomSheet(context),
+                      _showBottomSheet(context),
                   child: const CircleAvatar(
                     radius: 30, // Adjusted radius for better UI balance
                     //backgroundImage: AssetImage('assets/images/login_image.jpeg'), // Placeholder image
@@ -119,9 +118,7 @@ class InfoScreen extends StatelessWidget {
   getToken() async {
     final SessionManager sessionManager = SessionManager();
 
-    sessionManager.getToken().then((token) async {
-
-    }).catchError((error) {
+    sessionManager.getToken().then((token) async {}).catchError((error) {
       print('Error: $error');
     });
   }

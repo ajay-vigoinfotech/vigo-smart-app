@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:vigo_smart_app/features/auth/model/marklogin_model.dart';
+import 'package:vigo_smart_app/features/home/view/test_home_page.dart';
 import '../../../core/strings/strings.dart';
 import '../../../core/theme/app_pallete.dart';
 import '../../../core/utils.dart';
-import '../../home/view/home_page.dart';
+import '../../home/viewmodel/modules_view_model.dart';
 import '../model/login_model.dart';
 import '../session_manager/session_manager.dart';
 import '../viewmodel/login_sucess_view_model.dart';
@@ -45,13 +46,17 @@ class _LoginPageState extends State<LoginPage> {
         await sessionManager.saveLoginInfo(username);
 
         sessionManager.getToken().then((token) async {
-          // Fetch required data using utility functions
           final String formattedDateTime = Utils.getCurrentFormattedDateTime();
           final String deviceDetails = await Utils.getDeviceDetails(context);
           final String appVersion = await Utils.getAppVersion();
+          final String ipAddress = await Utils.getIpAddress();
+          final String uniqueId = await Utils.getUniqueID();
+
+          final String fullDeviceDetails =
+              "$deviceDetails/$uniqueId/$ipAddress";
 
           final markLoginModel = MarkLoginModel(
-            deviceDetails: deviceDetails,
+            deviceDetails: fullDeviceDetails,
             punchAction: 'LOGIN',
             locationDetails: '',
             batteryStatus: '100%',
@@ -64,13 +69,19 @@ class _LoginPageState extends State<LoginPage> {
 
           final markLogin =
               await markLoginViewModel.markLogin(token!, markLoginModel);
+          ModulesViewModel moduleService = ModulesViewModel();
+          List<String> moduleCodes = await moduleService.getModules(token);
+          sessionManager.saveModuleCodes(moduleCodes);
+          sessionManager.getModuleCodes().then((modulesCodes) async {
+            print(modulesCodes);
+          });
         }).catchError((error) {
           print('Error: $error');
         });
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
+          MaterialPageRoute(builder: (context) => HomeScreen()),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -83,97 +94,117 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const SizedBox(height: 50),
-                Image.asset(
-                  'assets/images/login_image.jpeg',
-                  height: 200,
-                ),
-                const Text(
-                  Strings.login,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 30),
-                AuthField(
-                  labelText: Strings.partnerCode,
-                  controller: _partnerCodeController,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Partner Code is Required';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20),
-                AuthField(
-                  labelText: Strings.userID,
-                  controller: _userIDController,
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'User ID is Required!!!!';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20),
-                AuthField(
-                  labelText: Strings.password,
-                  controller: _passwordController,
-                  obscureText: !isPasswordVisible,
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      isPasswordVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: constraints.maxWidth * 0.1,
+                vertical: constraints.maxHeight * 0.05,
+              ),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 50),
+                    _buildLoginImage(constraints),
+                    const SizedBox(height: 30),
+                    _buildLoginTitle(),
+                    const SizedBox(height: 30),
+                    AuthField(
+                      labelText: Strings.partnerCode,
+                      controller: _partnerCodeController,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Partner Code is Required';
+                        }
+                        return null;
+                      },
                     ),
-                    onPressed: () {
-                      setState(() {
-                        isPasswordVisible = !isPasswordVisible;
-                      });
-                    },
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Password is Required';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 40),
-                ElevatedButton(
-                  onPressed: _onSubmit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: (Pallete.btn1),
-                    foregroundColor: (Pallete.backgroundColor),
-                    padding: const EdgeInsets.symmetric(vertical: 16.0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
+                    const SizedBox(height: 20),
+                    AuthField(
+                      labelText: Strings.userID,
+                      controller: _userIDController,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'User ID is Required';
+                        }
+                        return null;
+                      },
                     ),
-                  ),
-                  child: const Text(
-                    Strings.submit,
-                    style: TextStyle(fontSize: 18),
-                  ),
+                    const SizedBox(height: 20),
+                    AuthField(
+                      labelText: Strings.password,
+                      controller: _passwordController,
+                      obscureText: !isPasswordVisible,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          isPasswordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            isPasswordVisible = !isPasswordVisible;
+                          });
+                        },
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Password is Required';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 40),
+                    _buildSubmitButton(),
+                    const SizedBox(height: 20),
+                    const PrivacyPolicy(),
+                    const SizedBox(height: 20),
+                  ],
                 ),
-                const SizedBox(height: 20),
-                const PrivacyPolicy(),
-                const SizedBox(height: 20),
-              ],
+              ),
             ),
-          ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildLoginImage(BoxConstraints constraints) {
+    return Image.asset(
+      'assets/images/login_image.jpeg',
+      height: constraints.maxHeight * 0.2,
+    );
+  }
+
+  Widget _buildLoginTitle() {
+    return const Text(
+      Strings.login,
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        fontSize: 30,
+        fontWeight: FontWeight.bold,
+      ),
+    );
+  }
+
+  Widget _buildSubmitButton() {
+    return ElevatedButton(
+      onPressed: _onSubmit,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Pallete.btn1,
+        foregroundColor: Pallete.backgroundColor,
+        padding: const EdgeInsets.symmetric(vertical: 16.0),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8.0),
         ),
+      ),
+      child: const Text(
+        Strings.submit,
+        style: TextStyle(fontSize: 18),
       ),
     );
   }
