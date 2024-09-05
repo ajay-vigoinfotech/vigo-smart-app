@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vigo_smart_app/features/auth/model/marklogin_model.dart';
-import 'package:vigo_smart_app/features/home/view/test_home_page.dart';
+import 'package:vigo_smart_app/features/auth/viewmodel/getuserdetails_view_model.dart';
+import 'package:vigo_smart_app/features/home/view/home_page.dart';
 import '../../../core/strings/strings.dart';
 import '../../../core/theme/app_pallete.dart';
 import '../../../core/utils.dart';
@@ -28,6 +29,7 @@ class _LoginPageState extends State<LoginPage> {
   bool isPasswordVisible = false;
   final LoginViewModel _viewModel = LoginViewModel();
   final MarkLoginViewModel markLoginViewModel = MarkLoginViewModel();
+  final UserViewModel userViewModel = UserViewModel();
 
   Future<void> _onSubmit() async {
     if (_formKey.currentState?.validate() ?? false) {
@@ -75,13 +77,14 @@ class _LoginPageState extends State<LoginPage> {
           sessionManager.getModuleCodes().then((modulesCodes) async {
             print(modulesCodes);
           });
+          userViewModel.getUserDetails(token);
         }).catchError((error) {
           print('Error: $error');
         });
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
+          MaterialPageRoute(builder: (context) => const HomePage()),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

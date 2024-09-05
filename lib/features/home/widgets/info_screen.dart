@@ -3,11 +3,19 @@ import '../../../core/constants/constants.dart';
 import '../../../core/theme/app_pallete.dart';
 import '../../auth/session_manager/session_manager.dart';
 import '../../auth/view/login_page.dart';
+import '../../auth/viewmodel/getuserdetails_view_model.dart';
 
-class InfoScreen extends StatelessWidget {
+class InfoScreen extends StatefulWidget {
   final double barheight;
 
   const InfoScreen({super.key, required this.barheight});
+
+  @override
+  State<InfoScreen> createState() => _InfoScreenState();
+}
+
+class _InfoScreenState extends State<InfoScreen> {
+  final SessionManager sessionManager = SessionManager();
 
   Future<void> _logout(BuildContext context) async {
     final sessionManager = SessionManager();
@@ -23,7 +31,7 @@ class InfoScreen extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       builder: (context) => SizedBox(
-        height: 200, // Adjusted height for better responsiveness
+        height: 200,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -33,7 +41,6 @@ class InfoScreen extends StatelessWidget {
                 leading: AppConstants.settingsIcon,
                 title: const Text('Settings'),
                 onTap: () {
-                  // Handle settings action
                 },
               ),
               ListTile(
@@ -54,7 +61,7 @@ class InfoScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: barheight,
+      height: widget.barheight,
       width: double.infinity,
       decoration: BoxDecoration(
         color: Pallete.btn1,
@@ -118,7 +125,16 @@ class InfoScreen extends StatelessWidget {
   getToken() async {
     final SessionManager sessionManager = SessionManager();
 
-    sessionManager.getToken().then((token) async {}).catchError((error) {
+    sessionManager.getToken().then((token) async {
+      final UserViewModel userViewModel = UserViewModel();
+
+      userViewModel.getUserDetails(token!);
+      sessionManager.getUserDetails().then((data) async {
+        print("emp code: ${data.employeeCode}");
+      }).catchError((onError) {
+        print(onError.toString());
+      });
+    }).catchError((error) {
       print('Error: $error');
     });
   }
