@@ -3,6 +3,7 @@ import '../../../core/constants/constants.dart';
 import '../../../core/theme/app_pallete.dart';
 import '../../auth/session_manager/session_manager.dart';
 import '../../auth/view/login_page.dart';
+import '../../auth/viewmodel/getlastselfieatt_view_model.dart';
 import '../../auth/viewmodel/getuserdetails_view_model.dart';
 
 class InfoScreen extends StatefulWidget {
@@ -16,6 +17,16 @@ class InfoScreen extends StatefulWidget {
 
 class _InfoScreenState extends State<InfoScreen> {
   final SessionManager sessionManager = SessionManager();
+  String? employeeCode; //TBS24
+  String? compCode; //Tiger
+  String? compName; //TIGER 4 INDIA LIMITED
+  String? name; //PlayStore ID
+
+  @override
+  void initState() {
+    super.initState();
+    getUserData(); // Call the function to fetch user data when the screen initializes
+  }
 
   Future<void> _logout(BuildContext context) async {
     final sessionManager = SessionManager();
@@ -25,6 +36,28 @@ class _InfoScreenState extends State<InfoScreen> {
       context,
       MaterialPageRoute(builder: (context) => const LoginPage()),
     );
+  }
+
+  Future<void> getUserData() async {
+    final SessionManager sessionManager = SessionManager();
+
+    sessionManager.getToken().then((token) async {
+      final UserViewModel userViewModel = UserViewModel();
+
+      userViewModel.getUserDetails(token!);
+      sessionManager.getUserDetails().then((data) async {
+        setState(() {
+          employeeCode = data.employeeCode;
+          name = data.name;
+          compCode = data.compCode;
+          compName = data.compName;
+        });
+      }).catchError((onError) {
+        print(onError.toString());
+      });
+    }).catchError((error) {
+      print('Error: $error');
+    });
   }
 
   void _showBottomSheet(BuildContext context) {
@@ -40,8 +73,7 @@ class _InfoScreenState extends State<InfoScreen> {
               ListTile(
                 leading: AppConstants.settingsIcon,
                 title: const Text('Settings'),
-                onTap: () {
-                },
+                onTap: () {},
               ),
               ListTile(
                 leading: AppConstants.logoutIcon,
@@ -83,12 +115,17 @@ class _InfoScreenState extends State<InfoScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Flexible(
-              child: Text('VIGO INFOTECH PVT LTD VIGO85',
-                  style: TextStyle(
-                      fontSize: 14), // Adjusted font size for readability
-                  overflow: TextOverflow.visible // Prevents text overflow
-                  ),
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 20),
+                child: Text(
+                  '$employeeCode '
+                  '$name '
+                  '$compName ',
+                  style: const TextStyle(fontSize: 18),
+                  overflow: TextOverflow.visible, // Prevents text overflow
+                ),
+              ),
             ),
             Row(
               children: [
@@ -96,6 +133,7 @@ class _InfoScreenState extends State<InfoScreen> {
                   iconSize: 30,
                   onPressed: () {
                     // refresh logic here
+                    getUserData(); // Option to refresh the user data
                   },
                   icon: const Icon(Icons.refresh),
                 ),
@@ -107,8 +145,8 @@ class _InfoScreenState extends State<InfoScreen> {
                   icon: const Icon(Icons.notifications),
                 ),
                 GestureDetector(
-                  onTap: () => //getToken(),
-                      _showBottomSheet(context),
+                  onTap: () => getToken(),
+                  //_showBottomSheet(context),
                   child: const CircleAvatar(
                     radius: 30, // Adjusted radius for better UI balance
                     //backgroundImage: AssetImage('assets/images/login_image.jpeg'), // Placeholder image
@@ -122,17 +160,23 @@ class _InfoScreenState extends State<InfoScreen> {
     );
   }
 
-  getToken() async {
+  Future<void> getToken() async {
     final SessionManager sessionManager = SessionManager();
 
     sessionManager.getToken().then((token) async {
-      final UserViewModel userViewModel = UserViewModel();
-
-      userViewModel.getUserDetails(token!);
-      sessionManager.getUserDetails().then((data) async {
-        print("emp code: ${data.employeeCode}");
-      }).catchError((onError) {
-        print(onError.toString());
+      final GetlastselfieattViewModel getlastselfieattViewModel =
+          GetlastselfieattViewModel();
+      getlastselfieattViewModel.getLastSelfieAttendance(token!).then( (data1) async {
+        sessionManager.getCheckinData().then((data) async {
+          print(data.checkinId);
+          print(data.uniqueId);
+          print(data.dateTimeIn);
+          print(data.dateTimeOut);
+          print(data.inKmsDriven);
+          print(data.outKmsDriven);
+          print(data.siteId);
+          print(data.siteName);
+        });
       });
     }).catchError((error) {
       print('Error: $error');

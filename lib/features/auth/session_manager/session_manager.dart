@@ -1,12 +1,26 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vigo_smart_app/features/auth/model/getuserdetails.dart';
 
+import '../model/getlastselfieattendancemodel.dart';
+
 class SessionManager {
   static const String _isLoggedInKey = 'is_logged_in';
   static const String _usernameKey = 'username';
   static const String _accessToken = 'access_token';
   static const String _moduleCodesKey = 'module_codes';
   static const String _userDetailsKey = 'user_details';
+  static const String _SelfieAttendanceKey = 'selfie_attendance';
+
+  //save last selfie att strings
+  static const String _checkinId = 'checkinId';
+  static const String _uniqueId = 'uniqueId';
+  static const String _dateTimeIn = 'dateTimeIn';
+  static const String _dateTimeOut = 'dateTimeOut';
+  static const String _inKmsDriven = 'inKmsDriven';
+  static const String _outKmsDriven = 'outKmsDriven';
+  static const String _siteId = 'siteId';
+  static const String _siteName = 'siteName';
+
 
   //save user details strings
   static const String _code = 'code';
@@ -148,60 +162,90 @@ class SessionManager {
     await prefs.setString(_intervalKey, user.interval.toString());
     await prefs.setString(_checkInTKey, user.checkInT.toString());
     await prefs.setString(_checkOutTKey, user.checkOutT.toString());
-    await prefs.setString(_companyContactNoKey, user.companyContactNo.toString());
+    await prefs.setString(
+        _companyContactNoKey, user.companyContactNo.toString());
     await prefs.setString(_companyAddressKey, user.companyAddress.toString());
     await prefs.setString(_helplineNoKey, user.helplineNo.toString());
-    await prefs.setString(_helpLineWhatsappKey, user.helpLineWhatsapp.toString());
+    await prefs.setString(
+        _helpLineWhatsappKey, user.helpLineWhatsapp.toString());
   }
 
   // Get user details
   Future<GetUserDetails> getUserDetails() async {
     final prefs = await SharedPreferences.getInstance();
     return GetUserDetails(
-        code: prefs.getInt(_code),
-        status: prefs.getString(_status),
-        message: prefs.getString(_message),
-        entityId: prefs.getInt(_entityIdKey),
-        userId: prefs.getString(_userIdKey),
-        role: prefs.getString(_roleKey),
-        userName: prefs.getString(_usernameKey),
-        password: prefs.getString(_passwordKey),
-        scheme: prefs.getString(_schemeKey),
-        retailerType: prefs.getString(_retailerTypeKey),
-        parentID: prefs.getInt(_parentIDKey),
-        name: prefs.getString(_nameKey),
-        postalAddress: prefs.getString(_postalAddressKey),
-        cityID: prefs.getInt(_cityIDKey),
-        stateID: prefs.getInt(_stateIDKey),
-        districtName: prefs.getString(_districtNameKey),
-        stateName: prefs.getString(_stateNameKey),
-        pinCode: prefs.getString(_pinCodeKey),
-        landLineNo: prefs.getString(_landLineNoKey),
-        mobile: prefs.getString(_mobileKey),
-        email: prefs.getString(_emailKey),
-        panNo: prefs.getString(_panNoKey),
-        userProfilePic: prefs.getString(_usernameKey),
-        compId: prefs.getInt(_compIdKey),
-        branchId: prefs.getInt(_branchIdKey),
-        createdBy: prefs.getString(_createdByKey),
-        modifiedBy: prefs.getString(_modifiedByKey),
-        isApproved: prefs.getBool(_isApprovedKey),
-        isVisible: prefs.getBool(_isVisibleKey),
-        department: prefs.getString(_departmentKey),
-        compCode: prefs.getString(_compCodeKey),
-        compName: prefs.getString(_compNameKey),
-        access: prefs.getString(_accessKey),
-        designationName: prefs.getString(_designationNameKey),
-        employeeCode: prefs.getString(_employeeCodeKey),
-        userLoginRole: prefs.getString(_userLoginRoleKey),
-        isAutoCheckIn: prefs.getBool(_isAutoCheckInKey),
-        interval: prefs.getString(_intervalKey),
-        checkInT: prefs.getString(_checkInTKey),
-        checkOutT: prefs.getString(_checkOutTKey),
-        companyContactNo: prefs.getString(_companyContactNoKey),
-        companyAddress: prefs.getString(_companyAddressKey),
-        helplineNo: prefs.getString(_helplineNoKey),
-        helpLineWhatsapp: prefs.getString(_helpLineWhatsappKey),
+      code: prefs.getInt(_code),
+      status: prefs.getString(_status),
+      message: prefs.getString(_message),
+      entityId: prefs.getInt(_entityIdKey),
+      userId: prefs.getString(_userIdKey),
+      role: prefs.getString(_roleKey),
+      userName: prefs.getString(_usernameKey),
+      password: prefs.getString(_passwordKey),
+      scheme: prefs.getString(_schemeKey),
+      retailerType: prefs.getString(_retailerTypeKey),
+      parentID: prefs.getInt(_parentIDKey),
+      name: prefs.getString(_nameKey),
+      postalAddress: prefs.getString(_postalAddressKey),
+      cityID: prefs.getInt(_cityIDKey),
+      stateID: prefs.getInt(_stateIDKey),
+      districtName: prefs.getString(_districtNameKey),
+      stateName: prefs.getString(_stateNameKey),
+      pinCode: prefs.getString(_pinCodeKey),
+      landLineNo: prefs.getString(_landLineNoKey),
+      mobile: prefs.getString(_mobileKey),
+      email: prefs.getString(_emailKey),
+      panNo: prefs.getString(_panNoKey),
+      userProfilePic: prefs.getString(_usernameKey),
+      compId: prefs.getInt(_compIdKey),
+      branchId: prefs.getInt(_branchIdKey),
+      createdBy: prefs.getString(_createdByKey),
+      modifiedBy: prefs.getString(_modifiedByKey),
+      isApproved: prefs.getBool(_isApprovedKey),
+      isVisible: prefs.getBool(_isVisibleKey),
+      department: prefs.getString(_departmentKey),
+      compCode: prefs.getString(_compCodeKey),
+      compName: prefs.getString(_compNameKey),
+      access: prefs.getString(_accessKey),
+      designationName: prefs.getString(_designationNameKey),
+      employeeCode: prefs.getString(_employeeCodeKey),
+      userLoginRole: prefs.getString(_userLoginRoleKey),
+      isAutoCheckIn: prefs.getBool(_isAutoCheckInKey),
+      interval: prefs.getString(_intervalKey),
+      checkInT: prefs.getString(_checkInTKey),
+      checkOutT: prefs.getString(_checkOutTKey),
+      companyContactNo: prefs.getString(_companyContactNoKey),
+      companyAddress: prefs.getString(_companyAddressKey),
+      helplineNo: prefs.getString(_helplineNoKey),
+      helpLineWhatsapp: prefs.getString(_helpLineWhatsappKey),
     );
   }
+
+  //save SelfieAttendance
+  Future<void> saveSelfieAttendance(SelfieAttendanceModel selfieAttendanceModel) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_checkinId,  selfieAttendanceModel.table![0].checkinId.toString());
+    await prefs.setString(_uniqueId, selfieAttendanceModel.table![0].uniqueId.toString());
+    await prefs.setString(_dateTimeIn, selfieAttendanceModel.table![0].dateTimeIn.toString());
+    await prefs.setString(_dateTimeOut, selfieAttendanceModel.table![0].dateTimeOut.toString());
+    await prefs.setString(_inKmsDriven, selfieAttendanceModel.table![0].inKmsDriven.toString());
+    await prefs.setString(_outKmsDriven, selfieAttendanceModel.table![0].outKmsDriven.toString());
+    await prefs.setString(_siteId,  selfieAttendanceModel.table![0].siteId.toString());
+    await prefs.setString(_siteName, selfieAttendanceModel.table![0].siteName.toString());
+  }
+
+  Future<Table> getCheckinData() async {
+    final prefs = await SharedPreferences.getInstance();
+    return Table (
+    checkinId: prefs.getString(_checkinId),
+    uniqueId: prefs.getString(_uniqueId),
+    dateTimeIn: prefs.getString(_dateTimeIn),
+    dateTimeOut: prefs.getString(_dateTimeOut),
+    inKmsDriven: prefs.getString(_inKmsDriven) ,
+    outKmsDriven: prefs.getString(_outKmsDriven),
+    siteId: prefs.getString(_siteId),
+    siteName: prefs.getString(_siteName),
+    );
+  }
+
 }

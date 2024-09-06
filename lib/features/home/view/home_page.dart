@@ -26,13 +26,13 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    final infoScreenHeight = screenHeight * 0.2;
+    //final infoScreenHeight = screenHeight * 0.3;
     final gridPadding = screenHeight * 0.01;
 
     return Scaffold(
       body: Column(
         children: [
-          InfoScreen(barheight: infoScreenHeight),
+          InfoScreen(barheight: 150),
           SizedBox(height: gridPadding),
           Expanded(
             child: Padding(

@@ -8,6 +8,7 @@ import '../../../core/utils.dart';
 import '../../home/viewmodel/modules_view_model.dart';
 import '../model/login_model.dart';
 import '../session_manager/session_manager.dart';
+import '../viewmodel/getlastselfieatt_view_model.dart';
 import '../viewmodel/login_sucess_view_model.dart';
 import '../viewmodel/login_view_model.dart';
 import '../widgets/auth_field.dart';
@@ -30,6 +31,8 @@ class _LoginPageState extends State<LoginPage> {
   final LoginViewModel _viewModel = LoginViewModel();
   final MarkLoginViewModel markLoginViewModel = MarkLoginViewModel();
   final UserViewModel userViewModel = UserViewModel();
+  final GetlastselfieattViewModel getlastselfieattViewModel =
+      GetlastselfieattViewModel();
 
   Future<void> _onSubmit() async {
     if (_formKey.currentState?.validate() ?? false) {
@@ -78,6 +81,7 @@ class _LoginPageState extends State<LoginPage> {
             print(modulesCodes);
           });
           userViewModel.getUserDetails(token);
+          getlastselfieattViewModel.getLastSelfieAttendance(token);
         }).catchError((error) {
           print('Error: $error');
         });
