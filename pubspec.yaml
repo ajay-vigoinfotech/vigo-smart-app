@@ -54,6 +54,8 @@ dependencies:
   battery_plus: ^6.0.2
   package_info_plus: ^8.0.2
   connectivity_plus: ^6.0.5
+  flutter_expandable_fab: ^2.3.0
+  firebase_messaging: ^15.1.0
 
 dev_dependencies:
   flutter_test:

@@ -234,6 +234,7 @@ class SessionManager {
     await prefs.setString(_siteName, selfieAttendanceModel.table![0].siteName.toString());
   }
 
+  //Get SelfieAttendance
   Future<Table> getCheckinData() async {
     final prefs = await SharedPreferences.getInstance();
     return Table (

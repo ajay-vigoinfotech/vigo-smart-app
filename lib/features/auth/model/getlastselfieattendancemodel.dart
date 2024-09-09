@@ -44,13 +44,13 @@ class Table {
 
   Table(
       {this.checkinId,
-        this.uniqueId,
-        this.dateTimeIn,
-        this.dateTimeOut,
-        this.inKmsDriven,
-        this.outKmsDriven,
-        this.siteId,
-        this.siteName});
+      this.uniqueId,
+      this.dateTimeIn,
+      this.dateTimeOut,
+      this.inKmsDriven,
+      this.outKmsDriven,
+      this.siteId,
+      this.siteName});
 
   Table.fromJson(Map<String, dynamic> json) {
     checkinId = json['checkinId'].toString();

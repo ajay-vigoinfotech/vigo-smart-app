@@ -31,13 +31,11 @@ class _LoginPageState extends State<LoginPage> {
   final LoginViewModel _viewModel = LoginViewModel();
   final MarkLoginViewModel markLoginViewModel = MarkLoginViewModel();
   final UserViewModel userViewModel = UserViewModel();
-  final GetlastselfieattViewModel getlastselfieattViewModel =
-      GetlastselfieattViewModel();
+  final GetlastselfieattViewModel getlastselfieattViewModel = GetlastselfieattViewModel();
 
   Future<void> _onSubmit() async {
     if (_formKey.currentState?.validate() ?? false) {
-      final username =
-          "${_partnerCodeController.text}/${_userIDController.text}";
+      final username = "${_partnerCodeController.text}/${_userIDController.text}";
       final loginRequest = LoginRequest(
         grantType: Strings.grantType,
         username: username,

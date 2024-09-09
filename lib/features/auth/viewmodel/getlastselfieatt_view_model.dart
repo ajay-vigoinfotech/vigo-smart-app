@@ -1,15 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:vigo_smart_app/core/constants/constants.dart';
-import 'package:vigo_smart_app/features/auth/model/getuserdetails.dart';
 import '../model/getlastselfieattendancemodel.dart';
 import '../session_manager/session_manager.dart';
-
 
 class GetlastselfieattViewModel {
   final Dio _dio = Dio();
   SelfieAttendanceModel? selfieAttendance;
 
-  Future<GetlastselfieattViewModel?> getLastSelfieAttendance(String token) async {
+  Future<GetlastselfieattViewModel?> getLastSelfieAttendance(
+      String token) async {
     try {
       const url = '${AppConstants.baseUrl}/API/Kotlin/GetLastSelfieAttendance';
 
@@ -34,7 +33,6 @@ class GetlastselfieattViewModel {
 
         selfieAttendance = SelfieAttendanceModel.fromJson(response.data);
         await sessionManager.saveSelfieAttendance(selfieAttendance!);
-
       } else {
         print("Error: ${response.statusCode}");
         return null;

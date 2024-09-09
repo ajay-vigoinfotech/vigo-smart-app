@@ -23,20 +23,21 @@ class _HomePageState extends State<HomePage> {
       'page': const MarkDutyPage(),
     },
   ];
+
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    //final infoScreenHeight = screenHeight * 0.3;
     final gridPadding = screenHeight * 0.01;
 
     return Scaffold(
       body: Column(
         children: [
-          InfoScreen(barheight: 150),
+          const InfoScreen(barheight: 150),
           SizedBox(height: gridPadding),
-          Expanded(
+          SizedBox(
+            height: 200,
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: gridPadding),
+              padding: EdgeInsets.all(20),
               child: GridView.builder(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,

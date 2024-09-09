@@ -4,6 +4,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:vigo_smart_app/core/theme/theme.dart';
 import 'package:vigo_smart_app/features/auth/session_manager/session_manager.dart';
+import 'package:vigo_smart_app/features/home/widgets/floating_action_btn.dart';
 import 'package:vigo_smart_app/features/splash/splash_screen.dart';
 import 'firebase_options.dart';
 
@@ -39,5 +40,7 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+
 
 

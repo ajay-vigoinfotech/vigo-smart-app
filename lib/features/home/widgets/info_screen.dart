@@ -3,7 +3,6 @@ import '../../../core/constants/constants.dart';
 import '../../../core/theme/app_pallete.dart';
 import '../../auth/session_manager/session_manager.dart';
 import '../../auth/view/login_page.dart';
-import '../../auth/viewmodel/getlastselfieatt_view_model.dart';
 import '../../auth/viewmodel/getuserdetails_view_model.dart';
 
 class InfoScreen extends StatefulWidget {
@@ -25,16 +24,50 @@ class _InfoScreenState extends State<InfoScreen> {
   @override
   void initState() {
     super.initState();
-    getUserData(); // Call the function to fetch user data when the screen initializes
+    getUserData();
   }
+
+  // Future<void> _logout(BuildContext context) async {
+  //   final sessionManager = SessionManager();
+  //   await sessionManager.logout();
+  //
+  //   Navigator.pushReplacement(
+  //     context,
+  //     MaterialPageRoute(builder: (context) => const LoginPage()),
+  //   );
+  // }
 
   Future<void> _logout(BuildContext context) async {
     final sessionManager = SessionManager();
-    await sessionManager.logout();
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginPage()),
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Logout Confirmation"),
+          content: const Text("Are you sure you want to logout?"),
+          actions: [
+            TextButton(
+              child: const Text("Cancel"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text("Logout"),
+              onPressed: () async {
+                await sessionManager.logout();
+
+                Navigator.of(context).pop();
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -79,7 +112,7 @@ class _InfoScreenState extends State<InfoScreen> {
                 leading: AppConstants.logoutIcon,
                 title: const Text('Logout'),
                 onTap: () {
-                  Navigator.of(context).pop(); // Close the bottom sheet
+                  Navigator.of(context).pop();
                   _logout(context);
                 },
               ),
@@ -120,9 +153,11 @@ class _InfoScreenState extends State<InfoScreen> {
                 padding: const EdgeInsets.only(top: 20),
                 child: Text(
                   '$employeeCode '
-                  '$name '
-                  '$compName ',
-                  style: const TextStyle(fontSize: 18),
+                  '$name \n'
+                  '$compName',
+                  style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500),
                   overflow: TextOverflow.visible, // Prevents text overflow
                 ),
               ),
@@ -133,7 +168,7 @@ class _InfoScreenState extends State<InfoScreen> {
                   iconSize: 30,
                   onPressed: () {
                     // refresh logic here
-                    getUserData(); // Option to refresh the user data
+                    //getUserData(); // Option to refresh the user data
                   },
                   icon: const Icon(Icons.refresh),
                 ),
@@ -145,8 +180,8 @@ class _InfoScreenState extends State<InfoScreen> {
                   icon: const Icon(Icons.notifications),
                 ),
                 GestureDetector(
-                  onTap: () => getToken(),
-                  //_showBottomSheet(context),
+                  onTap: () => //getToken(),
+                      _showBottomSheet(context),
                   child: const CircleAvatar(
                     radius: 30, // Adjusted radius for better UI balance
                     //backgroundImage: AssetImage('assets/images/login_image.jpeg'), // Placeholder image
@@ -160,26 +195,26 @@ class _InfoScreenState extends State<InfoScreen> {
     );
   }
 
-  Future<void> getToken() async {
-    final SessionManager sessionManager = SessionManager();
-
-    sessionManager.getToken().then((token) async {
-      final GetlastselfieattViewModel getlastselfieattViewModel =
-          GetlastselfieattViewModel();
-      getlastselfieattViewModel.getLastSelfieAttendance(token!).then( (data1) async {
-        sessionManager.getCheckinData().then((data) async {
-          print(data.checkinId);
-          print(data.uniqueId);
-          print(data.dateTimeIn);
-          print(data.dateTimeOut);
-          print(data.inKmsDriven);
-          print(data.outKmsDriven);
-          print(data.siteId);
-          print(data.siteName);
-        });
-      });
-    }).catchError((error) {
-      print('Error: $error');
-    });
-  }
+//   Future<void> getToken() async {
+//     final SessionManager sessionManager = SessionManager();
+//
+//     sessionManager.getToken().then((token) async {
+//       final GetlastselfieattViewModel getlastselfieattViewModel =
+//           GetlastselfieattViewModel();
+//       getlastselfieattViewModel.getLastSelfieAttendance(token!).then( (data1) async {
+//         sessionManager.getCheckinData().then((data) async {
+//           print(data.checkinId);
+//           print(data.uniqueId);
+//           print(data.dateTimeIn);
+//           print(data.dateTimeOut);
+//           print(data.inKmsDriven);
+//           print(data.outKmsDriven);
+//           print(data.siteId);
+//           print(data.siteName);
+//         });
+//       });
+//     }).catchError((error) {
+//       print('Error: $error');
+//     });
+//   }
 }

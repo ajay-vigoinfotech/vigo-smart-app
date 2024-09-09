@@ -79,4 +79,5 @@ class Utils {
     final packageInfo = await PackageInfo.fromPlatform();
     return packageInfo.version;
   }
+
 }

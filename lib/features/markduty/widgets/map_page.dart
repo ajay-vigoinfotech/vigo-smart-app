@@ -21,11 +21,11 @@ class _MapPageState extends State<MapPage> {
   }
 
   Future<void> _checkLocationPermission() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      _showLocationError("Location services are disabled.");
-      return;
-    }
+    // bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    // if (!serviceEnabled) {
+    //   _showLocationError("Location services are disabled.");
+    //   return;
+    // }
 
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
@@ -65,7 +65,7 @@ class _MapPageState extends State<MapPage> {
           position: _googlePlex,
         ),
       );
-
+      print(_googlePlex);
       setState(() {});
     } catch (e) {
       _showLocationError("Failed to get current location.");

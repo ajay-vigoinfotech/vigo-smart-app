@@ -22,7 +22,7 @@ class _MarkDutyState extends State<MarkDutyPage> {
     _updateTime();
     _timer = Timer.periodic(
       const Duration(seconds: 1),
-          (Timer t) => _updateTime(),
+      (Timer t) => _updateTime(),
     );
   }
 
@@ -55,26 +55,31 @@ class _MarkDutyState extends State<MarkDutyPage> {
                   _formattedDateTime,
                   style: const TextStyle(
                     fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w500,
                     color: Pallete.dark,
                   ),
                 ),
               ),
             ),
             const SizedBox(
-              height: 400,
+              height: 300,
               width: double.infinity,
               child: MapPage(),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 150),
             const Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
-                InOutBtn(btnText: 'In'),
-                InOutBtn(btnText: 'Out'),
+                InOutBtn(
+                  btnText: 'In',
+                  btnColor: Colors.green,
+                ),
+                InOutBtn(
+                  btnText: "Out",
+                  btnColor: Colors.red, // The button will have a red background
+                ),
               ],
             ),
-            const SizedBox(height: 20),
           ],
         ),
       ),

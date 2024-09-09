@@ -4,9 +4,11 @@ import 'dart:io';
 
 class InOutBtn extends StatefulWidget {
   final String btnText;
+  final dynamic btnColor;
   const InOutBtn({
     super.key,
     required this.btnText,
+    this.btnColor,
   });
 
   @override
@@ -20,7 +22,7 @@ class _InOutBtnState extends State<InOutBtn> {
 
   Future<void> _pickImage() async {
     final pickedFile =
-    await ImagePicker().pickImage(source: ImageSource.camera);
+        await ImagePicker().pickImage(source: ImageSource.camera);
 
     if (pickedFile != null) {
       setState(() {
@@ -84,9 +86,26 @@ class _InOutBtnState extends State<InOutBtn> {
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: _pickImage,
-      child: Text(widget.btnText),
+    return SizedBox(
+      width: 100,
+      height: 50,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          elevation: 5,
+          backgroundColor: widget.btnColor,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+        onPressed: _pickImage,
+        child: Text(
+          widget.btnText,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+            color: Colors.white,
+          ),
+        ),
+      ),
     );
   }
 }
