@@ -8,6 +8,8 @@ class Strings {
   static const String privacyPolicy = "Privacy Policy";
   static const String login = "Login";
   static const String markDuty = "Mark Duty";
+  static const String settings = "Settings";
+
 
   //Map Page Strings
   //static const String markDuty = "Mark Duty";

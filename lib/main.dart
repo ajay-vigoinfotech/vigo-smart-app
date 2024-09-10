@@ -2,10 +2,11 @@ import 'dart:ui';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vigo_smart_app/core/theme/theme.dart';
 import 'package:vigo_smart_app/features/auth/session_manager/session_manager.dart';
-import 'package:vigo_smart_app/features/home/widgets/floating_action_btn.dart';
 import 'package:vigo_smart_app/features/splash/splash_screen.dart';
+import 'package:vigo_smart_app/testing/cubit/counter_cubit.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -32,15 +33,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
-      theme: AppTheme.lightThemeMode,
-      home: const SplashScreen(),
-    );
+    return BlocProvider(
+        create: (_) => CounterCubit(),
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'Flutter Demo',
+          theme: AppTheme.lightThemeMode,
+          home: //ImageToBase64(),
+              const SplashScreen(),
+        ));
   }
 }
-
-
-
-

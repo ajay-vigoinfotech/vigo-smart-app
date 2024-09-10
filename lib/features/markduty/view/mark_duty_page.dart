@@ -43,6 +43,8 @@ class _MarkDutyState extends State<MarkDutyPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.white12,
+        elevation: 5,
         title: const Text('Mark Duty'),
       ),
       body: SingleChildScrollView(
@@ -71,11 +73,11 @@ class _MarkDutyState extends State<MarkDutyPage> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
                 InOutBtn(
-                  btnText: 'In',
+                  btnText: 'IN',
                   btnColor: Colors.green,
                 ),
                 InOutBtn(
-                  btnText: "Out",
+                  btnText: "OUT",
                   btnColor: Colors.red, // The button will have a red background
                 ),
               ],

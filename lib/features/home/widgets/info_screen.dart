@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vigo_smart_app/features/home/widgets/setting_page.dart';
 import '../../../core/constants/constants.dart';
 import '../../../core/theme/app_pallete.dart';
 import '../../auth/session_manager/session_manager.dart';
@@ -26,16 +27,6 @@ class _InfoScreenState extends State<InfoScreen> {
     super.initState();
     getUserData();
   }
-
-  // Future<void> _logout(BuildContext context) async {
-  //   final sessionManager = SessionManager();
-  //   await sessionManager.logout();
-  //
-  //   Navigator.pushReplacement(
-  //     context,
-  //     MaterialPageRoute(builder: (context) => const LoginPage()),
-  //   );
-  // }
 
   Future<void> _logout(BuildContext context) async {
     final sessionManager = SessionManager();
@@ -106,7 +97,10 @@ class _InfoScreenState extends State<InfoScreen> {
               ListTile(
                 leading: AppConstants.settingsIcon,
                 title: const Text('Settings'),
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (context) => const SettingPage()));
+                },
               ),
               ListTile(
                 leading: AppConstants.logoutIcon,
@@ -152,12 +146,13 @@ class _InfoScreenState extends State<InfoScreen> {
               child: Padding(
                 padding: const EdgeInsets.only(top: 20),
                 child: Text(
-                  '$employeeCode '
-                  '$name \n'
+                  '$employeeCode - '
+                  '$name\n'
                   '$compName',
                   style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500),
+                      color: Colors.white,
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold),
                   overflow: TextOverflow.visible, // Prevents text overflow
                 ),
               ),

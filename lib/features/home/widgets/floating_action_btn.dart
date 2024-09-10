@@ -23,7 +23,7 @@ class _FloatingActionBtnState extends State<FloatingActionBtn> {
         overlayStyle: ExpandableFabOverlayStyle(
           color: Colors.white.withOpacity(0.9),
         ),
-        children:  [
+        children: [
           Row(
             children: [
               const Text('WhatsApp'),
@@ -35,7 +35,7 @@ class _FloatingActionBtnState extends State<FloatingActionBtn> {
               ),
             ],
           ),
-           Row(
+          Row(
             children: [
               const Text('Call'),
               const SizedBox(width: 20),

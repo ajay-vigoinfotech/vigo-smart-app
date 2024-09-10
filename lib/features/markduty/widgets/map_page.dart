@@ -40,7 +40,6 @@ class _MapPageState extends State<MapPage> {
       _showLocationError("Location permissions are permanently denied.");
       return;
     }
-
     _getCurrentLocation();
   }
 
