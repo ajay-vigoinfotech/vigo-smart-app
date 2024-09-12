@@ -1,6 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vigo_smart_app/features/auth/model/getuserdetails.dart';
-
 import '../model/getlastselfieattendancemodel.dart';
 
 class SessionManager {
@@ -10,6 +9,8 @@ class SessionManager {
   static const String _moduleCodesKey = 'module_codes';
   static const String _userDetailsKey = 'user_details';
   static const String _SelfieAttendanceKey = 'selfie_attendance';
+  static const String _currentDateTimeKey = 'currentDateTime';
+
 
   //save last selfie att strings
   static const String _checkinId = 'checkinId';
@@ -162,12 +163,10 @@ class SessionManager {
     await prefs.setString(_intervalKey, user.interval.toString());
     await prefs.setString(_checkInTKey, user.checkInT.toString());
     await prefs.setString(_checkOutTKey, user.checkOutT.toString());
-    await prefs.setString(
-        _companyContactNoKey, user.companyContactNo.toString());
+    await prefs.setString(_companyContactNoKey, user.companyContactNo.toString());
     await prefs.setString(_companyAddressKey, user.companyAddress.toString());
     await prefs.setString(_helplineNoKey, user.helplineNo.toString());
-    await prefs.setString(
-        _helpLineWhatsappKey, user.helpLineWhatsapp.toString());
+    await prefs.setString(_helpLineWhatsappKey, user.helpLineWhatsapp.toString());
   }
 
   // Get user details
@@ -249,4 +248,15 @@ class SessionManager {
     );
   }
 
+  // Save Current DateTime
+  Future<void> saveCurrentDateTime(String dateTime) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_currentDateTimeKey, dateTime);
+  }
+
+  // Get saved DateTime
+  Future<String?> getTimeDate() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_currentDateTimeKey);
+  }
 }

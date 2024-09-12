@@ -27,7 +27,6 @@ class Utils {
       deviceDetails =
           '${androidInfo.model}/${androidInfo.brand}/${androidInfo.device}/${androidInfo.version.sdkInt}/${androidInfo.version.release}/${androidInfo.isPhysicalDevice}';
     }
-
     return deviceDetails;
   }
 
@@ -79,5 +78,4 @@ class Utils {
     final packageInfo = await PackageInfo.fromPlatform();
     return packageInfo.version;
   }
-
 }

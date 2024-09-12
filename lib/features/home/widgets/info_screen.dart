@@ -98,8 +98,10 @@ class _InfoScreenState extends State<InfoScreen> {
                 leading: AppConstants.settingsIcon,
                 title: const Text('Settings'),
                 onTap: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => const SettingPage()));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const SettingPage()));
                 },
               ),
               ListTile(
@@ -212,4 +214,19 @@ class _InfoScreenState extends State<InfoScreen> {
 //       print('Error: $error');
 //     });
 //   }
+
+  // Future<void> getToken() async {
+  //   final sessionManager = SessionManager();
+  //   final getCurrentDateViewModel = GetCurrentDateViewModel();
+  //
+  //   // Fetch current date from the API
+  //   final currentDateTime = await getCurrentDateViewModel.getTimeDate();
+  //
+  //   // Save the API result in SharedPreferences
+  //   await sessionManager.saveCurrentDateTime(currentDateTime!);
+  //
+  //   // Get the saved date from SharedPreferences
+  //   final savedDate = await sessionManager.getTimeDate();
+  //   print('Saved Date from SharedPreferences: $savedDate');
+  // }
 }

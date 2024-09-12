@@ -34,27 +34,29 @@ class _HomePageState extends State<HomePage> {
         children: [
           const InfoScreen(barheight: 150),
           SizedBox(height: gridPadding),
-          SizedBox(
-            height: 200,
-            child: Padding(
-              padding: EdgeInsets.all(20),
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 10.0,
-                  mainAxisSpacing: 10.0,
-                  childAspectRatio: 1.0,
+          Expanded(
+            child: SizedBox(
+              height: 200,
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 10.0,
+                    mainAxisSpacing: 10.0,
+                    childAspectRatio: 1.0,
+                  ),
+                  itemCount: modules.length,
+                  itemBuilder: (context, index) {
+                    final module = modules[index];
+                    return HomeScreenCard(
+                      icon: module['icon'],
+                      modulename: module['name'],
+                      cardColor: module['color'],
+                      nextPage: module['page'],
+                    );
+                  },
                 ),
-                itemCount: modules.length,
-                itemBuilder: (context, index) {
-                  final module = modules[index];
-                  return HomeScreenCard(
-                    icon: module['icon'],
-                    modulename: module['name'],
-                    cardColor: module['color'],
-                    nextPage: module['page'],
-                  );
-                },
               ),
             ),
           ),

@@ -10,11 +10,11 @@ class LoginViewModel {
   String? _accessToken;
 
   Future<bool> makeRequest(LoginRequest request) async {
-    const uri = '${AppConstants.baseUrl}/token';
+    const url = '${AppConstants.baseUrl}/token';
 
     try {
       final response = await _dio.post(
-        uri,
+        url,
         options: Options(
           contentType: Headers.formUrlEncodedContentType,
         ),

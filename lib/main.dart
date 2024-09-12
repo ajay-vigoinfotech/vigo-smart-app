@@ -34,13 +34,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-        create: (_) => CounterCubit(),
-        child: MaterialApp(
-          debugShowCheckedModeBanner: false,
-          title: 'Flutter Demo',
-          theme: AppTheme.lightThemeMode,
-          home: //ImageToBase64(),
-              const SplashScreen(),
-        ));
+      create: (_) => CounterCubit(),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Flutter Demo',
+        theme: AppTheme.lightThemeMode,
+        home: //ImageToBase64(),
+            const SplashScreen(),
+      ),
+    );
   }
 }

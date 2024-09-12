@@ -22,7 +22,7 @@ class _InOutBtnState extends State<InOutBtn> {
 
   Future<void> _pickImage() async {
     final pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.camera);
+        await ImagePicker().pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       setState(() {
@@ -37,7 +37,7 @@ class _InOutBtnState extends State<InOutBtn> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Captured Image'),
+          title: const Text('Captured Image..'),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -106,7 +106,8 @@ class _InOutBtnState extends State<InOutBtn> {
               elevation: 5,
               backgroundColor: widget.btnColor,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)),
+                  borderRadius: BorderRadius.circular(10),
+              ),
             ),
             onPressed: _pickImage,
             child: Text(

@@ -15,7 +15,7 @@ class _ImageToBase64State extends State<ImageToBase64> {
 
   // Function to pick image
   Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.camera);
+    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       setState(() {
