@@ -29,6 +29,7 @@ class GetCurrentDateViewModel {
       }
     } catch (e) {
       print('Exception: $e');
+
       return null;
     }
   }

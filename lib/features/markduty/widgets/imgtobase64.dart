@@ -1,5 +1,5 @@
-import 'dart:convert'; // For base64 encoding
-import 'dart:io'; // For File handling
+import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -15,7 +15,10 @@ class _ImageToBase64State extends State<ImageToBase64> {
 
   // Function to pick image
   Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    final pickedFile = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 1,
+    );
 
     if (pickedFile != null) {
       setState(() {
@@ -42,9 +45,7 @@ class _ImageToBase64State extends State<ImageToBase64> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _image != null
-                ? Image.file(_image!)
-                : Text('No image selected'),
+            _image != null ? Image.file(_image!) : Text('No image selected'),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: _pickImage,
@@ -52,13 +53,12 @@ class _ImageToBase64State extends State<ImageToBase64> {
             ),
             base64Image != null
                 ? Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                'Base64 String: $base64Image',
-                overflow: TextOverflow.ellipsis,
-              ),
-            )
-
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      'Base64 String: $base64Image',
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  )
                 : Container(),
           ],
         ),

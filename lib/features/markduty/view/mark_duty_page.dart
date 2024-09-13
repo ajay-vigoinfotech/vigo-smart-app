@@ -22,7 +22,7 @@ class _MarkDutyState extends State<MarkDutyPage> {
     _updateTime();
     _timer = Timer.periodic(
       const Duration(seconds: 1),
-      (Timer t) => _updateTime(),
+          (Timer t) => _updateTime(),
     );
   }
 
@@ -68,7 +68,7 @@ class _MarkDutyState extends State<MarkDutyPage> {
               width: double.infinity,
               child: MapPage(),
             ),
-            const SizedBox(height: 150),
+            const SizedBox(height: 50),
             const Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
@@ -78,7 +78,7 @@ class _MarkDutyState extends State<MarkDutyPage> {
                 ),
                 InOutBtn(
                   btnText: "OUT",
-                  btnColor: Colors.red, // The button will have a red background
+                  btnColor: Colors.red,
                 ),
               ],
             ),

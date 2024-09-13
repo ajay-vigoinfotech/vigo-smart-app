@@ -5,8 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vigo_smart_app/core/theme/theme.dart';
 import 'package:vigo_smart_app/features/auth/session_manager/session_manager.dart';
-import 'package:vigo_smart_app/features/splash/splash_screen.dart';
-import 'package:vigo_smart_app/testing/cubit/counter_cubit.dart';
+import 'package:vigo_smart_app/testing/timer/bloc/timer_bloc.dart';
+import 'package:vigo_smart_app/testing/timer/ticker.dart';
+import 'features/splash/splash_screen.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -29,18 +30,19 @@ Future<void> main() async {
 
 class MyApp extends StatelessWidget {
   final bool isLoggedIn;
+
   const MyApp({super.key, required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => CounterCubit(),
+      create: (context) => TimerBloc(ticker: const Ticker()),
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Flutter Demo',
         theme: AppTheme.lightThemeMode,
         home: //ImageToBase64(),
-            const SplashScreen(),
+        const SplashScreen(),
       ),
     );
   }
