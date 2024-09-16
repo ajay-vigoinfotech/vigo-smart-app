@@ -165,17 +165,17 @@ class _InfoScreenState extends State<InfoScreen> {
                   iconSize: 30,
                   onPressed: () {
                     // refresh logic here
-                    //getUserData(); // Option to refresh the user data
+                    getUserData();
                   },
                   icon: const Icon(Icons.refresh),
                 ),
-                IconButton(
-                  iconSize: 30,
-                  onPressed: () {
-                    // notification logic here
-                  },
-                  icon: const Icon(Icons.notifications),
-                ),
+                // IconButton(
+                //   iconSize: 30,
+                //   onPressed: () {
+                //     // notification logic here
+                //   },
+                //   icon: const Icon(Icons.notifications),
+                // ),
                 GestureDetector(
                   onTap: () => //getToken(),
                       _showBottomSheet(context),
@@ -229,4 +229,16 @@ class _InfoScreenState extends State<InfoScreen> {
   //   final savedDate = await sessionManager.getTimeDate();
   //   print('Saved Date from SharedPreferences: $savedDate');
   // }
+
+//   Future<void> getToken() async {
+//     // Assuming SessionManager is already implemented to manage tokens
+//     final sessionManager = SessionManager();
+//     final token = await sessionManager.getToken(); // Example usage
+//
+//     final supportContactViewModel = SupportContactViewModel();
+//
+//     // Fetch and store support contact using the ViewModel
+//     final supportContact = await supportContactViewModel.getSupportContact();
+//     print('Support Contact: $supportContact');
+//   }
 }

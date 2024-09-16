@@ -10,7 +10,7 @@ class SessionManager {
   static const String _userDetailsKey = 'user_details';
   static const String _SelfieAttendanceKey = 'selfie_attendance';
   static const String _currentDateTimeKey = 'currentDateTime';
-
+  static const String _supportContactKey = 'supportContact';
 
   //save last selfie att strings
   static const String _checkinId = 'checkinId';
@@ -21,7 +21,6 @@ class SessionManager {
   static const String _outKmsDriven = 'outKmsDriven';
   static const String _siteId = 'siteId';
   static const String _siteName = 'siteName';
-
 
   //save user details strings
   static const String _code = 'code';
@@ -163,10 +162,12 @@ class SessionManager {
     await prefs.setString(_intervalKey, user.interval.toString());
     await prefs.setString(_checkInTKey, user.checkInT.toString());
     await prefs.setString(_checkOutTKey, user.checkOutT.toString());
-    await prefs.setString(_companyContactNoKey, user.companyContactNo.toString());
+    await prefs.setString(
+        _companyContactNoKey, user.companyContactNo.toString());
     await prefs.setString(_companyAddressKey, user.companyAddress.toString());
     await prefs.setString(_helplineNoKey, user.helplineNo.toString());
-    await prefs.setString(_helpLineWhatsappKey, user.helpLineWhatsapp.toString());
+    await prefs.setString(
+        _helpLineWhatsappKey, user.helpLineWhatsapp.toString());
   }
 
   // Get user details
@@ -221,30 +222,39 @@ class SessionManager {
   }
 
   //save SelfieAttendance
-  Future<void> saveSelfieAttendance(SelfieAttendanceModel selfieAttendanceModel) async {
+  Future<void> saveSelfieAttendance(
+      SelfieAttendanceModel selfieAttendanceModel) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_checkinId,  selfieAttendanceModel.table![0].checkinId.toString());
-    await prefs.setString(_uniqueId, selfieAttendanceModel.table![0].uniqueId.toString());
-    await prefs.setString(_dateTimeIn, selfieAttendanceModel.table![0].dateTimeIn.toString());
-    await prefs.setString(_dateTimeOut, selfieAttendanceModel.table![0].dateTimeOut.toString());
-    await prefs.setString(_inKmsDriven, selfieAttendanceModel.table![0].inKmsDriven.toString());
-    await prefs.setString(_outKmsDriven, selfieAttendanceModel.table![0].outKmsDriven.toString());
-    await prefs.setString(_siteId,  selfieAttendanceModel.table![0].siteId.toString());
-    await prefs.setString(_siteName, selfieAttendanceModel.table![0].siteName.toString());
+    await prefs.setString(
+        _checkinId, selfieAttendanceModel.table![0].checkinId.toString());
+    await prefs.setString(
+        _uniqueId, selfieAttendanceModel.table![0].uniqueId.toString());
+    await prefs.setString(
+        _dateTimeIn, selfieAttendanceModel.table![0].dateTimeIn.toString());
+    await prefs.setString(
+        _dateTimeOut, selfieAttendanceModel.table![0].dateTimeOut.toString());
+    await prefs.setString(
+        _inKmsDriven, selfieAttendanceModel.table![0].inKmsDriven.toString());
+    await prefs.setString(
+        _outKmsDriven, selfieAttendanceModel.table![0].outKmsDriven.toString());
+    await prefs.setString(
+        _siteId, selfieAttendanceModel.table![0].siteId.toString());
+    await prefs.setString(
+        _siteName, selfieAttendanceModel.table![0].siteName.toString());
   }
 
   //Get SelfieAttendance
   Future<Table> getCheckinData() async {
     final prefs = await SharedPreferences.getInstance();
-    return Table (
-    checkinId: prefs.getString(_checkinId),
-    uniqueId: prefs.getString(_uniqueId),
-    dateTimeIn: prefs.getString(_dateTimeIn),
-    dateTimeOut: prefs.getString(_dateTimeOut),
-    inKmsDriven: prefs.getString(_inKmsDriven) ,
-    outKmsDriven: prefs.getString(_outKmsDriven),
-    siteId: prefs.getString(_siteId),
-    siteName: prefs.getString(_siteName),
+    return Table(
+      checkinId: prefs.getString(_checkinId),
+      uniqueId: prefs.getString(_uniqueId),
+      dateTimeIn: prefs.getString(_dateTimeIn),
+      dateTimeOut: prefs.getString(_dateTimeOut),
+      inKmsDriven: prefs.getString(_inKmsDriven),
+      outKmsDriven: prefs.getString(_outKmsDriven),
+      siteId: prefs.getString(_siteId),
+      siteName: prefs.getString(_siteName),
     );
   }
 
@@ -259,4 +269,20 @@ class SessionManager {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_currentDateTimeKey);
   }
+
+  // Save SupportContact to SharedPreferences
+  Future<void> saveSupportContact(String contact) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_supportContactKey, contact);
+    print('Support contact saved locally');
+  }
+
+  // Get SupportContact from SharedPreferences
+  Future<String?> getStoredSupportContact() async {
+    final prefs = await SharedPreferences.getInstance();
+    final supportContact = prefs.getString(_supportContactKey);
+    print('Retrieved support contact from local storage: $supportContact');
+    return supportContact;
+  }
 }
+

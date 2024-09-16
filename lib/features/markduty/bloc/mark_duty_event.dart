@@ -1,16 +1,11 @@
+abstract class MarkDutyEvent {}
+
+class LoadTimeEvent extends MarkDutyEvent {}
+
+class MarkInEvent extends MarkDutyEvent {}
+
+class MarkOutEvent extends MarkDutyEvent {}
 
 
-abstract class MarkDutyEvent {
-  const MarkDutyEvent();
 
-  List<Object> get props => [];
-}
-
-class UpdateTime extends MarkDutyEvent {
-
-}
-
-class InButtonPressed extends MarkDutyEvent {}
-
-class OutButtonPressed extends MarkDutyEvent {}
 

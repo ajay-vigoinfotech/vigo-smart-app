@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:vigo_smart_app/features/auth/model/marklogin_model.dart';
 import 'package:vigo_smart_app/features/auth/viewmodel/getuserdetails_view_model.dart';
 import 'package:vigo_smart_app/features/home/view/home_page.dart';
@@ -70,14 +71,29 @@ class _LoginPageState extends State<LoginPage> {
             dataStatus: '',
           );
 
-          final markLogin =
-              await markLoginViewModel.markLogin(token!, markLoginModel);
+          final markLoginResponse =
+          await markLoginViewModel.markLogin(token!, markLoginModel);
+
+          if (markLoginResponse is String &&
+              markLoginResponse == "Device Logged-In successfully.") {
+            Fluttertoast.showToast(
+              msg: markLoginResponse,
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.green,
+              textColor: Colors.white,
+              fontSize: 17.0,
+            );
+          }
+
           ModulesViewModel moduleService = ModulesViewModel();
           List<String> moduleCodes = await moduleService.getModules(token);
           sessionManager.saveModuleCodes(moduleCodes);
           sessionManager.getModuleCodes().then((modulesCodes) async {
             print(modulesCodes);
           });
+
           userViewModel.getUserDetails(token);
           getlastselfieattViewModel.getLastSelfieAttendance(token);
         }).catchError((error) {
@@ -90,7 +106,15 @@ class _LoginPageState extends State<LoginPage> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login failed. Please try again.')),
+          const SnackBar(
+            backgroundColor: Colors.red,
+              content: Text('Login failed. Please try again.',
+              style: TextStyle(
+                fontSize: 17,
+                color: Colors.white,
+                fontWeight: FontWeight.bold
+              ),
+              )),
         );
       }
     }
@@ -209,7 +233,9 @@ class _LoginPageState extends State<LoginPage> {
       ),
       child: const Text(
         Strings.submit,
-        style: TextStyle(fontSize: 18),
+        style: TextStyle(
+          fontSize: 18,
+        ),
       ),
     );
   }

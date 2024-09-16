@@ -43,7 +43,7 @@ class _MarkDutyState extends State<MarkDutyPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white12,
+        backgroundColor: Colors.white,
         elevation: 5,
         title: const Text('Mark Duty'),
       ),

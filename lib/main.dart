@@ -35,8 +35,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => TimerBloc(ticker: const Ticker()),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => TimerBloc(ticker: const Ticker()),
+        ),
+        BlocProvider(
+            create: (context) => TimerBloc(ticker: const Ticker()),
+        ),
+      ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Flutter Demo',
