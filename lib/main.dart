@@ -41,7 +41,7 @@ class MyApp extends StatelessWidget {
           create: (context) => TimerBloc(ticker: const Ticker()),
         ),
         BlocProvider(
-            create: (context) => TimerBloc(ticker: const Ticker()),
+          create: (context) => TimerBloc(ticker: const Ticker()),
         ),
       ],
       child: MaterialApp(
@@ -49,7 +49,7 @@ class MyApp extends StatelessWidget {
         title: 'Flutter Demo',
         theme: AppTheme.lightThemeMode,
         home: //ImageToBase64(),
-        const SplashScreen(),
+            const SplashScreen(),
       ),
     );
   }

@@ -55,15 +55,15 @@ class _LoginPageState extends State<LoginPage> {
           final String appVersion = await Utils.getAppVersion();
           final String ipAddress = await Utils.getIpAddress();
           final String uniqueId = await Utils.getUniqueID();
+          final int battery = await Utils.getBatteryLevel();
 
-          final String fullDeviceDetails =
-              "$deviceDetails/$uniqueId/$ipAddress";
+          final String fullDeviceDetails = "$deviceDetails/$uniqueId/$ipAddress";
 
           final markLoginModel = MarkLoginModel(
             deviceDetails: fullDeviceDetails,
             punchAction: 'LOGIN',
             locationDetails: '',
-            batteryStatus: '100%',
+            batteryStatus: '$battery%',
             time: formattedDateTime,
             latLong: '',
             version: 'v$appVersion',
@@ -72,7 +72,7 @@ class _LoginPageState extends State<LoginPage> {
           );
 
           final markLoginResponse =
-          await markLoginViewModel.markLogin(token!, markLoginModel);
+              await markLoginViewModel.markLogin(token!, markLoginModel);
 
           if (markLoginResponse is String &&
               markLoginResponse == "Device Logged-In successfully.") {
@@ -108,13 +108,14 @@ class _LoginPageState extends State<LoginPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             backgroundColor: Colors.red,
-              content: Text('Login failed. Please try again.',
+            content: Text(
+              'Login failed. Please try again.',
               style: TextStyle(
-                fontSize: 17,
-                color: Colors.white,
-                fontWeight: FontWeight.bold
-              ),
-              )),
+                  fontSize: 17,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold),
+            ),
+          ),
         );
       }
     }
@@ -202,6 +203,11 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  // Future<Widget> getAppVersion() async {
+  //   final appVersion = await Utils.getAppVersion();
+  //   print('$appVersion');
+  // }
+
   Widget _buildLoginImage(BoxConstraints constraints) {
     return Image.asset(
       'assets/images/login_image.jpeg',
@@ -224,6 +230,7 @@ class _LoginPageState extends State<LoginPage> {
     return ElevatedButton(
       onPressed: _onSubmit,
       style: ElevatedButton.styleFrom(
+        elevation: 5,
         backgroundColor: Pallete.btn1,
         foregroundColor: Pallete.backgroundColor,
         padding: const EdgeInsets.symmetric(vertical: 16.0),

@@ -31,6 +31,7 @@ class LoginViewModel {
       }
     } catch (e) {
       print('Exception: $e');
+      print('Exception: $e');
       return false;
     }
   }

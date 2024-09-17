@@ -28,8 +28,6 @@ class GetlastselfieattViewModel {
         final SessionManager sessionManager = SessionManager();
         print(response.data);
         print(response.data);
-        print(response.data);
-        print(response.data);
 
         selfieAttendance = SelfieAttendanceModel.fromJson(response.data);
         await sessionManager.saveSelfieAttendance(selfieAttendance!);

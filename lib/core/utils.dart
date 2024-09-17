@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:apple_product_name/apple_product_name.dart';
 import 'package:battery_plus/battery_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:intl/intl.dart';
@@ -20,12 +21,12 @@ class Utils {
 
     if (Theme.of(context).platform == TargetPlatform.iOS) {
       final iosInfo = await deviceInfo.iosInfo;
+      final info = await DeviceInfoPlugin().iosInfo;
       deviceDetails =
-          '${iosInfo.name}/Apple/${iosInfo.model}/${iosInfo.utsname.release}/${iosInfo.systemVersion}';
+          '${info.utsname.productName}/Apple/${iosInfo.model}/${iosInfo.utsname.release}/${iosInfo.systemVersion}';
     } else {
       final androidInfo = await deviceInfo.androidInfo;
-      deviceDetails =
-          '${androidInfo.model}/${androidInfo.brand}/${androidInfo.device}/${androidInfo.version.sdkInt}/${androidInfo.version.release}/${androidInfo.isPhysicalDevice}';
+      deviceDetails = '${androidInfo.model}/${androidInfo.brand}/${androidInfo.device}/${androidInfo.version.sdkInt}/${androidInfo.version.release}/${androidInfo.isPhysicalDevice}';
     }
     return deviceDetails;
   }
@@ -36,10 +37,17 @@ class Utils {
       final connectivity = Connectivity();
       final connectivityResult = await connectivity.checkConnectivity();
 
+      // Only proceed if there's Wi-Fi or mobile connectivity
       if (connectivityResult == ConnectivityResult.wifi ||
           connectivityResult == ConnectivityResult.mobile) {
-        for (var interface in await NetworkInterface.list()) {
+
+        // Get network interfaces based on the platform
+        for (var interface in await NetworkInterface.list(
+          includeLoopback: false,
+          type: InternetAddressType.any,
+        )) {
           for (var addr in interface.addresses) {
+            // Return IPv4 address
             if (addr.type == InternetAddressType.IPv4) {
               return addr.address;
             }
@@ -63,7 +71,6 @@ class Utils {
     } else {
       uniqueID = 'Unsupported platform';
     }
-
     return uniqueID;
   }
 

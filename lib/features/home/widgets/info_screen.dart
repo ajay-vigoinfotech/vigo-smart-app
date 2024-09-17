@@ -99,9 +99,11 @@ class _InfoScreenState extends State<InfoScreen> {
                 title: const Text('Settings'),
                 onTap: () {
                   Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const SettingPage()));
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SettingPage(),
+                    ),
+                  );
                 },
               ),
               ListTile(
@@ -149,13 +151,13 @@ class _InfoScreenState extends State<InfoScreen> {
                 padding: const EdgeInsets.only(top: 20),
                 child: Text(
                   '$employeeCode - '
-                  '$name\n'
+                  '$name\n,'
                   '$compName',
                   style: const TextStyle(
                       color: Colors.white,
                       fontSize: 17,
                       fontWeight: FontWeight.bold),
-                  overflow: TextOverflow.visible, // Prevents text overflow
+                  overflow: TextOverflow.visible,
                 ),
               ),
             ),
@@ -192,28 +194,28 @@ class _InfoScreenState extends State<InfoScreen> {
     );
   }
 
-//   Future<void> getToken() async {
-//     final SessionManager sessionManager = SessionManager();
-//
-//     sessionManager.getToken().then((token) async {
-//       final GetlastselfieattViewModel getlastselfieattViewModel =
-//           GetlastselfieattViewModel();
-//       getlastselfieattViewModel.getLastSelfieAttendance(token!).then( (data1) async {
-//         sessionManager.getCheckinData().then((data) async {
-//           print(data.checkinId);
-//           print(data.uniqueId);
-//           print(data.dateTimeIn);
-//           print(data.dateTimeOut);
-//           print(data.inKmsDriven);
-//           print(data.outKmsDriven);
-//           print(data.siteId);
-//           print(data.siteName);
-//         });
-//       });
-//     }).catchError((error) {
-//       print('Error: $error');
-//     });
-//   }
+  // Future<void> getToken() async {
+  //   final SessionManager sessionManager = SessionManager();
+  //
+  //   sessionManager.getToken().then((token) async {
+  //     final GetlastselfieattViewModel getlastselfieattViewModel =
+  //         GetlastselfieattViewModel();
+  //     getlastselfieattViewModel.getLastSelfieAttendance(token!).then( (data1) async {
+  //       sessionManager.getCheckinData().then((data) async {
+  //         print(data.checkinId);
+  //         print(data.uniqueId);
+  //         print(data.dateTimeIn);
+  //         print(data.dateTimeOut);
+  //         print(data.inKmsDriven);
+  //         print(data.outKmsDriven);
+  //         print(data.siteId);
+  //         print(data.siteName);
+  //       });
+  //     });
+  //   }).catchError((error) {
+  //     print('Error: $error');
+  //   });
+  // }
 
   // Future<void> getToken() async {
   //   final sessionManager = SessionManager();
