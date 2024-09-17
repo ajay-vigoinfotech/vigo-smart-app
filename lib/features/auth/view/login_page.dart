@@ -61,7 +61,7 @@ class _LoginPageState extends State<LoginPage> {
 
           final markLoginModel = MarkLoginModel(
             deviceDetails: fullDeviceDetails,
-            punchAction: 'LOGIN',
+            punchAction: 'LOGIN.',
             locationDetails: '',
             batteryStatus: '$battery%',
             time: formattedDateTime,

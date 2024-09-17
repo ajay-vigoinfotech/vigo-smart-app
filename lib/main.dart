@@ -46,7 +46,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Flutter Demo',
+        title: 'Flutter Demo.',
         theme: AppTheme.lightThemeMode,
         home: //ImageToBase64(),
             const SplashScreen(),
