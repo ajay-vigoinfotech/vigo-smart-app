@@ -32,11 +32,13 @@ class _LoginPageState extends State<LoginPage> {
   final LoginViewModel _viewModel = LoginViewModel();
   final MarkLoginViewModel markLoginViewModel = MarkLoginViewModel();
   final UserViewModel userViewModel = UserViewModel();
-  final GetlastselfieattViewModel getlastselfieattViewModel = GetlastselfieattViewModel();
+  final GetlastselfieattViewModel getlastselfieattViewModel =
+      GetlastselfieattViewModel();
 
   Future<void> _onSubmit() async {
     if (_formKey.currentState?.validate() ?? false) {
-      final username = "${_partnerCodeController.text}/${_userIDController.text}";
+      final username =
+          "${_partnerCodeController.text}/${_userIDController.text}";
       final loginRequest = LoginRequest(
         grantType: Strings.grantType,
         username: username,
@@ -56,8 +58,11 @@ class _LoginPageState extends State<LoginPage> {
           final String ipAddress = await Utils.getIpAddress();
           final String uniqueId = await Utils.getUniqueID();
           final int battery = await Utils.getBatteryLevel();
+          final String? fcmToken = await Utils.getFCMToken();
+          print(fcmToken);
 
-          final String fullDeviceDetails = "$deviceDetails/$uniqueId/$ipAddress";
+          final String fullDeviceDetails =
+              "$deviceDetails/$uniqueId/$ipAddress";
 
           final markLoginModel = MarkLoginModel(
             deviceDetails: fullDeviceDetails,
@@ -67,7 +72,7 @@ class _LoginPageState extends State<LoginPage> {
             time: formattedDateTime,
             latLong: '',
             version: 'v$appVersion',
-            fcmToken: '',
+            fcmToken: fcmToken ?? '',
             dataStatus: '',
           );
 
@@ -202,11 +207,6 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
-
-  // Future<Widget> getAppVersion() async {
-  //   final appVersion = await Utils.getAppVersion();
-  //   print('$appVersion');
-  // }
 
   Widget _buildLoginImage(BoxConstraints constraints) {
     return Image.asset(
