@@ -94,6 +94,17 @@ class _LoginPageState extends State<LoginPage> {
 
           ModulesViewModel moduleService = ModulesViewModel();
           List<String> moduleCodes = await moduleService.getModules(token);
+
+          List<String> distinctModuleCodes = moduleCodes.toSet().toList();
+
+          // Save the distinct module codes
+          await sessionManager.saveModuleCodes(distinctModuleCodes);
+
+          // Print saved distinct module codes
+          sessionManager.getModuleCodes().then((savedModuleCodes) {
+            print(savedModuleCodes);
+          });
+
           sessionManager.saveModuleCodes(moduleCodes);
           sessionManager.getModuleCodes().then((modulesCodes) async {
             print(modulesCodes);

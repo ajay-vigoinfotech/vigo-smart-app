@@ -95,7 +95,7 @@ class _MapPageState extends State<MapPage> {
         },
         onCameraIdle: () {
           if (_isMapBeingMoved) {
-            Future.delayed(const Duration(seconds: 1), () {
+            Future.delayed(const Duration(seconds: 2), () {
               _moveCameraToLocation();
               _isMapBeingMoved = false;
             });

@@ -35,12 +35,15 @@ class HomeScreenCard extends StatelessWidget {
             children: [
               icon,
               const SizedBox(height: 8),
-              Text(
-                modulename,
-                style: const TextStyle(
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+              Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Text(
+                  modulename,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ],
