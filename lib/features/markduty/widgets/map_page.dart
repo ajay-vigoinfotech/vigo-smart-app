@@ -10,10 +10,11 @@ class MapPage extends StatefulWidget {
 }
 
 class _MapPageState extends State<MapPage> {
-  LatLng _googlePlex = const LatLng(19.2059, 72.8500);
+  LatLng? _googlePlex; // Make it nullable to handle uninitialized state
   late GoogleMapController _googleMapController;
   final Set<Marker> _markers = {};
   bool _isMapBeingMoved = false;
+  bool _isLoading = true; // Add a loading state to indicate fetching location
 
   @override
   void initState() {
@@ -31,10 +32,10 @@ class _MapPageState extends State<MapPage> {
       }
     }
 
-    if (permission == LocationPermission.deniedForever) {
-      _showLocationError("Location permissions are permanently denied.");
-      return;
-    }
+    // if (permission == LocationPermission.denied) {
+    //   _showLocationError("Location permissions are denied.");
+    //   return;
+    // }
     _getCurrentLocation();
   }
 
@@ -42,34 +43,41 @@ class _MapPageState extends State<MapPage> {
     try {
       Position position = await Geolocator.getCurrentPosition();
       _googlePlex = LatLng(position.latitude, position.longitude);
+      print(_googlePlex);
 
-      _moveCameraToLocation();
       _setMarkerAtCurrentLocation();
+      setState(() {
+        _isLoading = false; // Stop loading after location is fetched
+      });
     } catch (e) {
       _showLocationError("Failed to get current location of your device");
     }
   }
 
   void _moveCameraToLocation() {
-    _googleMapController.animateCamera(
-      CameraUpdate.newCameraPosition(
-        CameraPosition(
-          zoom: 14,
-          target: _googlePlex,
+    if (_googlePlex != null) {
+      _googleMapController.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(
+            zoom: 14,
+            target: _googlePlex!,
+          ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   void _setMarkerAtCurrentLocation() {
     _markers.clear();
-    _markers.add(
-      Marker(
-        markerId: const MarkerId("Current Location"),
-        position: _googlePlex,
-      ),
-    );
-    setState(() {});
+    if (_googlePlex != null) {
+      _markers.add(
+        Marker(
+          markerId: const MarkerId("Current Location"),
+          position: _googlePlex!,
+        ),
+      );
+      setState(() {});
+    }
   }
 
   void _showLocationError(String message) {
@@ -80,28 +88,33 @@ class _MapPageState extends State<MapPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GoogleMap(
-        myLocationButtonEnabled: false,
-        markers: _markers,
-        onMapCreated: (GoogleMapController controller) {
-          _googleMapController = controller;
-        },
-        initialCameraPosition: CameraPosition(
-          target: _googlePlex,
-          zoom: 14,
-        ),
-        onCameraMove: (CameraPosition position) {
-          _isMapBeingMoved = true;
-        },
-        onCameraIdle: () {
-          if (_isMapBeingMoved) {
-            Future.delayed(const Duration(seconds: 2), () {
-              _moveCameraToLocation();
-              _isMapBeingMoved = false;
-            });
-          }
-        },
-      ),
+      body: _isLoading
+          ? const Center(
+              child:
+                  CircularProgressIndicator()) // Show loading indicator while fetching location
+          : GoogleMap(
+              myLocationButtonEnabled: false,
+              markers: _markers,
+              onMapCreated: (GoogleMapController controller) {
+                _googleMapController = controller;
+                _moveCameraToLocation(); // Move the camera once the map is created
+              },
+              initialCameraPosition: CameraPosition(
+                target: _googlePlex!, // Use the current location once fetched
+                zoom: 14,
+              ),
+              onCameraMove: (CameraPosition position) {
+                _isMapBeingMoved = true;
+              },
+              onCameraIdle: () {
+                if (_isMapBeingMoved) {
+                  Future.delayed(const Duration(seconds: 2), () {
+                    _moveCameraToLocation();
+                    _isMapBeingMoved = false;
+                  });
+                }
+              },
+            ),
     );
   }
 }

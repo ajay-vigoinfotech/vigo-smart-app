@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:vigo_smart_app/features/home/widgets/setting_page.dart';
-import 'package:vigo_smart_app/features/punchHistory/view/punch_history.dart';
+import 'package:vigo_smart_app/features/markduty/view/new_mark.dart';
 import '../../../core/constants/constants.dart';
 import '../../../core/strings/strings.dart';
 import '../../../core/theme/app_pallete.dart';
@@ -32,7 +32,7 @@ class _HomePageState extends State<HomePage> {
       'icon': AppConstants.markDutyIcon,
       'name': Strings.punchHistory,
       'color': Pallete.btn1,
-      'page': const PunchHistory(),
+      'page': const MarkDuty(),
     },
     {
       'code': 'SettingsApp',

@@ -28,7 +28,6 @@ class NotificationUtils {
         alert: true,
         badge: true,
         sound: true,
-
       );
     }
   }

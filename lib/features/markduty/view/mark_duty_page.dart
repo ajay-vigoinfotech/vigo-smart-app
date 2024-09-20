@@ -22,7 +22,7 @@ class _MarkDutyState extends State<MarkDutyPage> {
     _updateTime();
     _timer = Timer.periodic(
       const Duration(seconds: 1),
-          (Timer t) => _updateTime(),
+      (Timer t) => _updateTime(),
     );
   }
 

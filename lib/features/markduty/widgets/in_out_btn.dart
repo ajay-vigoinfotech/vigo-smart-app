@@ -37,6 +37,7 @@ class _InOutBtnState extends State<InOutBtn> {
       final bytes = await _imageFile!.readAsBytes();
       setState(() {
         base64Image = base64Encode(bytes);
+        print(base64Image);
       });
       _showImageDialog();
     }
@@ -78,8 +79,8 @@ class _InOutBtnState extends State<InOutBtn> {
           actions: <Widget>[
             TextButton(
               onPressed: () {
-                String km = _kmController.text;
-                String comment = _commentController.text;
+                // String km = _kmController.text;
+                // String comment = _commentController.text;
 
                 // print('KM: $km');
                 // print('Comment: $comment');
@@ -115,7 +116,7 @@ class _InOutBtnState extends State<InOutBtn> {
         if (_imageFile != null) ...[
           Image.file(
             _imageFile!,
-            height: 90,
+            height: 120,
             width: 90,
             fit: BoxFit.cover,
           ),
