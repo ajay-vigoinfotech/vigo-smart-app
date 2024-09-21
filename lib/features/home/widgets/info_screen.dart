@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:vigo_smart_app/features/home/widgets/setting_page.dart';
-import '../../../core/constants/constants.dart';
 import '../../../core/theme/app_pallete.dart';
 import '../../auth/session_manager/session_manager.dart';
 import '../../auth/view/login_page.dart';
 import '../../auth/viewmodel/getuserdetails_view_model.dart';
 
 class InfoScreen extends StatefulWidget {
-  final double barheight;
+  final double barHeight;
 
-  const InfoScreen({super.key, required this.barheight});
+  const InfoScreen({super.key, required this.barHeight});
 
   @override
   State<InfoScreen> createState() => _InfoScreenState();
@@ -17,10 +16,10 @@ class InfoScreen extends StatefulWidget {
 
 class _InfoScreenState extends State<InfoScreen> {
   final SessionManager sessionManager = SessionManager();
-  String? employeeCode; //TBS24
-  String? compCode; //Tiger
-  String? compName; //TIGER 4 INDIA LIMITED
-  String? name; //PlayStore ID
+  String? employeeCode;
+  String? compCode;
+  String? compName;
+  String? name;
 
   @override
   void initState() {
@@ -29,8 +28,6 @@ class _InfoScreenState extends State<InfoScreen> {
   }
 
   Future<void> _logout(BuildContext context) async {
-    final sessionManager = SessionManager();
-
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -39,7 +36,12 @@ class _InfoScreenState extends State<InfoScreen> {
           content: const Text("Are you sure you want to logout?"),
           actions: [
             TextButton(
-              child: const Text("Cancel"),
+              child: const Text(
+                  "Cancel",
+                style: TextStyle(
+
+                ),
+              ),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -48,7 +50,6 @@ class _InfoScreenState extends State<InfoScreen> {
               child: const Text("Logout"),
               onPressed: () async {
                 await sessionManager.logout();
-
                 Navigator.of(context).pop();
                 Navigator.pushReplacement(
                   context,
@@ -87,6 +88,9 @@ class _InfoScreenState extends State<InfoScreen> {
   void _showBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (context) => SizedBox(
         height: 200,
         child: Padding(
@@ -95,7 +99,10 @@ class _InfoScreenState extends State<InfoScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: AppConstants.settingsIcon,
+                leading: const Icon(
+                  Icons.settings,
+                  color: Colors.black54,
+                ), // Corrected syntax
                 title: const Text('Settings'),
                 onTap: () {
                   Navigator.push(
@@ -107,7 +114,10 @@ class _InfoScreenState extends State<InfoScreen> {
                 },
               ),
               ListTile(
-                leading: AppConstants.logoutIcon,
+                leading: const Icon(
+                  Icons.logout,
+                  color: Colors.black54,
+                ),
                 title: const Text('Logout'),
                 onTap: () {
                   Navigator.of(context).pop();
@@ -124,7 +134,7 @@ class _InfoScreenState extends State<InfoScreen> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: widget.barheight,
+      height: widget.barHeight,
       width: double.infinity,
       decoration: BoxDecoration(
         color: Pallete.btn1,
@@ -134,56 +144,47 @@ class _InfoScreenState extends State<InfoScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.5),
-            spreadRadius: 5,
+            color: Colors.black.withOpacity(0.3),
+            spreadRadius: 3,
             blurRadius: 7,
             offset: const Offset(0, 3),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
+        padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 1.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Flexible(
               child: Padding(
-                padding: const EdgeInsets.only(top: 20),
+                padding: const EdgeInsets.only(top: 10),
                 child: Text(
-                  '$employeeCode - '
-                  '$name\n,'
-                  '$compName',
+                  '$employeeCode - $name \n$compName',
                   style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold),
-                  overflow: TextOverflow.visible,
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ),
             Row(
               children: [
                 IconButton(
-                  iconSize: 30,
+                  iconSize: 28,
                   onPressed: () {
-                    // refresh logic here
                     getUserData();
                   },
-                  icon: const Icon(Icons.refresh),
+                  icon: const Icon(Icons.refresh, color: Colors.white),
                 ),
-                // IconButton(
-                //   iconSize: 30,
-                //   onPressed: () {
-                //     // notification logic here
-                //   },
-                //   icon: const Icon(Icons.notifications),
-                // ),
                 GestureDetector(
-                  onTap: () => //getToken(),
-                      _showBottomSheet(context),
+                  onTap: () => _showBottomSheet(context),
                   child: const CircleAvatar(
-                    radius: 30, // Adjusted radius for better UI balance
-                    //backgroundImage: AssetImage('assets/images/login_image.jpeg'), // Placeholder image
+                    radius: 28,
+                    backgroundColor: Colors.grey,
+                    // backgroundImage: AssetImage('assets/images/login_image.jpeg'), // You can uncomment if using an image
                   ),
                 ),
               ],
@@ -193,44 +194,45 @@ class _InfoScreenState extends State<InfoScreen> {
       ),
     );
   }
+}
 
-  // Future<void> getToken() async {
-  //   final SessionManager sessionManager = SessionManager();
-  //
-  //   sessionManager.getToken().then((token) async {
-  //     final GetlastselfieattViewModel getlastselfieattViewModel =
-  //         GetlastselfieattViewModel();
-  //     getlastselfieattViewModel.getLastSelfieAttendance(token!).then( (data1) async {
-  //       sessionManager.getCheckinData().then((data) async {
-  //         print(data.checkinId);
-  //         print(data.uniqueId);
-  //         print(data.dateTimeIn);
-  //         print(data.dateTimeOut);
-  //         print(data.inKmsDriven);
-  //         print(data.outKmsDriven);
-  //         print(data.siteId);
-  //         print(data.siteName);
-  //       });
-  //     });
-  //   }).catchError((error) {
-  //     print('Error: $error');
-  //   });
-  // }
+// Future<void> getToken() async {
+//   final SessionManager sessionManager = SessionManager();
+//
+//   sessionManager.getToken().then((token) async {
+//     final GetlastselfieattViewModel getlastselfieattViewModel =
+//         GetlastselfieattViewModel();
+//     getlastselfieattViewModel.getLastSelfieAttendance(token!).then( (data1) async {
+//       sessionManager.getCheckinData().then((data) async {
+//         print(data.checkinId);
+//         print(data.uniqueId);
+//         print(data.dateTimeIn);
+//         print(data.dateTimeOut);
+//         print(data.inKmsDriven);
+//         print(data.outKmsDriven);
+//         print(data.siteId);
+//         print(data.siteName);
+//       });
+//     });
+//   }).catchError((error) {
+//     print('Error: $error');
+//   });
+// }
 
-  // Future<void> getToken() async {
-  //   final sessionManager = SessionManager();
-  //   final getCurrentDateViewModel = GetCurrentDateViewModel();
-  //
-  //   // Fetch current date from the API
-  //   final currentDateTime = await getCurrentDateViewModel.getTimeDate();
-  //
-  //   // Save the API result in SharedPreferences
-  //   await sessionManager.saveCurrentDateTime(currentDateTime!);
-  //
-  //   // Get the saved date from SharedPreferences
-  //   final savedDate = await sessionManager.getTimeDate();
-  //   print('Saved Date from SharedPreferences: $savedDate');
-  // }
+// Future<void> getToken() async {
+//   final sessionManager = SessionManager();
+//   final getCurrentDateViewModel = GetCurrentDateViewModel();
+//
+//   // Fetch current date from the API
+//   final currentDateTime = await getCurrentDateViewModel.getTimeDate();
+//
+//   // Save the API result in SharedPreferences
+//   await sessionManager.saveCurrentDateTime(currentDateTime!);
+//
+//   // Get the saved date from SharedPreferences
+//   final savedDate = await sessionManager.getTimeDate();
+//   print('Saved Date from SharedPreferences: $savedDate');
+// }
 
 //   Future<void> getToken() async {
 //     // Assuming SessionManager is already implemented to manage tokens
@@ -243,4 +245,3 @@ class _InfoScreenState extends State<InfoScreen> {
 //     final supportContact = await supportContactViewModel.getSupportContact();
 //     print('Support Contact: $supportContact');
 //   }
-}

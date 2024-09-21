@@ -38,6 +38,7 @@ class _InOutBtnState extends State<InOutBtn> {
       setState(() {
         base64Image = base64Encode(bytes);
         print(base64Image);
+        print(base64Image);
       });
       _showImageDialog();
     }

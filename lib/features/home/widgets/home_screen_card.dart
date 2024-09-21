@@ -19,34 +19,41 @@ class HomeScreenCard extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         Navigator.push(
-            context, MaterialPageRoute(builder: (context) => nextPage));
+          context,
+          MaterialPageRoute(builder: (context) => nextPage),
+        );
       },
       child: Card(
         elevation: 10,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12), // Make corners slightly rounded
+        ),
         child: Container(
-          height: 150,
-          width: 150,
           decoration: BoxDecoration(
             color: cardColor,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(12),
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              icon,
-              const SizedBox(height: 8),
-              Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Text(
+          child: Center( // Align contents to the center
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center, // Center vertically
+              crossAxisAlignment: CrossAxisAlignment.center, // Center horizontally
+              children: [
+                IconTheme( // Ensures the icon is white
+                  data: const IconThemeData(color: Colors.white, size: 50), // Adjust the icon size and color
+                  child: icon,
+                ),
+                const SizedBox(height: 1), // Add space between icon and text
+                Text(
                   modulename,
+                  textAlign: TextAlign.center, // Ensure text is centered
                   style: const TextStyle(
-                    fontSize: 20,
+                    fontSize: 20, // Slightly reduced font size for balance
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

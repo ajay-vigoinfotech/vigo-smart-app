@@ -8,43 +8,20 @@ class Strings {
   static const String privacyPolicy = "Privacy Policy";
   static const String login = "Login";
 
-
-
   static const String supervisorDutyManagementApp = "SupervisorDutyManagement App";
   static const String supervisorQRDutyManagementApp = "SupervisorQR Duty ManagementApp";
-  static const String punchHistory = "Punch History";
-  static const String fieldReportingApp = "Field Reporting App";
+  static const String punchHistory = "Punch\nHistory";
+  static const String fieldReportingApp = "Field\nReporting";
   static const String fieldReportingQRApp = "FieldReportingQRApp";
   static const String siteReportingApp = "Site Reporting App";
   static const String siteReportingQRApp = "Site ReportingQR App";
   static const String teamViewApp = "TeamViewApp";
   static const String otherAttendanceApp = "Other Attendance App";
   static const String settingsApp = "Settings";
-  static const String syncData = "SyncData";
+  static const String syncData = "Sync Data";
   static const String guardsTeamView = "Guards TeamView";
   static const String paySlipApp = "PaySlip App";
   static const String recruitmentApp = "Recruitment App";
   static const String calendarViewApp = "CalendarView App";
   static const String leaveMgmtApp = "LeaveMgmtApp";
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  //Map Page Strings
-  //static const String markDuty = "Mark Duty";
-
-
 }

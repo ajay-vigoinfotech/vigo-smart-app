@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vigo_smart_app/core/theme/theme.dart';
 import 'package:vigo_smart_app/features/auth/session_manager/session_manager.dart';
@@ -35,6 +36,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //debugPaintSizeEnabled = true;
     return MultiBlocProvider(
       providers: [
         BlocProvider(

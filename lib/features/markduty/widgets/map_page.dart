@@ -1,6 +1,8 @@
+import 'dart:core';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:vigo_smart_app/features/auth/session_manager/session_manager.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -31,7 +33,6 @@ class _MapPageState extends State<MapPage> {
         return;
       }
     }
-
     // if (permission == LocationPermission.denied) {
     //   _showLocationError("Location permissions are denied.");
     //   return;
@@ -40,6 +41,7 @@ class _MapPageState extends State<MapPage> {
   }
 
   Future<void> _getCurrentLocation() async {
+    final sessionManager = SessionManager();
     try {
       Position position = await Geolocator.getCurrentPosition();
       _googlePlex = LatLng(position.latitude, position.longitude);
@@ -47,10 +49,10 @@ class _MapPageState extends State<MapPage> {
 
       _setMarkerAtCurrentLocation();
       setState(() {
-        _isLoading = false; // Stop loading after location is fetched
+        _isLoading = false;
       });
     } catch (e) {
-      _showLocationError("Failed to get current location of your device");
+      _showLocationError("Failed to get the current location of your device");
     }
   }
 
@@ -59,7 +61,7 @@ class _MapPageState extends State<MapPage> {
       _googleMapController.animateCamera(
         CameraUpdate.newCameraPosition(
           CameraPosition(
-            zoom: 14,
+            zoom: 17,
             target: _googlePlex!,
           ),
         ),

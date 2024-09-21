@@ -24,21 +24,28 @@ class _HomePageState extends State<HomePage> {
       'code': 'FieldReportingApp',
       'icon': AppConstants.markDutyIcon,
       'name': Strings.fieldReportingApp,
-      'color': Pallete.btn1,
+      'color': Pallete.greenColor,
       'page': const MarkDutyPage(),
     },
     {
       'code': 'PunchHistory',
-      'icon': AppConstants.markDutyIcon,
+      'icon': AppConstants.punchHistoryIcon,
       'name': Strings.punchHistory,
-      'color': Pallete.btn1,
+      'color': Pallete.blueColor,
       'page': const MarkDuty(),
     },
     {
+      'code': 'SyncData',
+      'icon': AppConstants.syncDataIcon,
+      'name': Strings.syncData,
+      'color': Pallete.vibrantOrangeColor,
+      'page': const SettingPage(),
+    },
+    {
       'code': 'SettingsApp',
-      'icon': AppConstants.markDutyIcon,
+      'icon': AppConstants.settingsIcon,
       'name': Strings.settingsApp,
-      'color': Pallete.btn1,
+      'color': Pallete.greyColor,
       'page': const SettingPage(),
     },
     {
@@ -68,7 +75,7 @@ class _HomePageState extends State<HomePage> {
       'name': Strings.siteReportingApp,
       'color': Pallete.btn1,
       'page': const MarkDutyPage(),
-    },    {
+    }, {
       'code': 'SiteReportingQRApp',
       'icon': AppConstants.markDutyIcon,
       'name': Strings.siteReportingQRApp,
@@ -90,25 +97,20 @@ class _HomePageState extends State<HomePage> {
       'page': const MarkDutyPage(),
     },
     {
-      'code': 'SyncData',
-      'icon': AppConstants.markDutyIcon,
-      'name': Strings.syncData,
-      'color': Pallete.btn1,
-      'page': const MarkDutyPage(),
-    },
-    {
       'code': 'GuardsTeamView',
       'icon': AppConstants.markDutyIcon,
       'name': Strings.guardsTeamView,
       'color': Pallete.btn1,
       'page': const MarkDutyPage(),
-    },    {
+    },
+    {
       'code': 'PaySlipApp',
       'icon': AppConstants.markDutyIcon,
       'name': Strings.paySlipApp,
       'color': Pallete.btn1,
       'page': const MarkDutyPage(),
-    },    {
+    },
+    {
       'code': 'RecruitmentApp',
       'icon': AppConstants.markDutyIcon,
       'name': Strings.recruitmentApp,
@@ -154,41 +156,40 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final gridPadding = screenHeight * 0.01;
-
     return Scaffold(
       body: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          const InfoScreen(barheight: 150),
-          SizedBox(height: gridPadding),
+          const InfoScreen(barHeight: 150),
           Expanded(
-            child: SizedBox(
-              height: 200,
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: GridView.builder(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 10.0,
-                    mainAxisSpacing: 10.0,
-                    childAspectRatio: 1.0,
-                  ),
-                  itemCount: filteredModules.length, // Display filtered modules
-                  itemBuilder: (context, index) {
-                    final module = filteredModules[index];
-                    return HomeScreenCard(
-                      icon: module['icon'],
-                      modulename: module['name'],
-                      cardColor: module['color'],
-                      nextPage: module['page'],
-                    );
-                  },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15),
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 10.0,
+                  mainAxisSpacing: 10.0,
+                  childAspectRatio: 1.0,
                 ),
+                itemCount: filteredModules.length, // Display filtered modules
+                itemBuilder: (context, index) {
+                  final module = filteredModules[index];
+                  return HomeScreenCard(
+                    icon: module['icon'],
+                    modulename: module['name'],
+                    cardColor: module['color'],
+                    nextPage: module['page'],
+                  );
+                },
               ),
             ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Your action here
+        },
       ),
     );
   }

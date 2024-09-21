@@ -8,7 +8,12 @@ class SettingPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(Strings.settingsApp),
+
+        centerTitle: false,
+        title: const Text(
+            Strings.settingsApp,
+
+        ),
       ),
 
     );

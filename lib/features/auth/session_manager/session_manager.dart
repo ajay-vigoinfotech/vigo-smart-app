@@ -280,5 +280,15 @@ class SessionManager {
     final supportContact = prefs.getString(_supportContactKey);
     return supportContact;
   }
+
+  //Save CurrentLocation
+// Future<LatLng> saveCurrentLocation() async {
+//     final prefs = await SharedPreferences.getInstance();
+//     await prefs.setString();
+// }
+//
+// //Get CurrentLocation
+// Future<LatLng> getCurrentLocation() async {
+
 }
 

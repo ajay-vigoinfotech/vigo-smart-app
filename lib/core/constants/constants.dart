@@ -9,5 +9,6 @@ class AppConstants {
   static const Icon markDutyIcon = Icon(Icons.watch_later_outlined);
   static const Icon settingsIcon = Icon(Icons.settings);
   static const Icon logoutIcon = Icon(Icons.logout);
-  static const Icon punchHistoryIcon = Icon(Icons.history);
+  static const Icon punchHistoryIcon = Icon(Icons.fact_check_outlined);
+  static const Icon syncDataIcon = Icon(Icons.sync);
 }

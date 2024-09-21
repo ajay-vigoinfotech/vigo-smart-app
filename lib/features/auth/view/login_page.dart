@@ -21,7 +21,7 @@ class LoginPage extends StatefulWidget {
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
-
+  
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _partnerCodeController = TextEditingController();
   final TextEditingController _userIDController = TextEditingController();
@@ -32,13 +32,11 @@ class _LoginPageState extends State<LoginPage> {
   final LoginViewModel _viewModel = LoginViewModel();
   final MarkLoginViewModel markLoginViewModel = MarkLoginViewModel();
   final UserViewModel userViewModel = UserViewModel();
-  final GetlastselfieattViewModel getlastselfieattViewModel =
-      GetlastselfieattViewModel();
+  final GetlastselfieattViewModel getlastselfieattViewModel = GetlastselfieattViewModel();
 
   Future<void> _onSubmit() async {
     if (_formKey.currentState?.validate() ?? false) {
-      final username =
-          "${_partnerCodeController.text}/${_userIDController.text}";
+      final username = "${_partnerCodeController.text}/${_userIDController.text}";
       final loginRequest = LoginRequest(
         grantType: Strings.grantType,
         username: username,
@@ -61,8 +59,7 @@ class _LoginPageState extends State<LoginPage> {
           final String? fcmToken = await Utils.getFCMToken();
           print(fcmToken);
 
-          final String fullDeviceDetails =
-              "$deviceDetails/$uniqueId/$ipAddress";
+          final String fullDeviceDetails = "$deviceDetails/$uniqueId/$ipAddress";
 
           final markLoginModel = MarkLoginModel(
             deviceDetails: fullDeviceDetails,
