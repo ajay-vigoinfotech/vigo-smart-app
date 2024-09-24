@@ -75,7 +75,8 @@ class _HomePageState extends State<HomePage> {
       'name': Strings.siteReportingApp,
       'color': Pallete.btn1,
       'page': const MarkDutyPage(),
-    }, {
+    },
+    {
       'code': 'SiteReportingQRApp',
       'icon': AppConstants.markDutyIcon,
       'name': Strings.siteReportingQRApp,

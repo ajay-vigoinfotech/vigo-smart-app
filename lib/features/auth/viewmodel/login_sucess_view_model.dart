@@ -6,10 +6,10 @@ class MarkLoginViewModel {
   final Dio _dio = Dio();
 
   Future<Object> markLogin(String token, MarkLoginModel markLoginModel) async {
-    const uri = '${AppConstants.baseUrl}/API/CheckIns/MarkLogin';
+    const url = '${AppConstants.baseUrl}/API/CheckIns/MarkLogin';
     try {
       final response = await _dio.post(
-        uri,
+        url,
         options: Options(
           headers: {
             'Authorization': 'Bearer $token',

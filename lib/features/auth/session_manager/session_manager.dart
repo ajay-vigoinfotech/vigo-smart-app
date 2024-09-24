@@ -11,6 +11,8 @@ class SessionManager {
   static const String _SelfieAttendanceKey = 'selfie_attendance';
   static const String _currentDateTimeKey = 'currentDateTime';
   static const String _supportContactKey = 'supportContact';
+  static const String _checkSessionKey = 'checkSession';
+
 
   //save last selfie att strings
   static const String _checkinId = 'checkinId';
@@ -162,10 +164,12 @@ class SessionManager {
     await prefs.setString(_intervalKey, user.interval.toString());
     await prefs.setString(_checkInTKey, user.checkInT.toString());
     await prefs.setString(_checkOutTKey, user.checkOutT.toString());
-    await prefs.setString(_companyContactNoKey, user.companyContactNo.toString());
+    await prefs.setString(
+        _companyContactNoKey, user.companyContactNo.toString());
     await prefs.setString(_companyAddressKey, user.companyAddress.toString());
     await prefs.setString(_helplineNoKey, user.helplineNo.toString());
-    await prefs.setString(_helpLineWhatsappKey, user.helpLineWhatsapp.toString());
+    await prefs.setString(
+        _helpLineWhatsappKey, user.helpLineWhatsapp.toString());
   }
 
   // Get user details
@@ -281,14 +285,4 @@ class SessionManager {
     return supportContact;
   }
 
-  //Save CurrentLocation
-// Future<LatLng> saveCurrentLocation() async {
-//     final prefs = await SharedPreferences.getInstance();
-//     await prefs.setString();
-// }
-//
-// //Get CurrentLocation
-// Future<LatLng> getCurrentLocation() async {
-
 }
-

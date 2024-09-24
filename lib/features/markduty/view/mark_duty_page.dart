@@ -15,6 +15,7 @@ class MarkDutyPage extends StatefulWidget {
 class _MarkDutyState extends State<MarkDutyPage> {
   String _formattedDateTime = '';
   Timer? _timer;
+  bool isPunched = false;
 
   @override
   void initState() {

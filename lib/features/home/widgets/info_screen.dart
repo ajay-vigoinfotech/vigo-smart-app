@@ -37,10 +37,8 @@ class _InfoScreenState extends State<InfoScreen> {
           actions: [
             TextButton(
               child: const Text(
-                  "Cancel",
-                style: TextStyle(
-
-                ),
+                "Cancel",
+                style: TextStyle(),
               ),
               onPressed: () {
                 Navigator.of(context).pop();
@@ -68,7 +66,6 @@ class _InfoScreenState extends State<InfoScreen> {
 
     sessionManager.getToken().then((token) async {
       final UserViewModel userViewModel = UserViewModel();
-
       userViewModel.getUserDetails(token!);
       sessionManager.getUserDetails().then((data) async {
         setState(() {
@@ -245,3 +242,11 @@ class _InfoScreenState extends State<InfoScreen> {
 //     final supportContact = await supportContactViewModel.getSupportContact();
 //     print('Support Contact: $supportContact');
 //   }
+
+// Future<void> getToken() async {
+//   final sessionManager = SessionManager();
+//
+//   final checkSessionViewModel = CheckSessionModel();
+//
+//   final checkSession = await CheckSessionViewModel();
+// }

@@ -67,9 +67,9 @@ class NotificationServices {
       RemoteNotification? notification = message.notification;
       AndroidNotification? android = message.notification!.android;
 
-      print("Notification title: ${notification!.title}");
-      print("Notification title: ${notification!.body}");
-      print("Data: ${message.data.toString()}");
+      //print("Notification title: ${notification!.title}");
+      //print("Notification title: ${notification!.body}");
+      //print("Data: ${message.data.toString()}");
 
       // For IoS
       if (Platform.isIOS) {
@@ -99,7 +99,7 @@ class NotificationServices {
   }
 
   void handleMesssage(BuildContext context, RemoteMessage message) {
-    print('In handleMesssage function');
+    //print('In handleMesssage function');
     if (message.data['type'] == 'text') {
       // redirect to new screen or take different action based on payload that you receive.
     }

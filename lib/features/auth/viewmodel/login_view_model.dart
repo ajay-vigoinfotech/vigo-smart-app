@@ -6,6 +6,7 @@ import '../session_manager/session_manager.dart';
 
 class LoginViewModel {
   final Dio _dio = Dio();
+
   final SessionManager sessionManager = SessionManager();
   String? _accessToken;
 
@@ -30,7 +31,6 @@ class LoginViewModel {
         return false;
       }
     } catch (e) {
-      print('Exception: $e');
       print('Exception: $e');
       return false;
     }

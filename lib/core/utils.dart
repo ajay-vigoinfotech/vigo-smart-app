@@ -52,7 +52,7 @@ class Utils {
       final iosInfo = await deviceInfo.iosInfo;
       uniqueID = iosInfo.identifierForVendor ?? 'Unknown ID';
     } else {
-      uniqueID = 'Unsupported platform.s';
+      uniqueID = 'Unsupported platform';
     }
     return uniqueID;
   }

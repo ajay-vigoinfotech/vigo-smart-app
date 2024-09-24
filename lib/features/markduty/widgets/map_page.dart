@@ -1,8 +1,8 @@
 import 'dart:core';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:vigo_smart_app/features/auth/session_manager/session_manager.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -21,11 +21,13 @@ class _MapPageState extends State<MapPage> {
   @override
   void initState() {
     super.initState();
-    _checkLocationPermission();
+    _checkLocationService();
+    // _checkLocationPermission();
   }
 
   Future<void> _checkLocationPermission() async {
     LocationPermission permission = await Geolocator.checkPermission();
+
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
@@ -40,8 +42,16 @@ class _MapPageState extends State<MapPage> {
     _getCurrentLocation();
   }
 
+  Future<void> _checkLocationService() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      _showCupertinoLocationServiceDialog();
+      return;
+    }
+    _checkLocationPermission();
+  }
+
   Future<void> _getCurrentLocation() async {
-    final sessionManager = SessionManager();
     try {
       Position position = await Geolocator.getCurrentPosition();
       _googlePlex = LatLng(position.latitude, position.longitude);
@@ -86,6 +96,35 @@ class _MapPageState extends State<MapPage> {
     ScaffoldMessenger.of(context)
         .showSnackBar(SnackBar(content: Text(message)));
   }
+
+  void _showCupertinoLocationServiceDialog() {
+    showCupertinoDialog(
+      context: context,
+      builder: (context) => CupertinoAlertDialog(
+        title: const Text("Location Service Disabled"),
+        content: const Text("Please enable location services to continue."),
+        actions: [
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text("Cancel"),
+          ),
+          CupertinoDialogAction(
+            isDestructiveAction: false,
+            onPressed: () {
+              Geolocator.openLocationSettings();
+              Navigator.of(context).pop();
+            },
+            child: const Text("Open Settings"),
+          ),
+        ],
+      ),
+    );
+  }
+
+
 
   @override
   Widget build(BuildContext context) {

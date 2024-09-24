@@ -21,7 +21,7 @@ class LoginPage extends StatefulWidget {
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
-  
+
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController _partnerCodeController = TextEditingController();
   final TextEditingController _userIDController = TextEditingController();
@@ -57,7 +57,7 @@ class _LoginPageState extends State<LoginPage> {
           final String uniqueId = await Utils.getUniqueID();
           final int battery = await Utils.getBatteryLevel();
           final String? fcmToken = await Utils.getFCMToken();
-          print(fcmToken);
+          //print(fcmToken);
 
           final String fullDeviceDetails = "$deviceDetails/$uniqueId/$ipAddress";
 
@@ -99,18 +99,18 @@ class _LoginPageState extends State<LoginPage> {
 
           // Print saved distinct module codes
           sessionManager.getModuleCodes().then((savedModuleCodes) {
-            print(savedModuleCodes);
+            //print(savedModuleCodes);
           });
 
           sessionManager.saveModuleCodes(moduleCodes);
           sessionManager.getModuleCodes().then((modulesCodes) async {
-            print(modulesCodes);
+            //print(modulesCodes);
           });
 
           userViewModel.getUserDetails(token);
           getlastselfieattViewModel.getLastSelfieAttendance(token);
         }).catchError((error) {
-          print('Error: $error');
+          //print('Error: $error');
         });
 
         Navigator.pushReplacement(
