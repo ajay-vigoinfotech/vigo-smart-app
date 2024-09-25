@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
         theme: AppTheme.lightThemeMode,
         home: //ImageToBase64(),
             const SplashScreen(),
-        //HomeScreen(title: 'home',),
+            //HomeScreen(title: 'home',),
       ),
     );
   }

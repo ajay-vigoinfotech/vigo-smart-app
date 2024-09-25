@@ -36,7 +36,8 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _onSubmit() async {
     if (_formKey.currentState?.validate() ?? false) {
-      final username = "${_partnerCodeController.text}/${_userIDController.text}";
+      final username =
+          "${_partnerCodeController.text}/${_userIDController.text}";
       final loginRequest = LoginRequest(
         grantType: Strings.grantType,
         username: username,

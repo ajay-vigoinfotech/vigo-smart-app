@@ -3,6 +3,7 @@ import 'package:vigo_smart_app/features/home/widgets/setting_page.dart';
 import '../../../core/theme/app_pallete.dart';
 import '../../auth/session_manager/session_manager.dart';
 import '../../auth/view/login_page.dart';
+import '../../auth/viewmodel/getlastselfieatt_view_model.dart';
 import '../../auth/viewmodel/getuserdetails_view_model.dart';
 
 class InfoScreen extends StatefulWidget {
@@ -177,7 +178,8 @@ class _InfoScreenState extends State<InfoScreen> {
                   icon: const Icon(Icons.refresh, color: Colors.white),
                 ),
                 GestureDetector(
-                  onTap: () => _showBottomSheet(context),
+                  onTap: () => //getToken(),
+                      _showBottomSheet(context),
                   child: const CircleAvatar(
                     radius: 28,
                     backgroundColor: Colors.grey,
@@ -211,7 +213,8 @@ class _InfoScreenState extends State<InfoScreen> {
 //         print(data.siteName);
 //       });
 //     });
-//   }).catchError((error) {
+//   }
+//   ).catchError((error) {
 //     print('Error: $error');
 //   });
 // }

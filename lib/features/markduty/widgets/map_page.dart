@@ -5,7 +5,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class MapPage extends StatefulWidget {
-  const MapPage({super.key});
+  final String latLong;
+  const MapPage({super.key, required this.latLong});
 
   @override
   State<MapPage> createState() => _MapPageState();
@@ -71,7 +72,7 @@ class _MapPageState extends State<MapPage> {
       _googleMapController.animateCamera(
         CameraUpdate.newCameraPosition(
           CameraPosition(
-            zoom: 17,
+            zoom: 15,
             target: _googlePlex!,
           ),
         ),
@@ -124,8 +125,6 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -142,7 +141,7 @@ class _MapPageState extends State<MapPage> {
               },
               initialCameraPosition: CameraPosition(
                 target: _googlePlex!, // Use the current location once fetched
-                zoom: 14,
+                zoom: 16,
               ),
               onCameraMove: (CameraPosition position) {
                 _isMapBeingMoved = true;

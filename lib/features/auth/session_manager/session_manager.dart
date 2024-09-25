@@ -13,7 +13,6 @@ class SessionManager {
   static const String _supportContactKey = 'supportContact';
   static const String _checkSessionKey = 'checkSession';
 
-
   //save last selfie att strings
   static const String _checkinId = 'checkinId';
   static const String _uniqueId = 'uniqueId';
@@ -284,5 +283,4 @@ class SessionManager {
     final supportContact = prefs.getString(_supportContactKey);
     return supportContact;
   }
-
 }
