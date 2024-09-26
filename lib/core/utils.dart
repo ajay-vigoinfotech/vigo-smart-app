@@ -6,6 +6,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Utils {
   // Method to get the current DateTime in the specified format
@@ -81,5 +82,28 @@ class Utils {
       return null;
     }
   }
+
+  //method to get Current Date and Time
+  static String formatDateTime(String apiDateTime) {
+    DateTime dateTime = DateTime.parse(apiDateTime);
+    DateFormat formatter = DateFormat('dd/MM/yyyy h:mm a');
+    return formatter.format(dateTime);
+  }
+
+
+  //method to get Current Date and Time
+  // static String formatDateTime(String apiDateTime) {
+  //   // Parse the string "2024-09-26 13:58" to DateTime object
+  //   DateTime dateTime = DateTime.parse(apiDateTime);
+  //
+  //   // Create a formatter for the desired format "dd/MM/yyyy h:mm a"
+  //   DateFormat formatter = DateFormat('dd/MM/yyyy h:mm a');
+  //   //print(formatter);
+  //
+  //   // Return formatted string
+  //   return formatter.format(dateTime);
+  // }
+
+
 }
 

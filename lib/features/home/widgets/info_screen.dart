@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:vigo_smart_app/features/home/widgets/setting_page.dart';
 import '../../../core/theme/app_pallete.dart';
+import '../../../core/utils.dart';
 import '../../auth/session_manager/session_manager.dart';
 import '../../auth/view/login_page.dart';
 import '../../auth/viewmodel/getlastselfieatt_view_model.dart';
 import '../../auth/viewmodel/getuserdetails_view_model.dart';
+import '../../markduty/viewmodel/get_current_date_view_model.dart';
 
 class InfoScreen extends StatefulWidget {
   final double barHeight;
@@ -178,8 +180,8 @@ class _InfoScreenState extends State<InfoScreen> {
                   icon: const Icon(Icons.refresh, color: Colors.white),
                 ),
                 GestureDetector(
-                  onTap: () => //getToken(),
-                      _showBottomSheet(context),
+                  onTap: () => getCurrentDateTime(),
+                  //_showBottomSheet(context),
                   child: const CircleAvatar(
                     radius: 28,
                     backgroundColor: Colors.grey,
@@ -219,20 +221,23 @@ class _InfoScreenState extends State<InfoScreen> {
 //   });
 // }
 
-// Future<void> getToken() async {
-//   final sessionManager = SessionManager();
-//   final getCurrentDateViewModel = GetCurrentDateViewModel();
-//
-//   // Fetch current date from the API
-//   final currentDateTime = await getCurrentDateViewModel.getTimeDate();
-//
-//   // Save the API result in SharedPreferences
-//   await sessionManager.saveCurrentDateTime(currentDateTime!);
-//
-//   // Get the saved date from SharedPreferences
-//   final savedDate = await sessionManager.getTimeDate();
-//   print('Saved Date from SharedPreferences: $savedDate');
-// }
+Future<void> getCurrentDateTime() async {
+  final sessionManager = SessionManager();
+  final getCurrentDateViewModel = GetCurrentDateViewModel();
+
+  // Fetch current date from the API
+  final currentDateTime = await getCurrentDateViewModel.getTimeDate();
+
+  // Format the API result to the desired format
+  final formattedDateTime = Utils.formatDateTime(currentDateTime!);
+
+  // Save the formatted date in SharedPreferences
+  await sessionManager.saveCurrentDateTime(formattedDateTime);
+
+  // Get the saved date from SharedPreferences
+  final savedDate = await sessionManager.getTimeDate();
+  print('Saved Date from SharedPreferences: $savedDate');
+}
 
 //   Future<void> getToken() async {
 //     // Assuming SessionManager is already implemented to manage tokens

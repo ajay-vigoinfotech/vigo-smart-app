@@ -125,13 +125,15 @@ class _MarkDutyState extends State<MarkDutyPage> {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    setState(() {
-                      if (isIn) {
-                        _hasSubmittedIn = true;
-                      } else {
-                        _hasSubmittedOut = true;
-                      }
-                    });
+                    setState(
+                      () {
+                        if (isIn) {
+                          _hasSubmittedIn = true;
+                        } else {
+                          _hasSubmittedOut = true;
+                        }
+                      },
+                    );
                     Navigator.of(context)
                         .pop(); // Close the dialog after submission
                   },

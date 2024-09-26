@@ -55,7 +55,7 @@ class _LoginPageState extends State<LoginPage> {
           final String deviceDetails = await Utils.getDeviceDetails(context);
           final String appVersion = await Utils.getAppVersion();
           final String ipAddress = await Utils.getIpAddress();
-          final String uniqueId = await Utils.getUniqueID();
+          final String uniqueId = await Utils.  getUniqueID();
           final int battery = await Utils.getBatteryLevel();
           final String? fcmToken = await Utils.getFCMToken();
           //print(fcmToken);

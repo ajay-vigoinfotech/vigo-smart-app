@@ -259,13 +259,13 @@ class SessionManager {
     );
   }
 
-  // Save Current DateTime
+// Save Current DateTime
   Future<void> saveCurrentDateTime(String dateTime) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_currentDateTimeKey, dateTime);
   }
 
-  // Get saved DateTime
+// Get saved DateTime
   Future<String?> getTimeDate() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_currentDateTimeKey);

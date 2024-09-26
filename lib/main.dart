@@ -2,11 +2,8 @@ import 'dart:ui';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:vigo_smart_app/core/theme/theme.dart';
 import 'package:vigo_smart_app/features/auth/session_manager/session_manager.dart';
-import 'package:vigo_smart_app/testing/timer/bloc/timer_bloc.dart';
-import 'package:vigo_smart_app/testing/timer/ticker.dart';
 import 'features/splash/splash_screen.dart';
 import 'firebase_options.dart';
 
@@ -36,23 +33,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     //debugPaintSizeEnabled = true;
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (context) => TimerBloc(ticker: const Ticker()),
-        ),
-        BlocProvider(
-          create: (context) => TimerBloc(ticker: const Ticker()),
-        ),
-      ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Flutter Demo.',
-        theme: AppTheme.lightThemeMode,
-        home: //ImageToBase64(),
-            const SplashScreen(),
-            //HomeScreen(title: 'home',),
-      ),
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Flutter Demo.',
+      theme: AppTheme.lightThemeMode,
+      home: const SplashScreen(),
     );
   }
 }
+
+
