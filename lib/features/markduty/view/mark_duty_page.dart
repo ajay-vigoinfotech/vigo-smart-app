@@ -46,7 +46,7 @@ class _MarkDutyState extends State<MarkDutyPage> {
   void _updateTime() {
     final DateTime now = DateTime.now();
     setState(() {
-      _formattedDateTime = DateFormat('dd/MM/yyyy hh:mm a').format(now);
+      _formattedDateTime = DateFormat('dd/MM/yyyy hh:mm').format(now);
     });
   }
 
