@@ -16,17 +16,19 @@ class MarkdutyPage extends StatefulWidget {
 }
 
 class _MarkdutyPageState extends State<MarkdutyPage> {
-  var uuid = const Uuid(); // generate V4 Unique ID
+  var uuid = const Uuid();
   String? timeDateIn;
   String? timeDateOut;
+  String? siteID;
+  String? siteName;
   final TextEditingController _commentController = TextEditingController();
   final TextEditingController _kmController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _loadCurrentDateTime(); //get Time Date from API
-    _setDeviceDateTime(); //get Time Date from Current Device
+    _loadCurrentDateTime(); // Get time and date from API
+    _setDeviceDateTime(); // Get time and date from current device
   }
 
   Future<String?> _loadCurrentDateTime() async {
@@ -35,11 +37,9 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     String? currentDateTime;
 
     try {
-      // Fetch current date from the API
       currentDateTime = await getCurrentDateViewModel.getTimeDate();
 
       if (currentDateTime != null) {
-        // Format and save the date from the API
         final formattedDateTime = Utils.formatDateTime(currentDateTime);
         await sessionManager.saveCurrentDateTime(formattedDateTime);
 
@@ -48,12 +48,11 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
           timeDateOut = formattedDateTime;
         });
       } else {
-        // If API returns null, fallback to device time
-        currentDateTime = _setDeviceDateTime();
+        currentDateTime = _setDeviceDateTime(); // Fallback to device time
       }
     } catch (e) {
-      // In case of error, fallback to device time
-      currentDateTime = _setDeviceDateTime();
+      print('Error fetching date from API: $e');
+      currentDateTime = _setDeviceDateTime(); // Fallback to device time
     }
 
     return currentDateTime;
@@ -71,76 +70,85 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     return currentDateTime;
   }
 
+  final SessionManager sessionManager = SessionManager();
+
   Future<void> _pickPunchInImage() async {
     final ImagePicker picker = ImagePicker();
-    final XFile? pickedFile =
+    final XFile? punchInImage =
         await picker.pickImage(source: ImageSource.camera);
-    if (pickedFile != null) {
-      setState(() {});
-      _showImageDialog(pickedFile);
+
+    if (punchInImage != null) {
+      await sessionManager.savePunchInPath(punchInImage.path);
+      setState(() {}); // Update state to refresh the UI
+      _showImageDialog(punchInImage);
     }
   }
 
   Future<void> _pickPunchOutImage() async {
     final ImagePicker picker = ImagePicker();
-    final XFile? pickedFile =
+    final XFile? punchOutImage =
         await picker.pickImage(source: ImageSource.camera);
-    if (pickedFile != null) {
+
+    if (punchOutImage != null) {
+      await sessionManager.savePunchOutPath(punchOutImage.path);
       setState(() {});
-      _showImageDialog(pickedFile);
+      _showImageDialog(punchOutImage);
     }
   }
 
-  void _showImageDialog(XFile pickedFile) async {
+  void _showImageDialog(XFile punchInImage) {
     showDialog(
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) {
           return AlertDialog(
-            // title: const Text(''),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Image.file(
-                  File(pickedFile.path),
-                  height: 150,
-                  width: 125,
-                ),
-                const SizedBox(height: 15),
-                TextField(
-                  controller: _kmController,
-                  keyboardType: TextInputType.number,
-                ),
-                const SizedBox(height: 15),
-                TextField(
-                  controller: _commentController,
-                ),
-              ],
+            content: SingleChildScrollView(
+              // Ensure the dialog is scrollable
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image.file(
+                    File(punchInImage.path),
+                    height: 150,
+                    width: 125,
+                  ),
+                  const SizedBox(height: 15),
+                  TextField(
+                    controller: _kmController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'Enter KM'),
+                  ),
+                  const SizedBox(height: 15),
+                  TextField(
+                    controller: _commentController,
+                    decoration:
+                        const InputDecoration(labelText: 'Enter Comment'),
+                  ),
+                ],
+              ),
             ),
             actions: [
               TextButton(
                 onPressed: () {
                   Navigator.pop(context, true);
                 },
-                child: const Text('cancel'),
+                child: const Text('Cancel'),
               ),
-              TextButton(
+              ElevatedButton(
                 onPressed: () async {
-                  // Call the function to get the formatted date and time
+                  await sessionManager.savePunchInPath(punchInImage.path);
+                  // print('Image path saved in Shared Preferences: ${punchInImage.path}');
+                  String? savedImagePath =
+                      await sessionManager.getPunchInImagePath();
+                  print('Retrieved Image Path from Shared Preferences: $savedImagePath');
                   String? formattedDateTime = await _loadCurrentDateTime();
-
-                  // Generate a unique ID
                   String generatedUuid = uuid.v4();
                   print('Unique ID: $generatedUuid');
 
-                  // Ensure the formatted date is used
                   if (formattedDateTime != null) {
-                    // Use the formatted date and generated UUID
                     print('Formatted DateTime: $formattedDateTime');
-
-                    // You can now use `formattedDateTime` for further operations
-                    // Example: Send to an API, display on the screen, etc.
                   }
+                  Navigator.pop(context, true);
                 },
                 child: const Text('Submit'),
               ),
@@ -153,42 +161,74 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(15),
-            child: Center(
-              child: Text(
-                timeDateIn ??
-                    'Loading...', // Display the timeDateIn or loading text
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-          const SizedBox(
-            height: 300,
-            width: double.infinity,
-            child: MapPage(latLong: ''),
-          ),
-          const SizedBox(height: 50),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      body: FutureBuilder<String?>(
+        future: sessionManager.getPunchInImagePath(),
+        builder: (context, snapshot) {
+          final imagePath = snapshot.data;
+
+          return Column(
             children: [
               Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: ElevatedButton(
-                  onPressed: _pickPunchInImage,
-                  child: const Text('IN'),
+                padding: const EdgeInsets.all(15),
+                child: Center(
+                  child: Text(
+                    timeDateIn ?? 'Loading...',
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
-              ElevatedButton(
-                onPressed: _pickPunchOutImage,
-                child: const Text('OUT'),
+              const SizedBox(
+                height: 300,
+                width: double.infinity,
+                child: MapPage(latLong: ''),
+              ),
+              const SizedBox(height: 20), // Space before image and buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  Column(
+                    children: [
+                      Text('$timeDateIn'),
+                      if (imagePath != null) // Display the image for IN
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Image.file(
+                            File(imagePath),
+                            height: 125,
+                            width: 110,
+                          ),
+                        ),
+                      ElevatedButton(
+                        onPressed: _pickPunchInImage,
+                        child: const Text('IN'),
+                      ),
+                    ],
+                  ),
+                  Column(
+                    children: [
+                      // if (imagePath !=
+                      //     null) // Display the image for OUT (can be different or same logic)
+                      //   Padding(
+                      //     padding: const EdgeInsets.all(8.0),
+                      //     child: Image.file(
+                      //       File(imagePath),
+                      //       // Modify if OUT image logic is different
+                      //       height: 100,
+                      //       width: 100,
+                      //     ),
+                      //   ),
+                      ElevatedButton(
+                        onPressed: _pickPunchOutImage,
+                        child: const Text('OUT'),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ],
-          )
-        ],
+          );
+        },
       ),
     );
   }

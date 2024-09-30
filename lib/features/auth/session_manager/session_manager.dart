@@ -69,6 +69,10 @@ class SessionManager {
   static const String _helplineNoKey = 'helpline_no';
   static const String _helpLineWhatsappKey = 'help_line_whatsapp';
 
+  //mark in & out
+  static const String punchInImageKey = 'punch_in_image';
+  static const String punchOutImageKey = 'punch_out_image';
+
   // Save token
   Future<void> saveToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
@@ -282,5 +286,41 @@ class SessionManager {
     final prefs = await SharedPreferences.getInstance();
     final supportContact = prefs.getString(_supportContactKey);
     return supportContact;
+  }
+
+// Save PunchIn Image
+  Future<void> savePunchInPath(String path) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(punchInImageKey, path);
+  }
+
+// Retrieve image path
+  Future<String?> getPunchInImagePath() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(punchInImageKey); // Return the stored path
+  }
+
+// Clear image path
+  Future<void> clearPunchInImage() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(punchInImageKey);
+  }
+
+  // Save PunchOut Image
+  Future<void> savePunchOutPath(String path) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(punchOutImageKey, path);
+  }
+
+// Retrieve image path
+  Future<String?> getPunchOutImagePath() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(punchOutImageKey); // Return the stored path
+  }
+
+// Clear image path
+  Future<void> clearPunchOutImage() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(punchOutImageKey);
   }
 }

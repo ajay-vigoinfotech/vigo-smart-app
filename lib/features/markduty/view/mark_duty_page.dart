@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:vigo_smart_app/features/auth/session_manager/session_manager.dart';
 import 'dart:async';
 import '../../../core/theme/app_pallete.dart';
 import '../widgets/map_page.dart';
@@ -14,6 +15,7 @@ class MarkDutyPage extends StatefulWidget {
 }
 
 class _MarkDutyState extends State<MarkDutyPage> {
+  final SessionManager sessionManager = SessionManager();
   String _formattedDateTime = '';
   String? _markInTime; // Stores mark-in time
   String? _markOutTime; // Stores mark-out time
@@ -24,6 +26,7 @@ class _MarkDutyState extends State<MarkDutyPage> {
   bool _hasCheckedOut = false;
   bool _hasSubmittedIn = false;
   bool _hasSubmittedOut = false;
+
   final TextEditingController _commentController = TextEditingController();
   final TextEditingController _kmController = TextEditingController();
 

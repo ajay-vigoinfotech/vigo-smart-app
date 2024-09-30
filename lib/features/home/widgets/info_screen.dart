@@ -180,8 +180,8 @@ class _InfoScreenState extends State<InfoScreen> {
                   icon: const Icon(Icons.refresh, color: Colors.white),
                 ),
                 GestureDetector(
-                  onTap: () => getCurrentDateTime(),
-                  //_showBottomSheet(context),
+                  onTap: () => //getCurrentDateTime(),
+                  _showBottomSheet(context),
                   child: const CircleAvatar(
                     radius: 28,
                     backgroundColor: Colors.grey,
@@ -221,23 +221,23 @@ class _InfoScreenState extends State<InfoScreen> {
 //   });
 // }
 
-Future<void> getCurrentDateTime() async {
-  final sessionManager = SessionManager();
-  final getCurrentDateViewModel = GetCurrentDateViewModel();
-
-  // Fetch current date from the API
-  final currentDateTime = await getCurrentDateViewModel.getTimeDate();
-
-  // Format the API result to the desired format
-  final formattedDateTime = Utils.formatDateTime(currentDateTime!);
-
-  // Save the formatted date in SharedPreferences
-  await sessionManager.saveCurrentDateTime(formattedDateTime);
-
-  // Get the saved date from SharedPreferences
-  final savedDate = await sessionManager.getTimeDate();
-  print('Saved Date from SharedPreferences: $savedDate');
-}
+// Future<void> getCurrentDateTime() async {
+//   final sessionManager = SessionManager();
+//   final getCurrentDateViewModel = GetCurrentDateViewModel();
+//
+//   // Fetch current date from the API
+//   final currentDateTime = await getCurrentDateViewModel.getTimeDate();
+//
+//   // Format the API result to the desired format
+//   final formattedDateTime = Utils.formatDateTime(currentDateTime!);
+//
+//   // Save the formatted date in SharedPreferences
+//   await sessionManager.saveCurrentDateTime(formattedDateTime);
+//
+//   // Get the saved date from SharedPreferences
+//   final savedDate = await sessionManager.getTimeDate();
+//   print('Saved Date from SharedPreferences: $savedDate');
+// }
 
 //   Future<void> getToken() async {
 //     // Assuming SessionManager is already implemented to manage tokens
