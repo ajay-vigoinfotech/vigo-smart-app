@@ -1,72 +1,365 @@
-// // ... imports ...
+// import 'dart:io';
+// import 'package:flutter/material.dart';
+// import 'package:image_picker/image_picker.dart';
+// import 'package:intl/intl.dart';
+// import 'package:uuid/uuid.dart';
+// import 'package:vigo_smart_app/features/markduty/widgets/map_page.dart';
+// import '../../../core/utils.dart';
+// import '../../auth/session_manager/session_manager.dart';
+// import '../viewmodel/get_current_date_view_model.dart';
 //
 // class MarkdutyPage extends StatefulWidget {
-//   // ...
+//   const MarkdutyPage({super.key});
+//
+//   @override
+//   State<MarkdutyPage> createState() => _MarkdutyPageState();
 // }
 //
 // class _MarkdutyPageState extends State<MarkdutyPage> {
-//   // ... variables ...
+//   var uuid = const Uuid();
+//   String? timeDateIn;
+//   String? timeDateOut;
+//   bool isPunchInDone = false;
+//   bool isPunchOutDone = false;
+//   final TextEditingController _commentController = TextEditingController();
+//   final TextEditingController _kmController = TextEditingController();
 //
-//   final _markdutyViewModel = MarkdutyViewModel(); // Create a view model
+//   final SessionManager sessionManager = SessionManager();
 //
 //   @override
 //   void initState() {
 //     super.initState();
-//     _markdutyViewModel.loadCurrentDateTime(); // Initialize in view model
+//     _loadCurrentDateTime();
+//     _setDeviceDateTime();
+//     _loadPunchStatus();
 //   }
 //
-//   Future<void> _pickPunchImage(PunchType type) async {//     // ... image picking logic ...
-//     if (pickedFile != null) {
-//       _markdutyViewModel.setImagePath(type,pickedFile.path); // Store in view model
-//       _showImageDialog(type, pickedFile);
+//   // Load punch status from SessionManager (if user already punched IN/OUT)
+//   Future<void> _loadPunchStatus() async {
+//     isPunchInDone = await sessionManager.isPunchInDone() ?? false;
+//     isPunchOutDone = await sessionManager.isPunchOutDone() ?? false;
+//     setState(() {});
+//   }
+//
+//   Future<String?> _loadCurrentDateTime() async {
+//     final getCurrentDateViewModel = GetCurrentDateViewModel();
+//     String? currentDateTime;
+//
+//     try {
+//       currentDateTime = await getCurrentDateViewModel.getTimeDate();
+//
+//       if (currentDateTime != null) {
+//         final formattedDateTime = Utils.formatDateTime(currentDateTime);
+//         await sessionManager.saveCurrentDateTime(formattedDateTime);
+//
+//         setState(() {
+//           timeDateIn = formattedDateTime;
+//           timeDateOut = formattedDateTime;
+//         });
+//       } else {
+//         currentDateTime = _setDeviceDateTime(); // Fallback to device time
+//       }
+//     } catch (e) {
+//       print('Error fetching date from API: $e');
+//       currentDateTime = _setDeviceDateTime(); // Fallback to device time
+//     }
+//
+//     return currentDateTime;
+//   }
+//
+//   String _setDeviceDateTime() {
+//     String currentDateTime =
+//     DateFormat('dd/MM/yyyy hh:mm').format(DateTime.now());
+//
+//     setState(() {
+//       timeDateIn = currentDateTime;
+//       timeDateOut = currentDateTime;
+//     });
+//
+//     return currentDateTime;
+//   }
+//
+//   // Pick and display Punch-In image
+//   Future<void> _pickPunchInImage() async {
+//     if (isPunchInDone && !isPunchOutDone) {
+//       // Validation: Don't allow IN again if OUT is not done yet
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         const SnackBar(
+//             content: Text("Punch OUT must be done before Punch IN again.")),
+//       );
+//       return;
+//     }
+//
+//     final ImagePicker picker = ImagePicker();
+//     final XFile? punchInImage =
+//     await picker.pickImage(source: ImageSource.camera);
+//
+//     if (punchInImage != null) {
+//       // Show the dialog and handle its outcome
+//       _showPunchInImageDialog(punchInImage, true);
 //     }
 //   }
 //
-//   void _showImageDialog(PunchType type, XFile pickedFile) async {
-//     // ... dialog logic ...
-//     TextButton(
-//       onPressed: () async {
-//         // ... get data from text fields ...
-//         _markdutyViewModel.submitData(type, imagePath, km, comment); // Submit in view model
-//         Navigator.pop(context, true);
+//   // Pick and display Punch-Out image
+//   Future<void> _pickPunchOutImage() async {
+//     if (!isPunchInDone) {
+//       // Validation: Allow OUT only if IN is done
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         const SnackBar(content: Text("Please Punch IN first.")),
+//       );
+//       return;
+//     }
+//     if (isPunchOutDone) {
+//       // Validation: Don't allow OUT again if already done
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         const SnackBar(content: Text("Punch OUT already done.")),
+//       );
+//       return;
+//     }
+//
+//     final ImagePicker picker = ImagePicker();
+//     final XFile? punchOutImage =
+//     await picker.pickImage(source: ImageSource.camera);
+//
+//     if (punchOutImage != null) {
+//       _showPunchOutImageDialog(punchOutImage, true);
+//     }
+//   }
+//
+//   void _showPunchInImageDialog(XFile punchInImage, bool isPunchIn) {
+//     showDialog(
+//       context: context,
+//       barrierDismissible: false,
+//       builder: (BuildContext context) {
+//         return AlertDialog(
+//           content: SingleChildScrollView(
+//             child: Column(
+//               mainAxisSize: MainAxisSize.min,
+//               children: [
+//                 Image.file(
+//                   File(punchInImage.path),
+//                   height: 150,
+//                   width: 125,
+//                 ),
+//                 const SizedBox(height: 15),
+//                 TextField(
+//                   controller: _kmController,
+//                   keyboardType: TextInputType.number,
+//                   decoration: const InputDecoration(labelText: 'Enter KM'),
+//                 ),
+//                 const SizedBox(height: 15),
+//                 TextField(
+//                   controller: _commentController,
+//                   decoration: const InputDecoration(labelText: 'Enter Comment'),
+//                 ),
+//               ],
+//             ),
+//           ),
+//           actions: [
+//             TextButton(
+//               onPressed: () {
+//                 Navigator.pop(context, false);
+//               },
+//               child: const Text('Cancel'),
+//             ),
+//             ElevatedButton(
+//               onPressed: () async {
+//                 try {
+//                   // Ensure punchInImage is not null and has a valid path
+//                   if (punchInImage.path.isNotEmpty) {
+//                     // Save Punch-In image path
+//                     await sessionManager.savePunchInPath(punchInImage.path);
+//
+//                     // Get the current date and time and save it
+//                     String currentDateTime = _setDeviceDateTime();
+//                     await sessionManager.savePunchInTime(currentDateTime);
+//
+//                     // Set Punch-In done status to true
+//                     await sessionManager.setPunchInDone(true);
+//
+//                     // Update state
+//                     setState(() {
+//                       isPunchInDone = true;
+//                       isPunchOutDone = false;
+//                       timeDateIn = currentDateTime; // Update timeDateIn
+//                       timeDateOut =
+//                           currentDateTime; // Optionally update timeDateOut
+//                     });
+//
+//                     // Navigate back
+//                     Navigator.pop(context, true);
+//                   } else {
+//                     // Handle invalid punch-in image path
+//                     print("Punch-in image path is invalid");
+//                   }
+//                 } catch (e) {
+//                   // Handle any errors
+//                   print("Error in Punch-In: $e");
+//                 }
+//               },
+//               child: const Text('Submit'),
+//             ),
+//           ],
+//         );
 //       },
-//       child: const Text('Submit'),
-//     ),
+//     );
+//   }
+//
+//   void _showPunchOutImageDialog(XFile punchOutImage, bool isPunchOut) {
+//     showDialog(
+//       context: context,
+//       barrierDismissible: false,
+//       builder: (BuildContext context) {
+//         return AlertDialog(
+//           content: SingleChildScrollView(
+//             child: Column(
+//               mainAxisSize: MainAxisSize.min,
+//               children: [
+//                 Image.file(
+//                   File(punchOutImage.path),
+//                   height: 150,
+//                   width: 125,
+//                 ),
+//                 const SizedBox(height: 15),
+//                 TextField(
+//                   controller: _kmController,
+//                   keyboardType: TextInputType.number,
+//                   decoration: const InputDecoration(labelText: 'Enter KM'),
+//                 ),
+//                 const SizedBox(height: 15),
+//                 TextField(
+//                   controller: _commentController,
+//                   decoration: const InputDecoration(labelText: 'Enter Comment'),
+//                 ),
+//               ],
+//             ),
+//           ),
+//           actions: [
+//             TextButton(
+//               onPressed: () {
+//                 Navigator.pop(context, false);
+//               },
+//               child: const Text('Cancel'),
+//             ),
+//             ElevatedButton(
+//               onPressed: () async {
+//                 // Save Punch-Out data and update the status
+//                 await sessionManager.savePunchOutPath(punchOutImage.path);
+//                 await sessionManager.savePunchOutTime(_setDeviceDateTime());
+//                 setState(() {
+//                   isPunchOutDone = true;
+//                 });
+//                 await sessionManager.setPunchOutDone(true);
+//
+//                 Navigator.pop(context, true);
+//               },
+//               child: const Text('Submit'),
+//             ),
+//           ],
+//         );
+//       },
+//     );
 //   }
 //
 //   @override
 //   Widget build(BuildContext context) {
 //     return Scaffold(
-//       // ... UI ...
-//       ElevatedButton(
-//         onPressed: () => _pickPunchImage(PunchType.in), // Pass punch type
-//         child: const Text('IN'),
+//       appBar: AppBar(),
+//       body: FutureBuilder<String?>(
+//         future: sessionManager.getPunchInImagePath(),
+//         builder: (context, punchInSnapshot) {
+//           final punchInImagePath = punchInSnapshot.data;
+//
+//           return Column(
+//             children: [
+//               Padding(
+//                 padding: const EdgeInsets.all(15),
+//                 child: Center(
+//                   child: Text(
+//                     timeDateIn ?? 'Loading..',
+//                     style: const TextStyle(
+//                         fontSize: 18, fontWeight: FontWeight.bold),
+//                   ),
+//                 ),
+//               ),
+//               const SizedBox(
+//                 height: 250,
+//                 width: double.infinity,
+//                 child: MapPage(latLong: ''),
+//               ),
+//               const SizedBox(height: 20),
+//               Row(
+//                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+//                 children: [
+//                   Column(
+//                     children: [
+//                       Text('$timeDateIn'),
+//                       if (punchInImagePath != null)
+//                         Padding(
+//                           padding: const EdgeInsets.all(8.0),
+//                           child: Image.file(
+//                             File(punchInImagePath),
+//                             height: 125,
+//                             width: 110,
+//                           ),
+//                         ),
+//                       SizedBox(
+//                         height: 80,
+//                         width: 120,
+//                         child: ElevatedButton(
+//                           style: ElevatedButton.styleFrom(
+//                             elevation: 5,
+//                             backgroundColor: Colors.green,
+//                             shape: RoundedRectangleBorder(
+//                               borderRadius: BorderRadius.circular(10),
+//                             ),
+//                           ),
+//                           onPressed: _pickPunchInImage,
+//                           child: const Text(
+//                             'IN',
+//                             style: TextStyle(
+//                               fontSize: 30,
+//                               color: Colors.white,
+//                               fontWeight: FontWeight.bold,
+//                             ),
+//                           ),
+//                         ),
+//                       ),
+//                     ],
+//                   ),
+//                   Column(
+//                     children: [
+//                       Text('$timeDateOut'),
+//                       SizedBox(
+//                         height: 80,
+//                         width: 120,
+//                         child: ElevatedButton(
+//                           style: ElevatedButton.styleFrom(
+//                             elevation: 5,
+//                             backgroundColor: Colors.red,
+//                             shape: RoundedRectangleBorder(
+//                               borderRadius: BorderRadius.circular(10),
+//                             ),
+//                           ),
+//                           onPressed: _pickPunchOutImage,
+//                           child: const Text(
+//                             'OUT',
+//                             style: TextStyle(
+//                               fontSize: 30,
+//                               color: Colors.white,
+//                               fontWeight: FontWeight.bold,
+//                             ),
+//                           ),
+//                         ),
+//                       ),
+//                     ],
+//                   ),
+//                 ],
+//               ),
+//             ],
+//           );
+//         },
 //       ),
-//       ElevatedButton(
-//         onPressed: () => _pickPunchImage(PunchType.out), // Pass punch type
-//         child: const Text('OUT'),
-//       ),
-//       // ...
 //     );
-//   }
-// }
-//
-// // Enum for punch type
-// enum PunchType { in, out }
-//
-// // MarkdutyViewModel (Illustrative)
-// class MarkdutyViewModel {
-//   // ... variables for image paths, date/time, etc. ...
-//
-//   Future<void> loadCurrentDateTime() async {
-//     // ... logic to fetch and set date/time ...
-//   }
-//
-//   void setImagePath(PunchType type, String path) {
-//     // ... store image path based on punch type ...
-//   }
-//
-//   Future<void> submitData(PunchType type, String imagePath, String km, String comment) async {
-//     // ... logic to submit data ...
 //   }
 // }

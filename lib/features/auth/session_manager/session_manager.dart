@@ -73,6 +73,11 @@ class SessionManager {
   static const String punchInImageKey = 'punch_in_image';
   static const String punchOutImageKey = 'punch_out_image';
 
+  static const String _isPunchInDoneKey = 'punch_in_image';
+  static const String _isPunchOutDoneKey = 'punch_out_image';
+  static const String _punchInTimeKey = 'punch_in_time';
+  static const String _punchOutTimeKey = 'punch_out_time';
+
   // Save token
   Future<void> saveToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
@@ -323,4 +328,63 @@ class SessionManager {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(punchOutImageKey);
   }
-}
+
+  Future<void> saveTimeDateIn(String timeDateIn) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('timeDateIn', timeDateIn);
+  }
+
+  // Save Punch-Out DateTime
+  Future<void> saveTimeDateOut(String timeDateOut) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('timeDateOut', timeDateOut);
+  }
+
+
+
+  // Get Punch-In DateTime
+  Future<String?> getTimeDateIn() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('timeDateIn');
+  }
+
+  // Get Punch-Out DateTime
+  Future<String?> getTimeDateOut() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('timeDateOut');
+  }
+
+//Punch Action
+  Future<void> saveLastPunchAction(String action) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('lastPunchAction', action);
+  }
+
+  Future<String?> getLastPunchAction() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('lastPunchAction');
+  }
+
+  Future<bool> getCheckInStatus() async {
+    // Retrieve the check-in status
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('checkInStatus') ?? false;
+  }
+
+  Future<void> saveCheckOutStatus(bool status) async {
+    // Save the check-out status (true or false)
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('checkOutStatus', status);
+  }
+
+  Future<bool> getCheckOutStatus() async {
+    // Retrieve the check-out status
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('checkOutStatus') ?? false;
+  }
+
+  Future<void> saveCheckInStatus(bool status) async {
+    // Save the check-in status (true or false)
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('checkInStatus', status);
+  }}
