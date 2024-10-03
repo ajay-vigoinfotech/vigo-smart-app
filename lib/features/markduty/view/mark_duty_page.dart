@@ -195,10 +195,10 @@ class _MarkDutyState extends State<MarkDutyPage> {
                 ),
               ),
             ),
-            const SizedBox(
+            SizedBox(
               height: 300,
               width: double.infinity,
-              child: MapPage(latLong: ''),
+              child: MapPage(locationReceived: (LatLng ) {  },),
             ),
             const SizedBox(height: 20),
 

@@ -33,7 +33,7 @@ class _HomePageState extends State<HomePage> {
       'icon': AppConstants.punchHistoryIcon,
       'name': Strings.punchHistory,
       'color': Pallete.blueColor,
-      'page': const MarkdutyPage(),
+      'page': MarkdutyPage(),
     },
     {
       'code': 'SyncData',

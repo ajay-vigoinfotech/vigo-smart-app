@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
@@ -155,31 +156,54 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                 child: const Text('Cancel'),
               ),
               ElevatedButton(
-                onPressed: () async {
-                  await sessionManager.saveCheckInStatus(true);
-                  _hasCheckedIn = true;
+                onPressed: _hasCheckedIn
+                    ? null
+                    : () async {
+                        await sessionManager.saveCheckInStatus(true);
 
-                  String generatedUuid = uuid.v4();
-                  print('Unique ID: $generatedUuid');
+                        String generateUuid = uuid.v4();
+                        print('Unique ID : $generateUuid');
 
-                  // Save the current date/time for Punch-In
-                  String? currentTime = await _loadCurrentDateTime();
-                  await sessionManager.saveTimeDateIn(
-                      currentTime!); // Save Punch-In date and time
+                        String? currentTime = await _loadCurrentDateTime();
+                        await sessionManager.saveTimeDateIn(currentTime!);
 
-                  print('KM: ${_kmController.text}');
-                  print('Comment: ${_commentController.text}');
-                  print('Punch-In DateTime: $currentTime');
+                        print('KM: ${_kmController.text}');
+                        print('Comment: ${_commentController.text}');
+                        print('Punch-In DateTime: $currentTime');
 
-                  Navigator.pop(context, true); // Pop the dialog
-                },
+                        Navigator.pop(context, true); // Pop the dialog
+                      },
                 child: const Text('Submit'),
               ),
+              // ElevatedButton(
+              //   onPressed: () async {
+              //     await sessionManager.saveCheckInStatus(true);
+              //     _hasCheckedIn = true;
+              //
+              //     String generatedUuid = uuid.v4();
+              //     print('Unique ID: $generatedUuid');
+              //
+              //     // Save the current date/time for Punch-In
+              //     String? currentTime = await _loadCurrentDateTime();
+              //     await sessionManager.saveTimeDateIn(
+              //         currentTime!); // Save Punch-In date and time
+              //
+              //     print('KM: ${_kmController.text}');
+              //     print('Comment: ${_commentController.text}');
+              //     print('Punch-In DateTime: $currentTime');
+              //
+              //     Navigator.pop(context, true); // Pop the dialog
+              //   },
+              //   child: const Text('Submit'),
+              // ),
             ],
           );
         }).then((value) {
       if (value == true) {
-        setState(() {});
+        setState(() {
+          _hasCheckedIn = true;
+          _hasCheckedOut = false;
+        });
       }
     });
   }
@@ -223,28 +247,52 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                 child: const Text('Cancel'),
               ),
               ElevatedButton(
-                onPressed: () async {
-                  _hasCheckedOut = true;
+                  onPressed: (!_hasCheckedIn || _hasCheckedOut)
+                      ? null
+                      : () async {
+                          String? currentTime = await _loadCurrentDateTime();
+                          await sessionManager.saveTimeDateOut(currentTime!);
 
-                  // Save the current date/time for Punch-Out
-                  String? currentTime = await _loadCurrentDateTime();
-                  await sessionManager.saveTimeDateOut(
-                      currentTime!); // Save Punch-Out date and time
+                          print('KM: ${_kmController.text}');
+                          print('Comment: ${_commentController.text}');
+                          print('Punch-Out DateTime: $currentTime');
 
-                  print('KM: ${_kmController.text}');
-                  print('Comment: ${_commentController.text}');
-                  print('Punch-Out DateTime: $currentTime');
-
-                  Navigator.pop(context, true); // Pop the dialog
-                },
-                child: const Text('Submit'),
-              ),
+                          Navigator.pop(context, true); // Pop the dialog
+                        },
+                  child: const Text('Submit'))
+              // ElevatedButton(
+              //   onPressed: () async {
+              //     _hasCheckedOut = true;
+              //
+              //     // Save the current date/time for Punch-Out
+              //     String? currentTime = await _loadCurrentDateTime();
+              //     await sessionManager.saveTimeDateOut(
+              //         currentTime!); // Save Punch-Out date and time
+              //
+              //     print('KM: ${_kmController.text}');
+              //     print('Comment: ${_commentController.text}');
+              //     print('Punch-Out DateTime: $currentTime');
+              //
+              //     Navigator.pop(context, true); // Pop the dialog
+              //   },
+              //   child: const Text('Submit'),
+              // ),
             ],
           );
         }).then((value) {
       if (value == true) {
-        setState(() {});
+        setState(() {
+          _hasCheckedIn = false;
+          _hasCheckedOut = true;
+        });
       }
+    });
+  }
+
+  void _onLocationReceived(LatLng latLng) {
+    debugPrint("Location received: $latLng"); // Print the received LatLng
+    setState(() {
+      _hasCheckedIn = false; // Enable the IN button
     });
   }
 
@@ -288,10 +336,11 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                               ),
                             ),
                           ),
-                          const SizedBox(
+                          SizedBox(
                             height: 250,
                             width: double.infinity,
-                            child: MapPage(latLong: ''),
+                            child:
+                                MapPage(locationReceived: _onLocationReceived),
                           ),
                           const SizedBox(height: 20),
                           Row(

@@ -6,7 +6,7 @@ import 'package:flutter/widgets.dart';
 class NotificationUtils {
   static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   static final FlutterLocalNotificationsPlugin _localNotificationsPlugin =
-  FlutterLocalNotificationsPlugin();
+      FlutterLocalNotificationsPlugin();
 
   // Get FCM Device Token
   static Future<String> getDeviceToken() async {
@@ -17,7 +17,7 @@ class NotificationUtils {
   // Listen for Token Refresh
   static void listenForTokenRefresh() {
     _messaging.onTokenRefresh.listen((newToken) {
-      print('FCM Token Refreshed: $newToken');
+      debugPrint('FCM Token Refreshed: $newToken');
     });
   }
 
@@ -35,7 +35,7 @@ class NotificationUtils {
   // Initialize Local Notifications
   static Future<void> initializeLocalNotifications(BuildContext context) async {
     var androidInitSettings =
-    const AndroidInitializationSettings('@mipmap/ic_launcher');
+        const AndroidInitializationSettings('@mipmap/ic_launcher');
     var iosInitSettings = const DarwinInitializationSettings();
 
     var initSettings = InitializationSettings(
@@ -43,9 +43,9 @@ class NotificationUtils {
 
     await _localNotificationsPlugin.initialize(initSettings,
         onDidReceiveNotificationResponse: (payload) {
-          // Handle when a user clicks on a notification
-          _handleMessage(context, payload as String?);
-        });
+      // Handle when a user clicks on a notification
+      _handleMessage(context, payload as String?);
+    });
   }
 
   // Show a Notification
@@ -96,7 +96,7 @@ class NotificationUtils {
   // Setup Notification Interactions (App Background/Terminated)
   static Future<void> setupInteractMessage(BuildContext context) async {
     RemoteMessage? initialMessage =
-    await FirebaseMessaging.instance.getInitialMessage();
+        await FirebaseMessaging.instance.getInitialMessage();
     if (initialMessage != null) {
       _handleMessage(context, initialMessage.data['type']);
     }

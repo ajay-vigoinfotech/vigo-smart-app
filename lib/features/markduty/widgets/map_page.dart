@@ -5,8 +5,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class MapPage extends StatefulWidget {
-  final String latLong;
-  const MapPage({super.key, required this.latLong});
+  final Function(LatLng) locationReceived;
+  const MapPage({super.key, required this.locationReceived});
 
   @override
   State<MapPage> createState() => _MapPageState();
@@ -23,7 +23,6 @@ class _MapPageState extends State<MapPage> {
   void initState() {
     super.initState();
     _checkLocationService();
-    // _checkLocationPermission();
   }
 
   Future<void> _checkLocationPermission() async {
@@ -36,10 +35,6 @@ class _MapPageState extends State<MapPage> {
         return;
       }
     }
-    // if (permission == LocationPermission.denied) {
-    //   _showLocationError("Location permissions are denied.");
-    //   return;
-    // }
     _getCurrentLocation();
   }
 
@@ -55,15 +50,18 @@ class _MapPageState extends State<MapPage> {
   Future<void> _getCurrentLocation() async {
     try {
       Position position = await Geolocator.getCurrentPosition();
+
       _googlePlex = LatLng(position.latitude, position.longitude);
       print(_googlePlex);
 
       _setMarkerAtCurrentLocation();
+      widget.locationReceived(
+          _googlePlex!); // Notify MarkDutyPage with the location
       setState(() {
         _isLoading = false;
       });
     } catch (e) {
-      _showLocationError("Failed to get the current location of your device");
+      _showLocationError("Failed to wget the current location of your device");
     }
   }
 

@@ -293,6 +293,8 @@ class SessionManager {
     return supportContact;
   }
 
+  //------------------- Mark Duty ---------------
+
 // Save PunchIn Image
   Future<void> savePunchInPath(String path) async {
     final prefs = await SharedPreferences.getInstance();
@@ -340,8 +342,6 @@ class SessionManager {
     prefs.setString('timeDateOut', timeDateOut);
   }
 
-
-
   // Get Punch-In DateTime
   Future<String?> getTimeDateIn() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -387,4 +387,5 @@ class SessionManager {
     // Save the check-in status (true or false)
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setBool('checkInStatus', status);
-  }}
+  }
+}
