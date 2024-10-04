@@ -73,11 +73,6 @@ class SessionManager {
   static const String punchInImageKey = 'punch_in_image';
   static const String punchOutImageKey = 'punch_out_image';
 
-  static const String _isPunchInDoneKey = 'punch_in_image';
-  static const String _isPunchOutDoneKey = 'punch_out_image';
-  static const String _punchInTimeKey = 'punch_in_time';
-  static const String _punchOutTimeKey = 'punch_out_time';
-
   // Save token
   Future<void> saveToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
@@ -235,29 +230,19 @@ class SessionManager {
   Future<void> saveSelfieAttendance(
       SelfieAttendanceModel selfieAttendanceModel) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-        _checkinId, selfieAttendanceModel.table![0].checkinId.toString());
-    await prefs.setString(
-        _uniqueId, selfieAttendanceModel.table![0].uniqueId.toString());
-    await prefs.setString(
-        _dateTimeIn, selfieAttendanceModel.table![0].dateTimeIn.toString());
-    await prefs.setString(
-        _dateTimeOut, selfieAttendanceModel.table![0].dateTimeOut.toString());
-    await prefs.setString(
-        _inKmsDriven, selfieAttendanceModel.table![0].inKmsDriven.toString());
-    await prefs.setString(
-        _outKmsDriven, selfieAttendanceModel.table![0].outKmsDriven.toString());
-    await prefs.setString(
-        _siteId, selfieAttendanceModel.table![0].siteId.toString());
-    await prefs.setString(
-        _siteName, selfieAttendanceModel.table![0].siteName.toString());
+    await prefs.setString(_uniqueId, selfieAttendanceModel.table![0].uniqueId.toString());
+    await prefs.setString(_dateTimeIn, selfieAttendanceModel.table![0].dateTimeIn.toString());
+    await prefs.setString(_dateTimeOut, selfieAttendanceModel.table![0].dateTimeOut.toString());
+    await prefs.setString(_inKmsDriven, selfieAttendanceModel.table![0].inKmsDriven.toString());
+    await prefs.setString(_outKmsDriven, selfieAttendanceModel.table![0].outKmsDriven.toString());
+    await prefs.setString(_siteId, selfieAttendanceModel.table![0].siteId.toString());
+    await prefs.setString(_siteName, selfieAttendanceModel.table![0].siteName.toString());
   }
 
   //Get SelfieAttendance
-  Future<Table> getCheckinData() async {
+  Future<AttendanceTable> getCheckinData() async {
     final prefs = await SharedPreferences.getInstance();
-    return Table(
-      checkinId: prefs.getString(_checkinId),
+    return AttendanceTable(
       uniqueId: prefs.getString(_uniqueId),
       dateTimeIn: prefs.getString(_dateTimeIn),
       dateTimeOut: prefs.getString(_dateTimeOut),
@@ -293,99 +278,4 @@ class SessionManager {
     return supportContact;
   }
 
-  //------------------- Mark Duty ---------------
-
-// Save PunchIn Image
-  Future<void> savePunchInPath(String path) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(punchInImageKey, path);
-  }
-
-// Retrieve image path
-  Future<String?> getPunchInImagePath() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(punchInImageKey); // Return the stored path
-  }
-
-// Clear image path
-  Future<void> clearPunchInImage() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(punchInImageKey);
-  }
-
-  // Save PunchOut Image
-  Future<void> savePunchOutPath(String path) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(punchOutImageKey, path);
-  }
-
-// Retrieve image path
-  Future<String?> getPunchOutImagePath() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(punchOutImageKey); // Return the stored path
-  }
-
-// Clear image path
-  Future<void> clearPunchOutImage() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(punchOutImageKey);
-  }
-
-  Future<void> saveTimeDateIn(String timeDateIn) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('timeDateIn', timeDateIn);
-  }
-
-  // Save Punch-Out DateTime
-  Future<void> saveTimeDateOut(String timeDateOut) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('timeDateOut', timeDateOut);
-  }
-
-  // Get Punch-In DateTime
-  Future<String?> getTimeDateIn() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getString('timeDateIn');
-  }
-
-  // Get Punch-Out DateTime
-  Future<String?> getTimeDateOut() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getString('timeDateOut');
-  }
-
-//Punch Action
-  Future<void> saveLastPunchAction(String action) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('lastPunchAction', action);
-  }
-
-  Future<String?> getLastPunchAction() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('lastPunchAction');
-  }
-
-  Future<bool> getCheckInStatus() async {
-    // Retrieve the check-in status
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('checkInStatus') ?? false;
-  }
-
-  Future<void> saveCheckOutStatus(bool status) async {
-    // Save the check-out status (true or false)
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('checkOutStatus', status);
-  }
-
-  Future<bool> getCheckOutStatus() async {
-    // Retrieve the check-out status
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('checkOutStatus') ?? false;
-  }
-
-  Future<void> saveCheckInStatus(bool status) async {
-    // Save the check-in status (true or false)
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('checkInStatus', status);
-  }
 }

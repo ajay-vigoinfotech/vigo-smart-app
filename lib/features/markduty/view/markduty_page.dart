@@ -1,13 +1,14 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
-import 'package:vigo_smart_app/features/markduty/widgets/map_page.dart';
+import 'package:vigo_smart_app/features/auth/model/getlastselfieattendancemodel.dart';
 import '../../../core/utils.dart';
 import '../../auth/session_manager/session_manager.dart';
+import '../../auth/viewmodel/getlastselfieatt_view_model.dart';
 import '../viewmodel/get_current_date_view_model.dart';
+import '../widgets/map_page.dart';
 
 class MarkdutyPage extends StatefulWidget {
   const MarkdutyPage({super.key});
@@ -17,424 +18,294 @@ class MarkdutyPage extends StatefulWidget {
 }
 
 class _MarkdutyPageState extends State<MarkdutyPage> {
-  var uuid = const Uuid();
+  String? punchTimeDateIn;
+  String? punchTimeDateOut;
   String? timeDateDisplay;
   String? timeDateIn;
   String? timeDateOut;
-  String? siteID;
-  String? siteName;
-  bool _hasCheckedIn = false; // Tracks if the user has punched in
-  bool _hasCheckedOut = false; // Tracks if the user has punched out
-  final TextEditingController _commentController = TextEditingController();
-  final TextEditingController _kmController = TextEditingController();
+  LatLng? currentLocation;
+  String? uniqueId;
+  String? inKm; // Declared uniqueId here so it persists across IN and OUT
+  String? outKm; // Declared uniqueId here so it persists across IN and OUT
+  final picker = ImagePicker();
+  final SessionManager sessionManager = SessionManager();
 
   @override
   void initState() {
+    _lastSelfieAttendance();
+    _loadCurrentDateTime();
     super.initState();
-    _loadCurrentDateTime(); // Get time and date from API
-    _setDeviceDateTime(); // Get time and date from current device
-    _loadCheckInOutStatus(); // Load check-in/out status
-  }
-
-  Future<void> _loadCheckInOutStatus() async {
-    _hasCheckedIn = await sessionManager.getCheckInStatus();
-    _hasCheckedOut = await sessionManager.getCheckOutStatus();
-    setState(() {}); // Update the UI
-  }
-
-  Future<String?> _loadCurrentDateTime() async {
-    final sessionManager = SessionManager();
-    final getCurrentDateViewModel = GetCurrentDateViewModel();
-    String? currentDateTime;
-
-    try {
-      currentDateTime = await getCurrentDateViewModel.getTimeDate();
-
-      if (currentDateTime != null) {
-        final formattedDateTime = Utils.formatDateTime(currentDateTime);
-        await sessionManager.saveCurrentDateTime(formattedDateTime);
-
-        setState(() {
-          timeDateDisplay = formattedDateTime;
-          timeDateIn = formattedDateTime;
-          timeDateOut = formattedDateTime;
-        });
-      } else {
-        currentDateTime = _setDeviceDateTime(); // Fallback to device time
-      }
-    } catch (e) {
-      print('Error fetching date from API: $e');
-      currentDateTime = _setDeviceDateTime(); // Fallback to device time
-    }
-
-    return currentDateTime;
-  }
-
-  String _setDeviceDateTime() {
-    String currentDateTime =
-        DateFormat('dd/MM/yyyy hh:mm').format(DateTime.now());
-
-    setState(() {
-      timeDateDisplay = currentDateTime;
-      timeDateIn = currentDateTime;
-      timeDateOut = currentDateTime;
-    });
-
-    return currentDateTime;
-  }
-
-  final SessionManager sessionManager = SessionManager();
-
-  // Pick and display Punch-In image
-  Future<void> _pickPunchInImage() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? punchInImage =
-        await picker.pickImage(source: ImageSource.camera);
-
-    if (punchInImage != null) {
-      // Show the dialog and handle its outcome (whether to save or cancel)
-      _showPunchInImageDialog(punchInImage);
-    }
-  }
-
-  // Pick and display Punch-Out image
-  Future<void> _pickPunchOutImage() async {
-    if (_hasCheckedIn && !_hasCheckedOut) {
-      final ImagePicker picker = ImagePicker();
-      final XFile? punchOutImage =
-          await picker.pickImage(source: ImageSource.camera);
-
-      if (punchOutImage != null) {
-        _showPunchOutImageDialog(punchOutImage);
-      }
-    } else {
-      // Notify the user they must punch in before punching out
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("You need to punch IN before punching OUT!"),
-        ),
-      );
-    }
-  }
-
-  // Show a dialog to input KM and Comment, and handle submit or cancel
-  void _showPunchInImageDialog(XFile punchInImage) {
-    showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Image.file(
-                    File(punchInImage.path),
-                    height: 150,
-                    width: 125,
-                  ),
-                  const SizedBox(height: 15),
-                  TextField(
-                    controller: _kmController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Enter KM'),
-                  ),
-                  const SizedBox(height: 15),
-                  TextField(
-                    controller: _commentController,
-                    decoration:
-                        const InputDecoration(labelText: 'Enter Comment'),
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context, false);
-                },
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: _hasCheckedIn
-                    ? null
-                    : () async {
-                        await sessionManager.saveCheckInStatus(true);
-
-                        String generateUuid = uuid.v4();
-                        print('Unique ID : $generateUuid');
-
-                        String? currentTime = await _loadCurrentDateTime();
-                        await sessionManager.saveTimeDateIn(currentTime!);
-
-                        print('KM: ${_kmController.text}');
-                        print('Comment: ${_commentController.text}');
-                        print('Punch-In DateTime: $currentTime');
-
-                        Navigator.pop(context, true); // Pop the dialog
-                      },
-                child: const Text('Submit'),
-              ),
-              // ElevatedButton(
-              //   onPressed: () async {
-              //     await sessionManager.saveCheckInStatus(true);
-              //     _hasCheckedIn = true;
-              //
-              //     String generatedUuid = uuid.v4();
-              //     print('Unique ID: $generatedUuid');
-              //
-              //     // Save the current date/time for Punch-In
-              //     String? currentTime = await _loadCurrentDateTime();
-              //     await sessionManager.saveTimeDateIn(
-              //         currentTime!); // Save Punch-In date and time
-              //
-              //     print('KM: ${_kmController.text}');
-              //     print('Comment: ${_commentController.text}');
-              //     print('Punch-In DateTime: $currentTime');
-              //
-              //     Navigator.pop(context, true); // Pop the dialog
-              //   },
-              //   child: const Text('Submit'),
-              // ),
-            ],
-          );
-        }).then((value) {
-      if (value == true) {
-        setState(() {
-          _hasCheckedIn = true;
-          _hasCheckedOut = false;
-        });
-      }
-    });
-  }
-
-  // Show a dialog to input KM and Comment, and handle submit or cancel
-  void _showPunchOutImageDialog(XFile punchOutImage) {
-    showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Image.file(
-                    File(punchOutImage.path),
-                    height: 150,
-                    width: 125,
-                  ),
-                  const SizedBox(height: 15),
-                  TextField(
-                    controller: _kmController,
-                    keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'Enter KM'),
-                  ),
-                  const SizedBox(height: 15),
-                  TextField(
-                    controller: _commentController,
-                    decoration:
-                        const InputDecoration(labelText: 'Enter Comment'),
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context, false);
-                },
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                  onPressed: (!_hasCheckedIn || _hasCheckedOut)
-                      ? null
-                      : () async {
-                          String? currentTime = await _loadCurrentDateTime();
-                          await sessionManager.saveTimeDateOut(currentTime!);
-
-                          print('KM: ${_kmController.text}');
-                          print('Comment: ${_commentController.text}');
-                          print('Punch-Out DateTime: $currentTime');
-
-                          Navigator.pop(context, true); // Pop the dialog
-                        },
-                  child: const Text('Submit'))
-              // ElevatedButton(
-              //   onPressed: () async {
-              //     _hasCheckedOut = true;
-              //
-              //     // Save the current date/time for Punch-Out
-              //     String? currentTime = await _loadCurrentDateTime();
-              //     await sessionManager.saveTimeDateOut(
-              //         currentTime!); // Save Punch-Out date and time
-              //
-              //     print('KM: ${_kmController.text}');
-              //     print('Comment: ${_commentController.text}');
-              //     print('Punch-Out DateTime: $currentTime');
-              //
-              //     Navigator.pop(context, true); // Pop the dialog
-              //   },
-              //   child: const Text('Submit'),
-              // ),
-            ],
-          );
-        }).then((value) {
-      if (value == true) {
-        setState(() {
-          _hasCheckedIn = false;
-          _hasCheckedOut = true;
-        });
-      }
-    });
-  }
-
-  void _onLocationReceived(LatLng latLng) {
-    debugPrint("Location received: $latLng"); // Print the received LatLng
-    setState(() {
-      _hasCheckedIn = false; // Enable the IN button
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body: FutureBuilder<String?>(
-        future: sessionManager.getPunchInImagePath(),
-        builder: (context, punchInSnapshot) {
-          final punchInImagePath = punchInSnapshot.data;
-
-          return FutureBuilder<String?>(
-            future: sessionManager.getTimeDateIn(), // Fetch Punch-In time
-            builder: (context, punchInTimeSnapshot) {
-              final timeDateIn = punchInTimeSnapshot.data;
-
-              return FutureBuilder<String?>(
-                future: sessionManager.getTimeDateOut(), // Fetch Punch-Out time
-                builder: (context, punchOutTimeSnapshot) {
-                  final timeDateOut = punchOutTimeSnapshot.data;
-
-                  // Fetch Punch-Out image path
-                  final Future<String?> punchOutImagePathFuture =
-                      sessionManager.getPunchOutImagePath();
-
-                  return FutureBuilder<String?>(
-                    future: punchOutImagePathFuture,
-                    builder: (context, punchOutImageSnapshot) {
-                      final punchOutImagePath = punchOutImageSnapshot.data;
-
-                      return Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(15),
-                            child: Center(
-                              child: Text(
-                                timeDateDisplay ?? 'Loading..',
-                                style: const TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          ),
-                          SizedBox(
-                            height: 250,
-                            width: double.infinity,
-                            child:
-                                MapPage(locationReceived: _onLocationReceived),
-                          ),
-                          const SizedBox(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Column(
-                                children: [
-                                  Text(timeDateIn ?? ''),
-                                  // Display Punch-In time
-                                  if (punchInImagePath != null)
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Image.file(
-                                        File(punchInImagePath),
-                                        height: 125,
-                                        width: 110,
-                                      ),
-                                    ),
-                                  SizedBox(
-                                    height: 80,
-                                    width: 120,
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        elevation: 5,
-                                        backgroundColor: Colors.green,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                      ),
-                                      onPressed:
-                                          _hasCheckedIn && !_hasCheckedOut
-                                              ? null
-                                              : _pickPunchInImage,
-                                      child: const Text(
-                                        'IN',
-                                        style: TextStyle(
-                                            fontSize: 20,
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Column(
-                                children: [
-                                  Text(timeDateOut ?? ''),
-                                  // Display Punch-Out image
-                                  if (punchOutImagePath != null)
-                                    Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Image.file(
-                                        File(punchOutImagePath),
-                                        height: 125,
-                                        width: 110,
-                                      ),
-                                    ),
-                                  SizedBox(
-                                    height: 80,
-                                    width: 120,
-                                    child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        elevation: 5,
-                                        backgroundColor: Colors.red,
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                        ),
-                                      ),
-                                      onPressed: _pickPunchOutImage,
-                                      child: const Text(
-                                        'OUT',
-                                        style: TextStyle(
-                                            fontSize: 20,
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
-                      );
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(15.0),
+            child: Center(
+              child: Text(
+                '$timeDateDisplay',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(
+            height: 275,
+            width: double.infinity,
+            child: MapPage(locationReceived: _onLocationReceived),
+          ),
+          const SizedBox(height: 25),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Column(
+                children: [
+                  Text('$punchTimeDateIn'),
+                  Text('$inKm'),
+                  ElevatedButton(
+                    onPressed: () {
+                      _onMarkIn(); // Mark In button action
                     },
-                  );
-                },
-              );
-            },
-          );
-        },
+                    child: const Text('IN'),
+                  ),
+                ],
+              ),
+              Column(
+                children: [
+                  Text('$punchTimeDateOut'),
+                  Text('$outKm'),
+                  ElevatedButton(
+                    onPressed: () {
+                      _onMarkOut(); // Mark Out button action
+                    },
+                    child: const Text('OUT'),
+                  ),
+                ],
+              ),
+            ],
+          )
+        ],
       ),
     );
+  }
+
+  Future<void> _loadCurrentDateTime() async {
+    final sessionManager = SessionManager();
+    final getCurrentDateViewModel = GetCurrentDateViewModel();
+    String? currentDateTime;
+
+    try {
+      currentDateTime = await getCurrentDateViewModel.getTimeDate();
+      if (currentDateTime != null) {
+        final formattedDateTime = Utils.formatDateTime(currentDateTime);
+        await sessionManager.saveCurrentDateTime(formattedDateTime);
+
+        setState(() {
+          timeDateDisplay = formattedDateTime;
+          // timeDateIn = formattedDateTime;
+        });
+      } else {
+        currentDateTime = _setDeviceDateTime(); // Fallback to device time
+      }
+    } catch (e) {
+      debugPrint('Error fetching date from API: $e');
+      currentDateTime = _setDeviceDateTime(); // Fallback to device time
+    }
+  }
+
+  String _setDeviceDateTime() {
+    String currentDateTime =
+        DateFormat('dd/MM/yyyy hh:mm').format(DateTime.now());
+    setState(() {
+      timeDateDisplay = currentDateTime;
+      timeDateIn = currentDateTime;
+    });
+    return currentDateTime;
+  }
+
+  void _onLocationReceived(LatLng latLng) {
+    setState(() {
+      currentLocation = latLng;
+    });
+  }
+
+  // Function called when 'Mark In' is clicked
+  Future<void> _onMarkIn() async {
+    String? comment;
+
+    // Generate uniqueId when Mark In is clicked
+    //uniqueId = Uuid().v4(); // Generates a new unique ID for "Mark In"
+    timeDateIn = DateFormat('dd/MM/yyyy hh:mm')
+        .format(DateTime.now()); // Capture IN time
+
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Mark In Details"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                decoration: const InputDecoration(labelText: 'Comment'),
+                onChanged: (value) {
+                  comment = value;
+                },
+              ),
+              TextField(
+                decoration: const InputDecoration(labelText: 'KM'),
+                keyboardType: TextInputType.number,
+                onChanged: (value) {
+                  inKm = value; // Store inKm value when Mark In is clicked
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog without action
+              },
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (inKm != null) {
+                  uniqueId =
+                      Uuid().v4(); // Generates a unique ID only for Mark In
+                  SelfieAttendanceModel selfieAttendanceModel =
+                      SelfieAttendanceModel(
+                    table: [
+                      AttendanceTable(
+                        uniqueId: uniqueId,
+                        dateTimeIn: timeDateDisplay, // Capture the IN time
+                        inKmsDriven: '$inKm KM', // Capture the KM input
+                        dateTimeOut: "-", // Set to null for Mark Out
+                        outKmsDriven: "-", // Set to null for Mark Out
+                        siteId: "", // Set your site ID logic
+                        siteName: "-", // Set your site name logic
+                      ),
+                    ],
+                  );
+
+                  // Save the model in SharedPreferences using the session manager
+                  await sessionManager
+                      .saveSelfieAttendance(selfieAttendanceModel);
+
+                  // Close the dialog
+                  Navigator.of(context).pop();
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please fill in all fields.')),
+                  );
+                }
+              },
+              child: const Text("Submit"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Function called when 'Mark Out' is clicked
+  Future<void> _onMarkOut() async {
+    String? outKm;
+    timeDateOut = DateFormat('dd/MM/yyyy hh:mm a')
+        .format(DateTime.now()); // Capture OUT time
+
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Mark Out Details"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                decoration: const InputDecoration(labelText: 'OUT KM'),
+                keyboardType: TextInputType.number,
+                onChanged: (value) {
+                  outKm = value;
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog without action
+              },
+              child: const Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (outKm != null && outKm!.isNotEmpty) {
+                  // Use the same uniqueId from IN for OUT
+                  SelfieAttendanceModel selfieAttendanceModel =
+                      SelfieAttendanceModel(
+                    table: [
+                      AttendanceTable(
+                        uniqueId: uniqueId, // Use the same unique ID
+                        dateTimeIn: timeDateIn, // Keep the IN time
+                        inKmsDriven: '$inKm KM', // Previous km (if needed)
+                        dateTimeOut: timeDateDisplay, // Capture OUT time
+                        outKmsDriven: '$outKm KM', // Capture OUT KM
+                        siteId: null, // Set your site ID logic
+                        siteName: null, // Set your site name logic
+                      ),
+                    ],
+                  );
+
+                  // Save the model in SharedPreferences using the session manager
+                  await sessionManager
+                      .saveSelfieAttendance(selfieAttendanceModel);
+
+                  // Close the dialog
+                  Navigator.of(context).pop();
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please fill in all fields.')),
+                  );
+                }
+              },
+              child: const Text("Submit"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _lastSelfieAttendance() async {
+    final SessionManager sessionManager = SessionManager();
+
+    sessionManager.getToken().then((token) async {
+      final GetlastselfieattViewModel getlastselfieattViewModel =
+          GetlastselfieattViewModel();
+      getlastselfieattViewModel
+          .getLastSelfieAttendance(token!)
+          .then((data1) async {
+        sessionManager.getCheckinData().then((data) async {
+          debugPrint(data.uniqueId);
+          setState(() {
+            uniqueId = data.uniqueId;
+            punchTimeDateIn = data.dateTimeIn;
+            timeDateIn = data.dateTimeIn;
+            punchTimeDateOut = data.dateTimeOut;
+            inKm = data.inKmsDriven;
+            outKm = data.outKmsDriven;
+          });
+        });
+      });
+    }).catchError((error) {
+      debugPrint('Error: $error');
+    });
   }
 }

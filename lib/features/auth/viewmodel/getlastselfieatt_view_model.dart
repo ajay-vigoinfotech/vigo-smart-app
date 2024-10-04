@@ -1,9 +1,10 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:vigo_smart_app/core/constants/constants.dart';
 import '../model/getlastselfieattendancemodel.dart';
 import '../session_manager/session_manager.dart';
 
-class GetlastselfieattViewModel {
+  class GetlastselfieattViewModel {
   final Dio _dio = Dio();
   SelfieAttendanceModel? selfieAttendance;
 
@@ -26,7 +27,7 @@ class GetlastselfieattViewModel {
 
       if (response.statusCode == 200) {
         final SessionManager sessionManager = SessionManager();
-        //print(response.data);
+        debugPrint(response.data);
 
         selfieAttendance = SelfieAttendanceModel.fromJson(response.data);
         await sessionManager.saveSelfieAttendance(selfieAttendance!);

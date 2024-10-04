@@ -90,20 +90,5 @@ class Utils {
     return formatter.format(dateTime);
   }
 
-
-  //method to get Current Date and Time
-  // static String formatDateTime(String apiDateTime) {
-  //   // Parse the string "2024-09-26 13:58" to DateTime object
-  //   DateTime dateTime = DateTime.parse(apiDateTime);
-  //
-  //   // Create a formatter for the desired format "dd/MM/yyyy h:mm a"
-  //   DateFormat formatter = DateFormat('dd/MM/yyyy h:mm a');
-  //   //print(formatter);
-  //
-  //   // Return formatted string
-  //   return formatter.format(dateTime);
-  // }
-
-
 }
 

@@ -1,14 +1,14 @@
 class SelfieAttendanceModel {
-  List<Table>? table;
+  List<AttendanceTable>? table;
   List<HttpResponseStatus>? httpResponseStatus;
 
   SelfieAttendanceModel({this.table, this.httpResponseStatus});
 
   SelfieAttendanceModel.fromJson(Map<String, dynamic> json) {
     if (json['table'] != null) {
-      table = <Table>[];
+      table = <AttendanceTable>[];
       json['table'].forEach((v) {
-        table!.add(Table.fromJson(v));
+        table!.add(AttendanceTable.fromJson(v));
       });
     }
     if (json['httpResponseStatus'] != null) {
@@ -32,8 +32,7 @@ class SelfieAttendanceModel {
   }
 }
 
-class Table {
-  String? checkinId;
+class AttendanceTable {  // Renamed from Table to AttendanceTable
   String? uniqueId;
   String? dateTimeIn;
   String? dateTimeOut;
@@ -42,18 +41,17 @@ class Table {
   String? siteId;
   String? siteName;
 
-  Table(
-      {this.checkinId,
-      this.uniqueId,
-      this.dateTimeIn,
-      this.dateTimeOut,
-      this.inKmsDriven,
-      this.outKmsDriven,
-      this.siteId,
-      this.siteName});
+  AttendanceTable(
+      {
+        this.uniqueId,
+        this.dateTimeIn,
+        this.dateTimeOut,
+        this.inKmsDriven,
+        this.outKmsDriven,
+        this.siteId,
+        this.siteName});
 
-  Table.fromJson(Map<String, dynamic> json) {
-    checkinId = json['checkinId'].toString();
+  AttendanceTable.fromJson(Map<String, dynamic> json) {
     uniqueId = json['uniqueId'].toString();
     dateTimeIn = json['dateTimeIn'].toString();
     dateTimeOut = json['dateTimeOut'].toString();
@@ -65,7 +63,6 @@ class Table {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    data['checkinId'] = checkinId;
     data['uniqueId'] = uniqueId;
     data['dateTimeIn'] = dateTimeIn;
     data['dateTimeOut'] = dateTimeOut;
