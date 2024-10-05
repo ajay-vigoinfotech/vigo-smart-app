@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vigo_smart_app/features/auth/model/getuserdetails.dart';
 import '../model/getlastselfieattendancemodel.dart';
@@ -230,13 +232,20 @@ class SessionManager {
   Future<void> saveSelfieAttendance(
       SelfieAttendanceModel selfieAttendanceModel) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_uniqueId, selfieAttendanceModel.table![0].uniqueId.toString());
-    await prefs.setString(_dateTimeIn, selfieAttendanceModel.table![0].dateTimeIn.toString());
-    await prefs.setString(_dateTimeOut, selfieAttendanceModel.table![0].dateTimeOut.toString());
-    await prefs.setString(_inKmsDriven, selfieAttendanceModel.table![0].inKmsDriven.toString());
-    await prefs.setString(_outKmsDriven, selfieAttendanceModel.table![0].outKmsDriven.toString());
-    await prefs.setString(_siteId, selfieAttendanceModel.table![0].siteId.toString());
-    await prefs.setString(_siteName, selfieAttendanceModel.table![0].siteName.toString());
+    await prefs.setString(
+        _uniqueId, selfieAttendanceModel.table![0].uniqueId.toString());
+    await prefs.setString(
+        _dateTimeIn, selfieAttendanceModel.table![0].dateTimeIn.toString());
+    await prefs.setString(
+        _dateTimeOut, selfieAttendanceModel.table![0].dateTimeOut.toString());
+    await prefs.setString(
+        _inKmsDriven, selfieAttendanceModel.table![0].inKmsDriven.toString());
+    await prefs.setString(
+        _outKmsDriven, selfieAttendanceModel.table![0].outKmsDriven.toString());
+    await prefs.setString(
+        _siteId, selfieAttendanceModel.table![0].siteId.toString());
+    await prefs.setString(
+        _siteName, selfieAttendanceModel.table![0].siteName.toString());
   }
 
   //Get SelfieAttendance
@@ -278,4 +287,15 @@ class SessionManager {
     return supportContact;
   }
 
+// Save punch-in image path to shared preferences
+  Future<void> savePunchInPath(String path) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('punchInImagePath', path);
+  }
+
+// Get punch-in image path from shared preferences
+  Future<String?> getPunchInPath() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('punchInImagePath');
+  }
 }

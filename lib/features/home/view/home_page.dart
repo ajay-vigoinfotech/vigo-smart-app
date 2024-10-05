@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:vigo_smart_app/features/home/widgets/setting_page.dart';
 import 'package:vigo_smart_app/features/markduty/view/markduty_page.dart';
+import 'package:vigo_smart_app/features/punchHistory/view/punch_history.dart';
 import '../../../core/constants/constants.dart';
 import '../../../core/strings/strings.dart';
 import '../../../core/theme/app_pallete.dart';
@@ -25,14 +26,14 @@ class _HomePageState extends State<HomePage> {
       'icon': AppConstants.markDutyIcon,
       'name': Strings.fieldReportingApp,
       'color': Pallete.greenColor,
-      'page': MarkDutyPage(),
+      'page': const MarkdutyPage(),
     },
     {
       'code': 'PunchHistory',
       'icon': AppConstants.punchHistoryIcon,
       'name': Strings.punchHistory,
       'color': Pallete.blueColor,
-      'page': MarkdutyPage(),
+      'page': const PunchHistory(),
     },
     {
       'code': 'SyncData',

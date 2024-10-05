@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
@@ -25,7 +26,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   String? timeDateOut;
   LatLng? currentLocation;
   String? uniqueId;
-  String? inKm; // Declared uniqueId here so it persists across IN and OUT
+  String? inKm;
   String? outKm; // Declared uniqueId here so it persists across IN and OUT
   final picker = ImagePicker();
   final SessionManager sessionManager = SessionManager();
@@ -40,7 +41,9 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        title: const Text('Mark Duty'),
+      ),
       body: Column(
         children: [
           Padding(
@@ -56,7 +59,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
             ),
           ),
           SizedBox(
-            height: 275,
+            height: 270,
             width: double.infinity,
             child: MapPage(locationReceived: _onLocationReceived),
           ),
@@ -138,11 +141,17 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   // Function called when 'Mark In' is clicked
   Future<void> _onMarkIn() async {
     String? comment;
-
-    // Generate uniqueId when Mark In is clicked
-    //uniqueId = Uuid().v4(); // Generates a new unique ID for "Mark In"
+    File? image;
     timeDateIn = DateFormat('dd/MM/yyyy hh:mm')
         .format(DateTime.now()); // Capture IN time
+
+    final ImagePicker picker = ImagePicker();
+    final XFile? markInImage =
+        await picker.pickImage(source: ImageSource.camera);
+
+    if (markInImage != null) {
+      image = File(markInImage.path);
+    }
 
     await showDialog(
       context: context,
@@ -152,6 +161,12 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              if (image != null)
+                Image.file(
+                  image,
+                  height: 100,
+                  width: 100,
+                ),
               TextField(
                 decoration: const InputDecoration(labelText: 'Comment'),
                 onChanged: (value) {
@@ -174,11 +189,14 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
               },
               child: const Text("Cancel"),
             ),
-            TextButton(
+            ElevatedButton(
               onPressed: () async {
-                if (inKm != null) {
-                  uniqueId =
-                      Uuid().v4(); // Generates a unique ID only for Mark In
+                if (inKm != null &&
+                    markInImage != null &&
+                    currentLocation != null) {
+                  await sessionManager.savePunchInPath(markInImage.path);
+
+                  uniqueId = const Uuid().v4(); // Generates a unique ID only for Mark In
                   SelfieAttendanceModel selfieAttendanceModel =
                       SelfieAttendanceModel(
                     table: [
@@ -197,7 +215,6 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                   // Save the model in SharedPreferences using the session manager
                   await sessionManager
                       .saveSelfieAttendance(selfieAttendanceModel);
-
                   // Close the dialog
                   Navigator.of(context).pop();
                 } else {
@@ -217,6 +234,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   // Function called when 'Mark Out' is clicked
   Future<void> _onMarkOut() async {
     String? outKm;
+
     timeDateOut = DateFormat('dd/MM/yyyy hh:mm a')
         .format(DateTime.now()); // Capture OUT time
 
@@ -229,7 +247,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
-                decoration: const InputDecoration(labelText: 'OUT KM'),
+                decoration: const InputDecoration(labelText: 'OUT KM '),
                 keyboardType: TextInputType.number,
                 onChanged: (value) {
                   outKm = value;
@@ -244,7 +262,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
               },
               child: const Text("Cancel"),
             ),
-            TextButton(
+            ElevatedButton(
               onPressed: () async {
                 if (outKm != null && outKm!.isNotEmpty) {
                   // Use the same uniqueId from IN for OUT
@@ -254,7 +272,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                       AttendanceTable(
                         uniqueId: uniqueId, // Use the same unique ID
                         dateTimeIn: timeDateIn, // Keep the IN time
-                        inKmsDriven: '$inKm KM', // Previous km (if needed)
+                        inKmsDriven: '$inKm', // Previous km (if needed)
                         dateTimeOut: timeDateDisplay, // Capture OUT time
                         outKmsDriven: '$outKm KM', // Capture OUT KM
                         siteId: null, // Set your site ID logic
@@ -295,7 +313,6 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
         sessionManager.getCheckinData().then((data) async {
           debugPrint(data.uniqueId);
           setState(() {
-            uniqueId = data.uniqueId;
             punchTimeDateIn = data.dateTimeIn;
             timeDateIn = data.dateTimeIn;
             punchTimeDateOut = data.dateTimeOut;

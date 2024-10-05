@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import '../../../core/constants/constants.dart';
 import '../model/marklogin_model.dart';
 
@@ -20,21 +21,20 @@ class MarkLoginViewModel {
         data: markLoginModel.toMap()
       );
 
-      print(response);
       if (response.statusCode == 200) {
         return response.data;
       } else {
-        print('Error: ${response.statusCode}');
-        print('Response data: ${response.data}');
+        debugPrint('Error: ${response.statusCode}');
+        debugPrint('Response data: ${response.data}');
         return response.data;
       }
     } catch (e) {
       if (e is DioException) {
-        print('DioException: ${e.response?.statusCode}');
-        print('DioException Data: ${e.response?.data}');
-        print('DioException Headers: ${e.response?.headers}');
+        debugPrint('DioException: ${e.response?.statusCode}');
+        debugPrint('DioException Data: ${e.response?.data}');
+        debugPrint('DioException Headers: ${e.response?.headers}');
       } else {
-        print('Exception: $e');
+        debugPrint('Exception: $e');
       }
       return e.toString();
     }

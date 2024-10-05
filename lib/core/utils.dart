@@ -6,7 +6,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class Utils {
   // Method to get the current DateTime in the specified format

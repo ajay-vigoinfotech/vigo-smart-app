@@ -285,7 +285,7 @@
 //               const SizedBox(
 //                 height: 250,
 //                 width: double.infinity,
-//                 child: MapPage(latLong: ''),
+//                 child: MapPage(latLong: '', locationReceived: (LatLng ) {  },),
 //               ),
 //               const SizedBox(height: 20),
 //               Row(
