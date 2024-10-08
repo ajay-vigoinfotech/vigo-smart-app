@@ -22,6 +22,7 @@ class _MapPageState extends State<MapPage> {
   @override
   void initState() {
     super.initState();
+    _checkLocationServiceStatus();
     _checkLocationService();
   }
 
@@ -96,12 +97,27 @@ class _MapPageState extends State<MapPage> {
         .showSnackBar(SnackBar(content: Text(message)));
   }
 
+
+  void _checkLocationServiceStatus() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    LocationPermission permission = await Geolocator.checkPermission();
+
+    if (!serviceEnabled) {
+      _showCupertinoLocationServiceDialog();
+    } else if (permission == LocationPermission.denied) {
+      // Handle permission denied case
+      // You can show another dialog to request permission
+    }
+  }
+
   void _showCupertinoLocationServiceDialog() {
     showCupertinoDialog(
       context: context,
       builder: (context) => CupertinoAlertDialog(
         title: const Text("Location Service Disabled"),
-        content: const Text("Please enable location services to continue."),
+        content: const Text(
+          "Location services are disabled. Please enable them in your device settings to continue.",
+        ),
         actions: [
           CupertinoDialogAction(
             isDefaultAction: true,
@@ -113,7 +129,7 @@ class _MapPageState extends State<MapPage> {
           CupertinoDialogAction(
             isDestructiveAction: false,
             onPressed: () {
-              Geolocator.openLocationSettings();
+              Geolocator.openLocationSettings(); // Open location settings directly
               Navigator.of(context).pop();
             },
             child: const Text("Open Settings"),
@@ -122,6 +138,7 @@ class _MapPageState extends State<MapPage> {
       ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {

@@ -74,8 +74,7 @@ class _LoginPageState extends State<LoginPage> {
             dataStatus: '',
           );
 
-          final markLoginResponse =
-              await markLoginViewModel.markLogin(token!, markLoginModel);
+          final markLoginResponse = await markLoginViewModel.markLogin(token!, markLoginModel);
 
           if (markLoginResponse is String &&
               markLoginResponse == "Device Logged-In successfully.") {

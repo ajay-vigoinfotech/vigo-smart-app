@@ -293,6 +293,12 @@ class SessionManager {
     await prefs.setString('punchInImagePath', path);
   }
 
+  // Save punch-in image path to shared preferences
+  Future<void> savePunchOutPath(String path) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('savePunchOutPath', path);
+  }
+
 // Get punch-in image path from shared preferences
   Future<String?> getPunchInPath() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'package:vigo_smart_app/features/auth/model/getlastselfieattendancemodel.dart';
 import '../../../core/utils.dart';
@@ -19,6 +20,8 @@ class MarkdutyPage extends StatefulWidget {
 }
 
 class _MarkdutyPageState extends State<MarkdutyPage> {
+  String? savedImagePath;
+  String? savedPunchOutImagePath;
   String? punchTimeDateIn;
   String? punchTimeDateOut;
   String? timeDateDisplay;
@@ -27,12 +30,15 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   LatLng? currentLocation;
   String? uniqueId;
   String? inKm;
-  String? outKm; // Declared uniqueId here so it persists across IN and OUT
+  String? outKm;
+  // late FutureBuilder<AttendanceTable> _attData;
   final picker = ImagePicker();
   final SessionManager sessionManager = SessionManager();
 
   @override
   void initState() {
+    _loadPunchInImageFromSP();
+    _loadPunchOutImageFromSP();
     _lastSelfieAttendance();
     _loadCurrentDateTime();
     super.initState();
@@ -69,25 +75,92 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
             children: [
               Column(
                 children: [
-                  Text('$punchTimeDateIn'),
-                  Text('$inKm'),
-                  ElevatedButton(
-                    onPressed: () {
-                      _onMarkIn(); // Mark In button action
-                    },
-                    child: const Text('IN'),
+                  Text(
+                    '$punchTimeDateIn',
+                    style: const TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.bold),
+                  ),
+                  // FutureBuilder(future:_attData, builder: builder),
+                  Text(
+                    '$inKm',
+                    style: const TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 5),
+                  if (savedImagePath != null && savedImagePath!.isNotEmpty)
+                    Image.file(
+                      File(savedImagePath!),
+                      height: 130,
+                      width: 120,
+                    ),
+                  const SizedBox(height: 15),
+                  SizedBox(
+                    height: 70,
+                    width: 100,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        elevation: 5,
+                        backgroundColor: Colors.green,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      onPressed: () {
+                        _onMarkIn(); // Mark In button action
+                      },
+                      child: const Text(
+                        'IN',
+                        style: TextStyle(
+                            fontSize: 22,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
                   ),
                 ],
               ),
               Column(
                 children: [
-                  Text('$punchTimeDateOut'),
-                  Text('$outKm'),
-                  ElevatedButton(
-                    onPressed: () {
-                      _onMarkOut(); // Mark Out button action
-                    },
-                    child: const Text('OUT'),
+                  Text(
+                    '$punchTimeDateOut',
+                    style: const TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    '$outKm',
+                    style: const TextStyle(
+                        fontSize: 14, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 5),
+                  if (savedPunchOutImagePath != null && savedPunchOutImagePath!.isNotEmpty)
+                    Image.file(
+                      File(savedPunchOutImagePath!),
+                      height: 130,
+                      width: 120,
+                    ),
+                  const SizedBox(height: 15),
+                  SizedBox(
+                    height: 70,
+                    width: 100,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        elevation: 5,
+                        backgroundColor: Colors.red,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      onPressed: () {
+                        _onMarkOut(); // Mark Out button action
+                      },
+                      child: const Text(
+                        'OUT',
+                        style: TextStyle(
+                            fontSize: 22,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -128,6 +201,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     setState(() {
       timeDateDisplay = currentDateTime;
       timeDateIn = currentDateTime;
+      timeDateOut = currentDateTime;
     });
     return currentDateTime;
   }
@@ -138,186 +212,227 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     });
   }
 
+  // Load Punch In image from SharedPreferences
+  Future<void> _loadPunchInImageFromSP() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      savedImagePath = prefs.getString('savedImagePath'); // Load image path
+    });
+  }
+
+  // Save Punch In image path to SharedPreferences
+  Future<void> _saveImageToSP(String imagePath) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('savedImagePath', imagePath); // Save image path
+    setState(() {
+      savedImagePath = imagePath; // Update UI with new image
+    });
+  }
+
+  // Load Punch Out image from SharedPreferences
+  Future<void> _loadPunchOutImageFromSP() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      savedPunchOutImagePath =
+          prefs.getString('savedPunchOutImagePath'); // Load image path
+    });
+  }
+
+  // Save Punch Out image path to SharedPreferences
+  Future<void> _savePunchOutImageToSP(String imagePath) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString('savedPunchOutImagePath', imagePath); // Save image path
+    setState(() {
+      savedPunchOutImagePath = imagePath; // Update UI with new image
+    });
+  }
+
   // Function called when 'Mark In' is clicked
   Future<void> _onMarkIn() async {
-    String? comment;
-    File? image;
-    timeDateIn = DateFormat('dd/MM/yyyy hh:mm')
-        .format(DateTime.now()); // Capture IN time
-
     final ImagePicker picker = ImagePicker();
     final XFile? markInImage =
         await picker.pickImage(source: ImageSource.camera);
 
     if (markInImage != null) {
-      image = File(markInImage.path);
-    }
+      final image = File(markInImage.path);
+      timeDateIn = DateFormat('dd/MM/yyyy hh:mm a').format(DateTime.now());
 
-    await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Mark In Details"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (image != null)
-                Image.file(
-                  image,
-                  height: 100,
-                  width: 100,
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Mark In Details"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.file(image, height: 100, width: 100),
+                TextField(
+                  decoration: const InputDecoration(labelText: 'Comment'),
+                  onChanged: (value) {
+                    // Handle comment input
+                  },
                 ),
-              TextField(
-                decoration: const InputDecoration(labelText: 'Comment'),
-                onChanged: (value) {
-                  comment = value;
+                TextField(
+                  decoration: const InputDecoration(labelText: 'KM'),
+                  keyboardType: TextInputType.number,
+                  onChanged: (value) {
+                    inKm = value;
+                  },
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog
                 },
+                child: const Text("Cancel"),
               ),
-              TextField(
-                decoration: const InputDecoration(labelText: 'KM'),
-                keyboardType: TextInputType.number,
-                onChanged: (value) {
-                  inKm = value; // Store inKm value when Mark In is clicked
+              ElevatedButton(
+                onPressed: () async {
+                  if (inKm != null && inKm!.isNotEmpty) {
+                    // Save image path and punch in data
+                    await _saveImageToSP(markInImage.path);
+
+                    uniqueId = const Uuid().v4(); // Generate unique ID
+                    SelfieAttendanceModel selfieAttendanceModel =
+                        SelfieAttendanceModel(
+                      table: [
+                        AttendanceTable(
+                          uniqueId: uniqueId,
+                          dateTimeIn: timeDateIn,
+                          inKmsDriven: '$inKm KM',
+                          dateTimeOut: "-",
+                          outKmsDriven: "-",
+                          siteId: "",
+                          siteName: "-",
+                        ),
+                      ],
+                    );
+
+                    // Save attendance model using sessionManager
+                    await sessionManager
+                        .saveSelfieAttendance(selfieAttendanceModel);
+
+                    Navigator.of(context).pop();
+                    _loadPunchInImageFromSP(); // Load image into UI
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text(
+                        'Please fill in all fields.',
+                        style: TextStyle(),
+                      )),
+                    );
+                  }
                 },
+                child: const Text("Submit"),
               ),
             ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog without action
-              },
-              child: const Text("Cancel"),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (inKm != null &&
-                    markInImage != null &&
-                    currentLocation != null) {
-                  await sessionManager.savePunchInPath(markInImage.path);
-
-                  uniqueId = const Uuid().v4(); // Generates a unique ID only for Mark In
-                  SelfieAttendanceModel selfieAttendanceModel =
-                      SelfieAttendanceModel(
-                    table: [
-                      AttendanceTable(
-                        uniqueId: uniqueId,
-                        dateTimeIn: timeDateDisplay, // Capture the IN time
-                        inKmsDriven: '$inKm KM', // Capture the KM input
-                        dateTimeOut: "-", // Set to null for Mark Out
-                        outKmsDriven: "-", // Set to null for Mark Out
-                        siteId: "", // Set your site ID logic
-                        siteName: "-", // Set your site name logic
-                      ),
-                    ],
-                  );
-
-                  // Save the model in SharedPreferences using the session manager
-                  await sessionManager
-                      .saveSelfieAttendance(selfieAttendanceModel);
-                  // Close the dialog
-                  Navigator.of(context).pop();
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please fill in all fields.')),
-                  );
-                }
-              },
-              child: const Text("Submit"),
-            ),
-          ],
-        );
-      },
-    );
+          );
+        },
+      );
+    }
   }
 
   // Function called when 'Mark Out' is clicked
   Future<void> _onMarkOut() async {
-    String? outKm;
+    final ImagePicker picker = ImagePicker();
+    final XFile? markOutImage =
+        await picker.pickImage(source: ImageSource.camera);
 
-    timeDateOut = DateFormat('dd/MM/yyyy hh:mm a')
-        .format(DateTime.now()); // Capture OUT time
+    if (markOutImage != null) {
+      final image = File(markOutImage.path);
+      timeDateOut = DateFormat('dd/MM/yyyy hh:mm a').format(DateTime.now());
 
-    await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Mark Out Details"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                decoration: const InputDecoration(labelText: 'OUT KM '),
-                keyboardType: TextInputType.number,
-                onChanged: (value) {
-                  outKm = value;
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Mark Out Details"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.file(image, height: 100, width: 100),
+                TextField(
+                  decoration: const InputDecoration(labelText: 'OUT KM'),
+                  keyboardType: TextInputType.number,
+                  onChanged: (value) {
+                    outKm = value;
+                  },
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog
                 },
+                child: const Text("Cancel"),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  if (outKm != null && outKm!.isNotEmpty) {
+                    // Save image path and punch out data
+                    await _savePunchOutImageToSP(markOutImage.path);
+
+                    SelfieAttendanceModel selfieAttendanceModel =
+                        SelfieAttendanceModel(
+                      table: [
+                        AttendanceTable(
+                          uniqueId: uniqueId,
+                          dateTimeIn: timeDateIn,
+                          inKmsDriven: '$inKm',
+                          dateTimeOut: timeDateOut,
+                          outKmsDriven: '$outKm KM',
+                          siteId: "",
+                          siteName: "-",
+                        ),
+                      ],
+                    );
+                    // Save attendance model using sessionManager
+                    await sessionManager
+                        .saveSelfieAttendance(selfieAttendanceModel);
+
+                    Navigator.of(context).pop();
+                    _loadPunchOutImageFromSP(); // Load image into UI
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text('Please fill in all fields.')),
+                    );
+                  }
+                },
+                child: const Text("Submit"),
               ),
             ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog without action
-              },
-              child: const Text("Cancel"),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (outKm != null && outKm!.isNotEmpty) {
-                  // Use the same uniqueId from IN for OUT
-                  SelfieAttendanceModel selfieAttendanceModel =
-                      SelfieAttendanceModel(
-                    table: [
-                      AttendanceTable(
-                        uniqueId: uniqueId, // Use the same unique ID
-                        dateTimeIn: timeDateIn, // Keep the IN time
-                        inKmsDriven: '$inKm', // Previous km (if needed)
-                        dateTimeOut: timeDateDisplay, // Capture OUT time
-                        outKmsDriven: '$outKm KM', // Capture OUT KM
-                        siteId: null, // Set your site ID logic
-                        siteName: null, // Set your site name logic
-                      ),
-                    ],
-                  );
-
-                  // Save the model in SharedPreferences using the session manager
-                  await sessionManager
-                      .saveSelfieAttendance(selfieAttendanceModel);
-
-                  // Close the dialog
-                  Navigator.of(context).pop();
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please fill in all fields.')),
-                  );
-                }
-              },
-              child: const Text("Submit"),
-            ),
-          ],
-        );
-      },
-    );
+          );
+        },
+      );
+    }
   }
 
   Future<void> _lastSelfieAttendance() async {
     final SessionManager sessionManager = SessionManager();
-
     sessionManager.getToken().then((token) async {
       final GetlastselfieattViewModel getlastselfieattViewModel =
           GetlastselfieattViewModel();
-      getlastselfieattViewModel
-          .getLastSelfieAttendance(token!)
-          .then((data1) async {
+      getlastselfieattViewModel.getLastSelfieAttendance(token!).then((data1) {
         sessionManager.getCheckinData().then((data) async {
           debugPrint(data.uniqueId);
+          debugPrint(data.dateTimeIn);
+          debugPrint(data.dateTimeOut);
+          debugPrint(data.inKmsDriven);
+          debugPrint(data.outKmsDriven);
+
           setState(() {
             punchTimeDateIn = data.dateTimeIn;
             timeDateIn = data.dateTimeIn;
             punchTimeDateOut = data.dateTimeOut;
             inKm = data.inKmsDriven;
             outKm = data.outKmsDriven;
+
+            // _attData = AttendanceTable()
           });
         });
       });

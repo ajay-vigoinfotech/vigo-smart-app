@@ -3,6 +3,7 @@ import 'package:vigo_smart_app/features/home/widgets/setting_page.dart';
 import '../../../core/theme/app_pallete.dart';
 import '../../auth/session_manager/session_manager.dart';
 import '../../auth/view/login_page.dart';
+import '../../auth/viewmodel/getlastselfieatt_view_model.dart';
 import '../../auth/viewmodel/getuserdetails_view_model.dart';
 
 class InfoScreen extends StatefulWidget {
@@ -194,29 +195,28 @@ class _InfoScreenState extends State<InfoScreen> {
   }
 }
 
-// Future<void> getToken() async {
-//   final SessionManager sessionManager = SessionManager();
-//
-//   sessionManager.getToken().then((token) async {
-//     final GetlastselfieattViewModel getlastselfieattViewModel =
-//         GetlastselfieattViewModel();
-//     getlastselfieattViewModel.getLastSelfieAttendance(token!).then( (data1) async {
-//       sessionManager.getCheckinData().then((data) async {
-//         print(data.checkinId);
-//         print(data.uniqueId);
-//         print(data.dateTimeIn);
-//         print(data.dateTimeOut);
-//         print(data.inKmsDriven);
-//         print(data.outKmsDriven);
-//         print(data.siteId);
-//         print(data.siteName);
-//       });
-//     });
-//   }
-//   ).catchError((error) {
-//     print('Error: $error');
-//   });
-// }
+Future<void> getToken() async {
+  final SessionManager sessionManager = SessionManager();
+
+  sessionManager.getToken().then((token) async {
+    final GetlastselfieattViewModel getlastselfieattViewModel =
+        GetlastselfieattViewModel();
+    getlastselfieattViewModel.getLastSelfieAttendance(token!).then( (data1) async {
+      sessionManager.getCheckinData().then((data) async {
+        print(data.uniqueId);
+        print(data.dateTimeIn);
+        print(data.dateTimeOut);
+        print(data.inKmsDriven);
+        print(data.outKmsDriven);
+        print(data.siteId);
+        print(data.siteName);
+      });
+    });
+  }
+  ).catchError((error) {
+    print('Error: $error');
+  });
+}
 
 // Future<void> getCurrentDateTime() async {
 //   final sessionManager = SessionManager();
