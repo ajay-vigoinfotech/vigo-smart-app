@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:vigo_smart_app/features/home/widgets/setting_page.dart';
 import 'package:vigo_smart_app/features/markduty/view/markduty_page.dart';
-import 'package:vigo_smart_app/features/punchHistory/view/punch_history.dart';
 import '../../../core/constants/constants.dart';
 import '../../../core/strings/strings.dart';
 import '../../../core/theme/app_pallete.dart';
 import '../../auth/session_manager/session_manager.dart';
-import '../../markduty/view/AttendancePage.dart';
 import '../../markduty/view/mark_duty_page.dart';
 import '../widgets/home_screen_card.dart';
 import '../widgets/info_screen.dart';
@@ -34,7 +32,7 @@ class _HomePageState extends State<HomePage> {
       'icon': AppConstants.punchHistoryIcon,
       'name': Strings.punchHistory,
       'color': Pallete.blueColor,
-      'page':  AttendancePage(),
+      'page':  const MarkdutyPage(),
     },
     {
       'code': 'SyncData',
