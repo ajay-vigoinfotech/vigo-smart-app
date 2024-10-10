@@ -1,3 +1,4 @@
+// import 'dart:async';
 // import 'dart:io';
 // import 'package:flutter/material.dart';
 // import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -22,12 +23,13 @@
 // class _MarkdutyPageState extends State<MarkdutyPage> {
 //   String? savedImagePath;
 //   String? savedPunchOutImagePath;
-//   String? punchIn;
-//   String? punchOut;
+//   String? punchTimeDateIn;
+//   String? punchTimeDateOut;
 //   String? timeDateDisplay;
 //   String? timeDateIn;
 //   String? timeDateOut;
 //   LatLng? currentLocation;
+//
 //   String? uniqueId;
 //   String? inKm;
 //   String? outKm;
@@ -76,7 +78,7 @@
 //               Column(
 //                 children: [
 //                   Text(
-//                     '$punchIn',
+//                     '$punchTimeDateIn',
 //                     style: const TextStyle(
 //                         fontSize: 14, fontWeight: FontWeight.bold),
 //                   ),
@@ -122,7 +124,7 @@
 //               Column(
 //                 children: [
 //                   Text(
-//                     '$punchOut',
+//                     '$punchTimeDateOut',
 //                     style: const TextStyle(
 //                         fontSize: 14, fontWeight: FontWeight.bold),
 //                   ),
@@ -377,7 +379,6 @@
 //                   if (outKm != null && outKm!.isNotEmpty) {
 //                     // Save image path and punch out data
 //                     await _savePunchOutImageToSP(markOutImage.path);
-//
 //                     SelfieAttendanceModel selfieAttendanceModel =
 //                     SelfieAttendanceModel(
 //                       table: [
@@ -393,8 +394,7 @@
 //                       ],
 //                     );
 //                     // Save attendance model using sessionManager
-//                     await sessionManager
-//                         .saveSelfieAttendance(selfieAttendanceModel);
+//                     await sessionManager.saveSelfieAttendance(selfieAttendanceModel);
 //
 //                     Navigator.of(context).pop();
 //                     _loadPunchOutImageFromSP(); // Load image into UI
@@ -414,19 +414,50 @@
 //     }
 //   }
 //
+//   // Future<void> _lastSelfieAttendance() async {
+//   //   final SessionManager sessionManager = SessionManager();
+//   //   sessionManager.getToken().then((token) async {
+//   //     final GetlastselfieattViewModel getlastselfieattViewModel =
+//   //     GetlastselfieattViewModel();
+//   //     getlastselfieattViewModel.getLastSelfieAttendance(token!).then((data1) {
+//   //       sessionManager.getCheckinData().then((data) async {
+//   //         debugPrint(data.dateTimeIn);
+//   //         debugPrint(data.dateTimeOut);
+//   //         debugPrint(data.inKmsDriven);
+//   //         debugPrint(data.outKmsDriven);
+//   //
+//   //         setState(() {
+//   //           timeDateIn = data.dateTimeIn;
+//   //           timeDateOut = data.dateTimeOut;
+//   //           inKm = data.inKmsDriven;
+//   //           outKm = data.outKmsDriven;
+//   //         });
+//   //       });
+//   //     });
+//   //   }).catchError((error) {
+//   //     debugPrint('Error: $error');
+//   //   });
+//   // }
+//
 //   Future<void> _lastSelfieAttendance() async {
-//     final SessionManager sessionManager = SessionManager();
 //     sessionManager.getToken().then((token) async {
 //       final GetlastselfieattViewModel getlastselfieattViewModel =
 //       GetlastselfieattViewModel();
 //       getlastselfieattViewModel.getLastSelfieAttendance(token!).then((data1) {
 //         sessionManager.getCheckinData().then((data) async {
+//           debugPrint(data.uniqueId);
 //           debugPrint(data.dateTimeIn);
 //           debugPrint(data.dateTimeOut);
+//           debugPrint(data.inKmsDriven);
+//           debugPrint(data.outKmsDriven);
 //
 //           setState(() {
-//             punchIn = data.dateTimeIn;
-//             punchOut = data.dateTimeOut;
+//             punchTimeDateIn = data.dateTimeIn;
+//             timeDateIn = data.dateTimeIn;
+//             punchTimeDateOut = data.dateTimeOut;
+//             inKm = data.inKmsDriven;
+//             outKm = data.outKmsDriven;
+//             // _attData = AttendanceTable()
 //           });
 //         });
 //       });
@@ -434,33 +465,4 @@
 //       debugPrint('Error: $error');
 //     });
 //   }
-//
-// // Future<void> _lastSelfieAttendance() async {
-// //   final SessionManager sessionManager = SessionManager();
-// //   sessionManager.getToken().then((token) async {
-// //     final GetlastselfieattViewModel getlastselfieattViewModel =
-// //     GetlastselfieattViewModel();
-// //     getlastselfieattViewModel.getLastSelfieAttendance(token!).then((data1) {
-// //       sessionManager.getCheckinData().then((data) async {
-// //         debugPrint(data.uniqueId);
-// //         debugPrint(data.dateTimeIn);
-// //         debugPrint(data.dateTimeOut);
-// //         debugPrint(data.inKmsDriven);
-// //         debugPrint(data.outKmsDriven);
-// //
-// //         setState(() {
-// //           punchTimeDateIn = data.dateTimeIn;
-// //           timeDateIn = data.dateTimeIn;
-// //           punchTimeDateOut = data.dateTimeOut;
-// //           inKm = data.inKmsDr iven;
-// //           outKm = data.outKmsDriven;
-// //
-// //           // _attData = AttendanceTable()
-// //         });
-// //       });
-// //     });
-// //   }).catchError((error) {
-// //     debugPrint('Error: $error');
-// //   });
-// // }
 // }
