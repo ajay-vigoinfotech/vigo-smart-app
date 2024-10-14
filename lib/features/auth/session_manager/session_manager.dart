@@ -228,24 +228,29 @@ class SessionManager {
     );
   }
 
-  //save SelfieAttendance
-  Future<void> saveSelfieAttendance(
-      SelfieAttendanceModel selfieAttendanceModel) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(
-        _uniqueId, selfieAttendanceModel.table![0].uniqueId.toString());
-    await prefs.setString(
-        _dateTimeIn, selfieAttendanceModel.table![0].dateTimeIn.toString());
-    await prefs.setString(
-        _dateTimeOut, selfieAttendanceModel.table![0].dateTimeOut.toString());
-    await prefs.setString(
-        _inKmsDriven, selfieAttendanceModel.table![0].inKmsDriven.toString());
-    await prefs.setString(
-        _outKmsDriven, selfieAttendanceModel.table![0].outKmsDriven.toString());
-    await prefs.setString(
-        _siteId, selfieAttendanceModel.table![0].siteId.toString());
-    await prefs.setString(
-        _siteName, selfieAttendanceModel.table![0].siteName.toString());
+  Future<void> saveSelfieAttendance(SelfieAttendanceModel selfieAttendanceModel) async {
+    if (selfieAttendanceModel.table != null && selfieAttendanceModel.table!.isNotEmpty) {
+      final prefs = await SharedPreferences.getInstance();
+
+      await prefs.setString(
+          _uniqueId, selfieAttendanceModel.table![0].uniqueId?.toString() ?? "");
+      await prefs.setString(
+          _dateTimeIn, selfieAttendanceModel.table![0].dateTimeIn?.toString() ?? "");
+      await prefs.setString(
+          _dateTimeOut, selfieAttendanceModel.table![0].dateTimeOut?.toString() ?? "");
+      await prefs.setString(
+          _inKmsDriven, selfieAttendanceModel.table![0].inKmsDriven?.toString() ?? "");
+      await prefs.setString(
+          _outKmsDriven, selfieAttendanceModel.table![0].outKmsDriven?.toString() ?? "");
+      await prefs.setString(
+          _siteId, selfieAttendanceModel.table![0].siteId?.toString() ?? "");
+      await prefs.setString(
+          _siteName, selfieAttendanceModel.table![0].siteName?.toString() ?? "");
+
+      print('Selfie Attendance saved successfully!');
+    } else {
+      print('Error: SelfieAttendanceModel table is null or empty.');
+    }
   }
 
   //Get SelfieAttendance

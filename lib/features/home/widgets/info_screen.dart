@@ -21,6 +21,7 @@ class _InfoScreenState extends State<InfoScreen> {
   String? compCode;
   String? compName;
   String? name;
+  String? punchTimeDateIn;
 
   @override
   void initState() {
@@ -87,10 +88,9 @@ class _InfoScreenState extends State<InfoScreen> {
   Future<void> lastSelfieAtt(
       SelfieAttendanceModel selfieAttendanceModel) async {
     final SessionManager sessionManager = SessionManager();
-
     try {
       await sessionManager.saveSelfieAttendance(selfieAttendanceModel);
-      print('Selfie Attendance saved successfully!');
+      print('Selfie Attendance saved successfully!!!!!!!!!');
     } catch (error) {
       print('Error saving selfie attendance: $error');
     }
