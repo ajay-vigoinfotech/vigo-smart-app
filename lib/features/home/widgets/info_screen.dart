@@ -217,12 +217,6 @@ class _InfoScreenState extends State<InfoScreen> {
 //     getlastselfieattViewModel.getLastSelfieAttendance(token!).then( (data1) async {
 //       sessionManager.getCheckinData().then((data) async {
 //         print(data.uniqueId);
-//         print(data.dateTimeIn);
-//         print(data.dateTimeOut);
-//         print(data.inKmsDriven);
-//         print(data.outKmsDriven);
-//         print(data.siteId);
-//         print(data.siteName);
 //       });
 //     });
 //   }
@@ -261,10 +255,3 @@ class _InfoScreenState extends State<InfoScreen> {
 //     print('Support Contact: $supportContact');
 //   }
 
-// Future<void> getToken() async {
-//   final sessionManager = SessionManager();
-//
-//   final checkSessionViewModel = CheckSessionModel();
-//
-//   final checkSession = await CheckSessionViewModel();
-// }

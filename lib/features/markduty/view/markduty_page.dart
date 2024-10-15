@@ -7,10 +7,11 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'package:vigo_smart_app/features/auth/model/getlastselfieattendancemodel.dart';
+import 'package:vigo_smart_app/features/markduty/model/markselfieattendance_model.dart';
 import '../../../core/utils.dart';
 import '../../auth/session_manager/session_manager.dart';
-import '../../auth/viewmodel/getlastselfieatt_view_model.dart';
 import '../viewmodel/get_current_date_view_model.dart';
+import '../viewmodel/mark_selfie_view_model.dart';
 import '../widgets/map_page.dart';
 
 class MarkdutyPage extends StatefulWidget {
@@ -27,12 +28,15 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   String? punchTimeDateOut;
   String? timeDateDisplay;
   LatLng? currentLocation;
-  String? uniqueId;
+  String _formattedLocation = '';
+  String? uniqueIdv4;
   String? inKm;
   String? outKm;
+  String? newpunchTimeDateIn;
   // late FutureBuilder<AttendanceTable> _attData;
   final picker = ImagePicker();
   final SessionManager sessionManager = SessionManager();
+  final MarkSelfieAttendance markSelfieAttendance = MarkSelfieAttendance();
 
   @override
   void initState() {
@@ -80,7 +84,9 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
           SizedBox(
             height: 270,
             width: double.infinity,
-            child: MapPage(locationReceived: _onLocationReceived),
+            child: MapPage(
+              locationReceived: _onLocationReceived, // Pass the function
+            ),
           ),
           const SizedBox(height: 25),
           Row(
@@ -118,12 +124,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                         ),
                       ),
                       onPressed: () {
-                        if ((punchTimeDateIn == null &&
-                                (punchTimeDateOut == null ||
-                                    punchTimeDateOut == "-")) ||
-                            (punchTimeDateIn != null &&
-                                punchTimeDateOut != null &&
-                                punchTimeDateOut != "-")) {
+                        if ((punchTimeDateIn == null && (punchTimeDateOut == null || punchTimeDateOut == "-")) || (punchTimeDateIn != null && punchTimeDateOut != null && punchTimeDateOut != "-")) {
                           setState(() {
                             _onMarkIn();
                           });
@@ -259,9 +260,9 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     return currentDateTime;
   }
 
-  void _onLocationReceived(LatLng latLng) {
+  void _onLocationReceived(String formattedLocation) {
     setState(() {
-      currentLocation = latLng;
+      _formattedLocation = formattedLocation; // Store the received location
     });
   }
 
@@ -349,13 +350,13 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                     // Save image path and punch in data
                     await _saveImageToSP(markInImage.path);
 
-                    uniqueId = const Uuid().v4();
+                    uniqueIdv4 = const Uuid().v4();
 
                     SelfieAttendanceModel selfieAttendanceModel =
                         SelfieAttendanceModel(
                       table: [
                         AttendanceTable(
-                          uniqueId: uniqueId,
+                          uniqueId: uniqueIdv4,
                           dateTimeIn: punchTimeDateIn,
                           inKmsDriven: '$inKm KM',
                           dateTimeOut: "-",
@@ -367,8 +368,53 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                     );
 
                     // Save attendance model using sessionManager
-                    await sessionManager
-                        .saveSelfieAttendance(selfieAttendanceModel);
+                    await sessionManager.saveSelfieAttendance(selfieAttendanceModel);
+
+                    String? token = await sessionManager.getToken(); // Assuming you have a method to retrieve the token
+                    MarkSelfieAttendance markSelfieAttendance  = MarkSelfieAttendance();
+                    final String deviceDetails = await Utils.getDeviceDetails(context);
+                    final String appVersion = await Utils.getAppVersion();
+                    final String ipAddress = await Utils.getIpAddress();
+                    final String uniqueId = await Utils.getUniqueID();
+                    final int battery = await Utils.getBatteryLevel();
+
+                    punchTimeDateIn = DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now());
+
+                    final String fullDeviceDetails = "$deviceDetails/$uniqueId/$ipAddress";
+
+                    String apiResponse = await markSelfieAttendance.markAttendance(token!, PunchDetails(
+                        deviceDetails: fullDeviceDetails,
+                        deviceImei: uniqueId,
+                        deviceIp: ipAddress,
+                        userPhoto: '',
+                        remark: '-',
+                        isOffline: '',
+                        version: appVersion,
+                        dataStatus: '',
+                        checkInId: '$uniqueIdv4',
+                        punchAction: 'IN',
+                        locationAccuracy: '',
+                        locationSpeed: '',
+                        batteryStatus: '$battery',
+                        locationStatus: '',
+                        time: '$punchTimeDateIn',
+                        latLong: _formattedLocation,
+                        kmsDriven: '$inKm',
+                        siteId: '-',
+                        locationId: '',
+                        distance: '',
+                    ));
+
+                    if (apiResponse == '200') {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Attendance marked successfully')),
+                      );
+                    } else {
+                      // Show error if API failed
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Failed to mark attendance: $apiResponse')),
+                      );
+                    }
 
                     Navigator.of(context).pop();
                     _loadPunchInImageFromSP(); // Load image into UI
@@ -436,7 +482,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                         SelfieAttendanceModel(
                       table: [
                         AttendanceTable(
-                          uniqueId: uniqueId,
+                          uniqueId: uniqueIdv4,
                           dateTimeIn: punchTimeDateIn,
                           inKmsDriven: '$inKm',
                           dateTimeOut: punchTimeDateOut,
@@ -447,8 +493,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                       ],
                     );
                     // Save attendance model using sessionManager
-                    await sessionManager
-                        .saveSelfieAttendance(selfieAttendanceModel);
+                    await sessionManager.saveSelfieAttendance(selfieAttendanceModel);
 
                     Navigator.of(context).pop();
                     _loadPunchOutImageFromSP(); // Load image into UI
@@ -469,22 +514,17 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   }
 
   // Future<void> _lastSelfieAttendance() async {
-  //   final SessionManager sessionManager = SessionManager();
   //   sessionManager.getToken().then((token) async {
   //     final GetlastselfieattViewModel getlastselfieattViewModel =
-  //     GetlastselfieattViewModel();
+  //         GetlastselfieattViewModel();
   //     getlastselfieattViewModel.getLastSelfieAttendance(token!).then((data1) {
   //       sessionManager.getCheckinData().then((data) async {
-  //         debugPrint(data.dateTimeIn);
-  //         debugPrint(data.dateTimeOut);
-  //         debugPrint(data.inKmsDriven);
-  //         debugPrint(data.outKmsDriven);
-  //
   //         setState(() {
-  //           timeDateIn = data.dateTimeIn;
-  //           timeDateOut = data.dateTimeOut;
+  //           punchTimeDateIn = data.dateTimeIn;
+  //           punchTimeDateOut = data.dateTimeOut;
   //           inKm = data.inKmsDriven;
   //           outKm = data.outKmsDriven;
+  //           // _attData = AttendanceTable()
   //         });
   //       });
   //     });
@@ -492,24 +532,4 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   //     debugPrint('Error: $error');
   //   });
   // }
-
-  Future<void> _lastSelfieAttendance() async {
-    sessionManager.getToken().then((token) async {
-      final GetlastselfieattViewModel getlastselfieattViewModel =
-          GetlastselfieattViewModel();
-      getlastselfieattViewModel.getLastSelfieAttendance(token!).then((data1) {
-        sessionManager.getCheckinData().then((data) async {
-          setState(() {
-            punchTimeDateIn = data.dateTimeIn;
-            punchTimeDateOut = data.dateTimeOut;
-            inKm = data.inKmsDriven;
-            outKm = data.outKmsDriven;
-            // _attData = AttendanceTable()
-          });
-        });
-      });
-    }).catchError((error) {
-      debugPrint('Error: $error');
-    });
-  }
 }

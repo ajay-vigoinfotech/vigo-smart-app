@@ -59,8 +59,7 @@ class _LoginPageState extends State<LoginPage> {
           final int battery = await Utils.getBatteryLevel();
           final String? fcmToken = await Utils.getFCMToken();
 
-          final String fullDeviceDetails =
-              "$deviceDetails/$uniqueId/$ipAddress";
+          final String fullDeviceDetails = "$deviceDetails/$uniqueId/$ipAddress";
 
           final markLoginModel = MarkLoginModel(
             deviceDetails: fullDeviceDetails,

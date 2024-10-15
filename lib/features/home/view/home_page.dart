@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:vigo_smart_app/features/home/widgets/setting_page.dart';
 import 'package:vigo_smart_app/features/markduty/view/markduty_page.dart';
+import 'package:vigo_smart_app/features/punchHistory/view/punch_history.dart';
 import '../../../core/constants/constants.dart';
 import '../../../core/strings/strings.dart';
 import '../../../core/theme/app_pallete.dart';
 import '../../auth/session_manager/session_manager.dart';
-import '../../markduty/view/mark_duty_page.dart';
 import '../widgets/home_screen_card.dart';
 import '../widgets/info_screen.dart';
 
@@ -32,7 +32,7 @@ class _HomePageState extends State<HomePage> {
       'icon': AppConstants.punchHistoryIcon,
       'name': Strings.punchHistory,
       'color': Pallete.blueColor,
-      'page':  const MarkdutyPage(),
+      'page':  const PunchHistory(),
     },
     {
       'code': 'SyncData',
@@ -53,84 +53,84 @@ class _HomePageState extends State<HomePage> {
       'icon': AppConstants.markDutyIcon,
       'name': Strings.calendarViewApp,
       'color': Pallete.btn1,
-      'page': const MarkDutyPage(),
+      'page': const MarkdutyPage(),
     },
     {
       'code': 'SupervisorQRDutyManagementApp',
       'icon': AppConstants.markDutyIcon,
       'name': Strings.supervisorQRDutyManagementApp,
       'color': Pallete.btn1,
-      'page': const MarkDutyPage(),
+      'page': const MarkdutyPage(),
     },
     {
       'code': 'FieldReportingQRApp',
       'icon': AppConstants.markDutyIcon,
       'name': Strings.fieldReportingQRApp,
       'color': Pallete.btn1,
-      'page': const MarkDutyPage(),
+      'page': const MarkdutyPage(),
     },
     {
       'code': 'SiteReportingApp',
       'icon': AppConstants.markDutyIcon,
       'name': Strings.siteReportingApp,
       'color': Pallete.btn1,
-      'page': const MarkDutyPage(),
+      'page': const MarkdutyPage(),
     },
     {
       'code': 'SiteReportingQRApp',
       'icon': AppConstants.markDutyIcon,
       'name': Strings.siteReportingQRApp,
       'color': Pallete.btn1,
-      'page': const MarkDutyPage(),
+      'page': const MarkdutyPage(),
     },
     {
       'code': 'TeamViewApp',
       'icon': AppConstants.markDutyIcon,
       'name': Strings.teamViewApp,
       'color': Pallete.btn1,
-      'page': const MarkDutyPage(),
+      'page': const MarkdutyPage(),
     },
     {
       'code': 'OtherAttendanceApp',
       'icon': AppConstants.markDutyIcon,
       'name': Strings.otherAttendanceApp,
       'color': Pallete.btn1,
-      'page': const MarkDutyPage(),
+      'page': const MarkdutyPage(),
     },
     {
       'code': 'GuardsTeamView',
       'icon': AppConstants.markDutyIcon,
       'name': Strings.guardsTeamView,
       'color': Pallete.btn1,
-      'page': const MarkDutyPage(),
+      'page': const MarkdutyPage(),
     },
     {
       'code': 'PaySlipApp',
       'icon': AppConstants.markDutyIcon,
       'name': Strings.paySlipApp,
       'color': Pallete.btn1,
-      'page': const MarkDutyPage(),
+      'page': const MarkdutyPage(),
     },
     {
       'code': 'RecruitmentApp',
       'icon': AppConstants.markDutyIcon,
       'name': Strings.recruitmentApp,
       'color': Pallete.btn1,
-      'page': const MarkDutyPage(),
+      'page': const MarkdutyPage(),
     },
     {
       'code': 'CalendarViewApp',
       'icon': AppConstants.markDutyIcon,
       'name': Strings.calendarViewApp,
       'color': Pallete.btn1,
-      'page': const MarkDutyPage(),
+      'page': const MarkdutyPage(),
     },
     {
       'code': 'LeaveMgmtApp',
       'icon': AppConstants.markDutyIcon,
       'name': Strings.leaveMgmtApp,
       'color': Pallete.btn1,
-      'page': const MarkDutyPage(),
+      'page': const MarkdutyPage(),
     },
   ];
 

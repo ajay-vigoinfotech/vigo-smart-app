@@ -9,6 +9,16 @@ class PunchDetails {
   String dataStatus;
   String checkInId;
   String punchAction;
+  String locationAccuracy;
+  String locationSpeed;
+  String batteryStatus;
+  String locationStatus;
+  String time;
+  String latLong;
+  String kmsDriven;
+  String siteId;
+  String locationId;
+  String distance;
 
   PunchDetails({
     required this.deviceDetails,
@@ -21,6 +31,16 @@ class PunchDetails {
     required this.dataStatus,
     required this.checkInId,
     required this.punchAction,
+    required this.locationAccuracy,
+    required this.locationSpeed,
+    required this.batteryStatus,
+    required this.locationStatus,
+    required this.time,
+    required this.latLong,
+    required this.kmsDriven,
+    required this.siteId,
+    required this.locationId,
+    required this.distance,
   });
 
   // Convert the class instance to a map (JSON)
@@ -36,6 +56,16 @@ class PunchDetails {
       'dataStatus': dataStatus,
       'checkInId': checkInId,
       'punchAction': punchAction,
+      'locationAccuracy': locationAccuracy,
+      'locationSpeed': locationSpeed,
+      'batteryStatus': batteryStatus,
+      'locationStatus': locationStatus,
+      'time': time,
+      'latLong': latLong,
+      'kmsDriven': kmsDriven,
+      'siteId': siteId,
+      'locationId': locationId,
+      'distance': distance,
     };
   }
 }

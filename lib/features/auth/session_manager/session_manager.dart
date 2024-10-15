@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vigo_smart_app/features/auth/model/getuserdetails.dart';
+import '../../markduty/viewmodel/mark_selfie_view_model.dart';
 import '../model/getlastselfieattendancemodel.dart';
 
 class SessionManager {
@@ -310,3 +311,14 @@ class SessionManager {
     return prefs.getString('punchInImagePath');
   }
 }
+
+
+//Mark Selfie Attendance
+Future<String?> saveSelfieAttendance(MarkSelfieAttendance markSelfieAttendance) async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  return null;
+}
+
+
+
+

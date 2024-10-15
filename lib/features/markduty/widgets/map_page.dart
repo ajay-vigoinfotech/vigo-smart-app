@@ -5,7 +5,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class MapPage extends StatefulWidget {
-  final Function(LatLng) locationReceived;
+  final Function(String) locationReceived; // Changed to receive a formatted string
   const MapPage({super.key, required this.locationReceived});
 
   @override
@@ -56,14 +56,18 @@ class _MapPageState extends State<MapPage> {
       print(_googlePlex);
 
       _setMarkerAtCurrentLocation();
-      widget.locationReceived(
-          _googlePlex!); // Notify MarkDutyPage with the location
+      widget.locationReceived(_formatLatLng(_googlePlex!)); // Send formatted location
       setState(() {
         _isLoading = false;
       });
     } catch (e) {
-      _showLocationError("Failed to wget the current location of your device");
+      _showLocationError("Failed to get the current location of your device");
     }
+  }
+
+  String _formatLatLng(LatLng latLng) {
+    // Format LatLng to "latitude,longitude"
+    return "${latLng.latitude.toStringAsFixed(7)},${latLng.longitude.toStringAsFixed(7)}";
   }
 
   void _moveCameraToLocation() {
@@ -97,7 +101,6 @@ class _MapPageState extends State<MapPage> {
         .showSnackBar(SnackBar(content: Text(message)));
   }
 
-
   void _checkLocationServiceStatus() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     LocationPermission permission = await Geolocator.checkPermission();
@@ -106,7 +109,6 @@ class _MapPageState extends State<MapPage> {
       _showCupertinoLocationServiceDialog();
     } else if (permission == LocationPermission.denied) {
       // Handle permission denied case
-      // You can show another dialog to request permission
     }
   }
 
@@ -139,37 +141,36 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: _isLoading
           ? const Center(
-              child:
-                  CircularProgressIndicator()) // Show loading indicator while fetching location
+        child: CircularProgressIndicator(),
+      ) // Show loading indicator while fetching location
           : GoogleMap(
-              myLocationButtonEnabled: false,
-              markers: _markers,
-              onMapCreated: (GoogleMapController controller) {
-                _googleMapController = controller;
-                _moveCameraToLocation(); // Move the camera once the map is created
-              },
-              initialCameraPosition: CameraPosition(
-                target: _googlePlex!, // Use the current location once fetched
-                zoom: 16,
-              ),
-              onCameraMove: (CameraPosition position) {
-                _isMapBeingMoved = true;
-              },
-              onCameraIdle: () {
-                if (_isMapBeingMoved) {
-                  Future.delayed(const Duration(seconds: 2), () {
-                    _moveCameraToLocation();
-                    _isMapBeingMoved = false;
-                  });
-                }
-              },
-            ),
+        myLocationButtonEnabled: false,
+        markers: _markers,
+        onMapCreated: (GoogleMapController controller) {
+          _googleMapController = controller;
+          _moveCameraToLocation(); // Move the camera once the map is created
+        },
+        initialCameraPosition: CameraPosition(
+          target: _googlePlex!, // Use the current location once fetched
+          zoom: 16,
+        ),
+        onCameraMove: (CameraPosition position) {
+          _isMapBeingMoved = true;
+        },
+        onCameraIdle: () {
+          if (_isMapBeingMoved) {
+            Future.delayed(const Duration(seconds: 2), () {
+              _moveCameraToLocation();
+              _isMapBeingMoved = false;
+            });
+          }
+        },
+      ),
     );
   }
 }
