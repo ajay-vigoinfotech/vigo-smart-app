@@ -12,27 +12,24 @@ class MarkSelfieAttendance {
     try {
       final response = await _dio.post(
         url,
-        data: punchDetails.toJson(),  // Send punchDetails as JSON
         options: Options(
           headers: {
-            'Authorization': 'Bearer $token',  // Assuming token is needed in Authorization header
-            'Content-Type': 'application/json',  // Ensure content type is JSON
-            'Accept': 'application/json',
-            'connection': 'keep-alive',
+            'Authorization': 'Bearer $token',
             'Accept-Encoding': 'gzip, deflate, br',
             'User-Agent': 'okhttp/4.9.1',
           },
+          contentType: Headers.formUrlEncodedContentType,
         ),
+        data: punchDetails.toJson(),
       );
 
       if (response.statusCode == 200) {
         debugPrint('${response.data}');
-        return response.data.toString();  // Returning response data as string
+        return response.data.toString();
       } else {
         return 'Error: ${response.statusCode} - ${response.statusMessage}';
       }
     } catch (e) {
-      // Handling DioError or any general error
       if (e is DioException) {
         return 'Error occurred: ${e.response?.data ?? e.message}';
       }

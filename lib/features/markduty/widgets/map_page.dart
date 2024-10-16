@@ -6,7 +6,9 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class MapPage extends StatefulWidget {
   final Function(String) locationReceived; // Changed to receive a formatted string
-  const MapPage({super.key, required this.locationReceived});
+  final Function(String) speedReceived; // Changed to receive a formatted string
+  final Function(String) accuracyReceived; // Changed to receive a formatted string
+  const MapPage({super.key, required this.locationReceived, required this.speedReceived, required this.accuracyReceived, });
 
   @override
   State<MapPage> createState() => _MapPageState();
@@ -53,10 +55,13 @@ class _MapPageState extends State<MapPage> {
       Position position = await Geolocator.getCurrentPosition();
 
       _googlePlex = LatLng(position.latitude, position.longitude);
-      print(_googlePlex);
+      // print(_googlePlex);
 
       _setMarkerAtCurrentLocation();
-      widget.locationReceived(_formatLatLng(_googlePlex!)); // Send formatted location
+      widget.locationReceived(_formatLatLng(_googlePlex!));
+      widget.speedReceived(_formatSpeed(position.speed));
+      widget.accuracyReceived(_formatAccuracy(position.accuracy));      // widget.accuracyReceived(_formatAccuracy(position.accuracy));
+      // Send formatted location
       setState(() {
         _isLoading = false;
       });
@@ -68,6 +73,16 @@ class _MapPageState extends State<MapPage> {
   String _formatLatLng(LatLng latLng) {
     // Format LatLng to "latitude,longitude"
     return "${latLng.latitude.toStringAsFixed(7)},${latLng.longitude.toStringAsFixed(7)}";
+  }
+
+  String _formatSpeed(double speed) {
+    // Format speed to "meters per second"
+    return speed.toStringAsFixed(2);
+  }
+
+  String _formatAccuracy(double accuracy) {
+    // Format accuracy to "meters"
+    return accuracy.toStringAsFixed(2);
   }
 
   void _moveCameraToLocation() {

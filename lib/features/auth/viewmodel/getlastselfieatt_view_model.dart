@@ -8,8 +8,7 @@ import '../session_manager/session_manager.dart';
   final Dio _dio = Dio();
   SelfieAttendanceModel? selfieAttendance;
 
-  Future<GetlastselfieattViewModel?> getLastSelfieAttendance(
-      String token) async {
+  Future<GetlastselfieattViewModel?> getLastSelfieAttendance(String token) async {
     try {
       const url = '${AppConstants.baseUrl}/API/Kotlin/GetLastSelfieAttendance';
 
