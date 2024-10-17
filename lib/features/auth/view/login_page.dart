@@ -36,8 +36,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Future<void> _onSubmit() async {
     if (_formKey.currentState?.validate() ?? false) {
-      final username =
-          "${_partnerCodeController.text}/${_userIDController.text}";
+      final username = "${_partnerCodeController.text}/${_userIDController.text}";
       final loginRequest = LoginRequest(
         grantType: Strings.grantType,
         username: username,
@@ -152,16 +151,17 @@ class _LoginPageState extends State<LoginPage> {
                   children: [
                     const SizedBox(height: 50),
                     _buildLoginImage(constraints),
-                    const SizedBox(height: 30),
+                    const SizedBox(height: 10),
                     _buildLoginTitle(),
                     const SizedBox(height: 30),
                     AuthField(
                       labelText: Strings.partnerCode,
                       controller: _partnerCodeController,
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
+                        if (value == null || value.trim().isEmpty) {
                           return 'Partner Code is Required';
                         }
+                        _partnerCodeController.text = value.trim();
                         return null;
                       },
                     ),
@@ -170,9 +170,10 @@ class _LoginPageState extends State<LoginPage> {
                       labelText: Strings.userID,
                       controller: _userIDController,
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
+                        if (value == null || value.trim().isEmpty) {
                           return 'User ID is Required';
                         }
+                        _userIDController.text = value.trim();
                         return null;
                       },
                     ),
@@ -194,7 +195,7 @@ class _LoginPageState extends State<LoginPage> {
                         },
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
+                        if (value == null || value.trim().isEmpty) {
                           return 'Password is Required';
                         }
                         return null;

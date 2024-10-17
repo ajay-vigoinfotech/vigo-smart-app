@@ -6,6 +6,7 @@ import '../../auth/session_manager/session_manager.dart';
 import '../../auth/view/login_page.dart';
 import '../../auth/viewmodel/getuserdetails_view_model.dart';
 
+
 class InfoScreen extends StatefulWidget {
   final double barHeight;
 
@@ -84,7 +85,6 @@ class _InfoScreenState extends State<InfoScreen> {
     });
   }
 
-// Your function to save last selfie attendance
   Future<void> lastSelfieAtt(
       SelfieAttendanceModel selfieAttendanceModel) async {
     final SessionManager sessionManager = SessionManager();
@@ -192,12 +192,11 @@ class _InfoScreenState extends State<InfoScreen> {
                   icon: const Icon(Icons.refresh, color: Colors.white),
                 ),
                 GestureDetector(
-                  onTap: () => //getCurrentDateTime(),
+                  onTap: () => //etToken(),
                       _showBottomSheet(context),
                   child: const CircleAvatar(
                     radius: 28,
                     backgroundColor: Colors.grey,
-                    // backgroundImage: AssetImage('assets/images/login_image.jpeg'), // You can uncomment if using an image
                   ),
                 ),
               ],
@@ -223,6 +222,39 @@ class _InfoScreenState extends State<InfoScreen> {
 //   ).catchError((error) {
 //     print('Error: $error');
 //   });
+// }
+//
+// Future<void> getToken() async {
+//   final SessionManager sessionManager = SessionManager();
+//   final token = await sessionManager.getToken();
+//
+//   if (token == null || token.isEmpty) {
+//     print('Failed to retrieve token.');
+//     return;
+//   }
+//
+//   final GetSelfieAttendanceViewModel getSelfieAttendanceViewModel = GetSelfieAttendanceViewModel();
+//   final GetSelfieAttendanceViewModel? viewModel = await getSelfieAttendanceViewModel.getSelfieAttendance(token);
+//
+//   if (viewModel != null && viewModel.getSelfieAttendanceModel != null) {
+//     final SelfieAttendanceTable? selfieAttendance = viewModel.getSelfieAttendanceModel!.table?.first;
+//
+//     if (selfieAttendance != null) {
+//       print('Comp ID: ${selfieAttendance.compId}');
+//       print('Date Time In: ${selfieAttendance.dateTimeIn}');
+//       print('Data Time Out: ${selfieAttendance.dateTimeOut}');
+//       print('Location: ${selfieAttendance.location}');
+//       print('Location: ${selfieAttendance.outLocation}');
+//       print('In Photo: ${selfieAttendance.inPhoto}');
+//       print('Out Photo: ${selfieAttendance.outPhoto}');
+//       print('In Remarks: ${selfieAttendance.inRemarks}');
+//       print('In Kms Driven: ${selfieAttendance.inKmsDriven}');
+//     } else {
+//       print('No attendance data available.');
+//     }
+//   } else {
+//     print('Failed to fetch attendance data.');
+//   }
 // }
 
 // Future<void> getCurrentDateTime() async {

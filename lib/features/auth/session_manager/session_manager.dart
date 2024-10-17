@@ -313,11 +313,7 @@ class SessionManager {
 }
 
 
-//Mark Selfie Attendance
-Future<String?> saveSelfieAttendance(MarkSelfieAttendance markSelfieAttendance) async {
-  final SharedPreferences prefs = await SharedPreferences.getInstance();
-  return null;
-}
+
 
 
 

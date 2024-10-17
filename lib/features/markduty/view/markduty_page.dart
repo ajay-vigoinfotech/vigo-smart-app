@@ -33,6 +33,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   String formattedAccuracyValue = '';
   String uniqueIdv4 = "";
   String? inKm;
+
   String? outKm;
   final picker = ImagePicker();
   final SessionManager sessionManager = SessionManager();
@@ -40,25 +41,22 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
 
   @override
   void initState() {
+    super.initState();
     _loadPunchInImageFromSP();
     _loadPunchOutImageFromSP();
-    sessionManager.getCheckinData().then((data) async {
-      debugPrint(data.uniqueId);
-      debugPrint(data.dateTimeIn);
-      debugPrint(data.inKmsDriven);
-      debugPrint(data.dateTimeOut);
-      debugPrint(data.outKmsDriven);
 
-      setState(() {
-        uniqueIdv4 = data.uniqueId!;
-        punchTimeDateIn = data.dateTimeIn;
-        inKm = data.inKmsDriven;
-        punchTimeDateOut = data.dateTimeOut;
-        outKm = data.outKmsDriven;
-      });
+    sessionManager.getCheckinData().then((data) {
+      if (mounted) {
+        setState(() {
+          uniqueIdv4 = data.uniqueId ?? "";
+          punchTimeDateIn = data.dateTimeIn;
+          inKm = data.inKmsDriven;
+          punchTimeDateOut = data.dateTimeOut;
+          outKm = data.outKmsDriven;
+        });
+      }
     });
     _loadCurrentDateTime();
-    super.initState();
   }
 
   @override
@@ -236,7 +234,6 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
 
         setState(() {
           timeDateDisplay = formattedDateTime;
-          // timeDateIn = formattedDateTime;
         });
       } else {
         currentDateTime = _setDeviceDateTime(); // Fallback to device time
@@ -273,7 +270,6 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
       formattedAccuracyValue = formattedAccuracy;
     });
   }
-
 
   // Load Punch In image from SharedPreferences
   Future<void> _loadPunchInImageFromSP() async {
@@ -315,18 +311,17 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     final ImagePicker picker = ImagePicker();
     final XFile? markInImage = await picker.pickImage(
       source: ImageSource.camera,
-      imageQuality: 1, // Lower this value to compress while picking
+      imageQuality: 1,
     );
 
     if (markInImage != null) {
       final File image = File(markInImage.path);
 
-      // Compress the image before converting to base64
       final List<int>? compressedBytes = await FlutterImageCompress.compressWithFile(
         image.absolute.path,
-        minWidth: 800,
-        minHeight: 800,
-        quality: 10,
+        minWidth: 400,
+        minHeight: 400,
+        quality: 1,
       );
 
       if (compressedBytes != null) {
@@ -348,7 +343,6 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                   TextField(
                     decoration: const InputDecoration(labelText: 'Comment'),
                     onChanged: (value) {
-                      // Handle comment input
                     },
                   ),
                   TextField(
@@ -471,7 +465,9 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
       // Compress the image
       final compressedImageBytes = await FlutterImageCompress.compressWithFile(
         markOutImage.path,
-        quality: 10,
+        minWidth: 400,
+        minHeight: 400,
+        quality: 1,
       );
 
       // Convert compressed image to Base64
