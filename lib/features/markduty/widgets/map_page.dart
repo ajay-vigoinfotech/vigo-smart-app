@@ -5,10 +5,17 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class MapPage extends StatefulWidget {
-  final Function(String) locationReceived; // Changed to receive a formatted string
+  final Function(String)
+      locationReceived; // Changed to receive a formatted string
   final Function(String) speedReceived; // Changed to receive a formatted string
-  final Function(String) accuracyReceived; // Changed to receive a formatted string
-  const MapPage({super.key, required this.locationReceived, required this.speedReceived, required this.accuracyReceived, });
+  final Function(String)
+      accuracyReceived; // Changed to receive a formatted string
+  const MapPage({
+    super.key,
+    required this.locationReceived,
+    required this.speedReceived,
+    required this.accuracyReceived,
+  });
 
   @override
   State<MapPage> createState() => _MapPageState();
@@ -55,13 +62,11 @@ class _MapPageState extends State<MapPage> {
       Position position = await Geolocator.getCurrentPosition();
 
       _googlePlex = LatLng(position.latitude, position.longitude);
-      // print(_googlePlex);
 
       _setMarkerAtCurrentLocation();
       widget.locationReceived(_formatLatLng(_googlePlex!));
       widget.speedReceived(_formatSpeed(position.speed));
-      widget.accuracyReceived(_formatAccuracy(position.accuracy));      // widget.accuracyReceived(_formatAccuracy(position.accuracy));
-      // Send formatted location
+      widget.accuracyReceived(_formatAccuracy(position.accuracy));
       setState(() {
         _isLoading = false;
       });
@@ -71,17 +76,14 @@ class _MapPageState extends State<MapPage> {
   }
 
   String _formatLatLng(LatLng latLng) {
-    // Format LatLng to "latitude,longitude"
     return "${latLng.latitude.toStringAsFixed(7)},${latLng.longitude.toStringAsFixed(7)}";
   }
 
   String _formatSpeed(double speed) {
-    // Format speed to "meters per second"
     return speed.toStringAsFixed(2);
   }
 
   String _formatAccuracy(double accuracy) {
-    // Format accuracy to "meters"
     return accuracy.toStringAsFixed(2);
   }
 
@@ -122,9 +124,7 @@ class _MapPageState extends State<MapPage> {
 
     if (!serviceEnabled) {
       _showCupertinoLocationServiceDialog();
-    } else if (permission == LocationPermission.denied) {
-      // Handle permission denied case
-    }
+    } else if (permission == LocationPermission.denied) {}
   }
 
   void _showCupertinoLocationServiceDialog() {
@@ -146,7 +146,8 @@ class _MapPageState extends State<MapPage> {
           CupertinoDialogAction(
             isDestructiveAction: false,
             onPressed: () {
-              Geolocator.openLocationSettings(); // Open location settings directly
+              Geolocator
+                  .openLocationSettings(); // Open location settings directly
               Navigator.of(context).pop();
             },
             child: const Text("Open Settings"),
@@ -161,31 +162,31 @@ class _MapPageState extends State<MapPage> {
     return Scaffold(
       body: _isLoading
           ? const Center(
-        child: CircularProgressIndicator(),
-      ) // Show loading indicator while fetching location
+              child: CircularProgressIndicator(),
+            ) // Show loading indicator while fetching location
           : GoogleMap(
-        myLocationButtonEnabled: false,
-        markers: _markers,
-        onMapCreated: (GoogleMapController controller) {
-          _googleMapController = controller;
-          _moveCameraToLocation(); // Move the camera once the map is created
-        },
-        initialCameraPosition: CameraPosition(
-          target: _googlePlex!, // Use the current location once fetched
-          zoom: 16,
-        ),
-        onCameraMove: (CameraPosition position) {
-          _isMapBeingMoved = true;
-        },
-        onCameraIdle: () {
-          if (_isMapBeingMoved) {
-            Future.delayed(const Duration(seconds: 2), () {
-              _moveCameraToLocation();
-              _isMapBeingMoved = false;
-            });
-          }
-        },
-      ),
+              myLocationButtonEnabled: false,
+              markers: _markers,
+              onMapCreated: (GoogleMapController controller) {
+                _googleMapController = controller;
+                _moveCameraToLocation(); // Move the camera once the map is created
+              },
+              initialCameraPosition: CameraPosition(
+                target: _googlePlex!, // Use the current location once fetched
+                zoom: 16,
+              ),
+              onCameraMove: (CameraPosition position) {
+                _isMapBeingMoved = true;
+              },
+              onCameraIdle: () {
+                if (_isMapBeingMoved) {
+                  Future.delayed(const Duration(seconds: 2), () {
+                    _moveCameraToLocation();
+                    _isMapBeingMoved = false;
+                  });
+                }
+              },
+            ),
     );
   }
 }

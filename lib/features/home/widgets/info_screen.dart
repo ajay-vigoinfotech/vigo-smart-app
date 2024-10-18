@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vigo_smart_app/features/home/viewmodel/modules_view_model.dart';
 import 'package:vigo_smart_app/features/home/widgets/setting_page.dart';
 import '../../../core/theme/app_pallete.dart';
 import '../../auth/model/getlastselfieattendancemodel.dart';
 import '../../auth/session_manager/session_manager.dart';
 import '../../auth/view/login_page.dart';
 import '../../auth/viewmodel/getuserdetails_view_model.dart';
-
 
 class InfoScreen extends StatefulWidget {
   final double barHeight;
@@ -29,6 +30,73 @@ class _InfoScreenState extends State<InfoScreen> {
     super.initState();
     getUserData();
     lastSelfieAtt(SelfieAttendanceModel());
+    getModules();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: widget.barHeight,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Pallete.btn1,
+        borderRadius: const BorderRadius.only(
+          bottomRight: Radius.circular(30),
+          bottomLeft: Radius.circular(30),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            spreadRadius: 3,
+            blurRadius: 7,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 1.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: Text(
+                  '$employeeCode - $name \n$compName',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+            Row(
+              children: [
+                IconButton(
+                  iconSize: 28,
+                  onPressed: () {
+                    getUserData();
+                    lastSelfieAtt(SelfieAttendanceModel());
+                    getModules();
+                  },
+                  icon: const Icon(Icons.refresh, color: Colors.white),
+                ),
+                GestureDetector(
+                  onTap: () => //etToken(),
+                      _showBottomSheet(context),
+                  child: const CircleAvatar(
+                    radius: 28,
+                    backgroundColor: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _logout(BuildContext context) async {
@@ -96,6 +164,23 @@ class _InfoScreenState extends State<InfoScreen> {
     }
   }
 
+  Future<void> getModules() async {
+    ModulesViewModel modulesViewModel = ModulesViewModel();
+    String? token = await sessionManager.getToken();
+
+    if (token != null && token.isNotEmpty) {
+      List<String> modules = await modulesViewModel.getModules(token);
+
+      if (modules.isNotEmpty) {
+        print('Modules fetched: $modules');
+      } else {
+        print('No Modules Found');
+      }
+    } else {
+      print('No Token Found');
+    }
+  }
+
   void _showBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -137,71 +222,6 @@ class _InfoScreenState extends State<InfoScreen> {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: widget.barHeight,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Pallete.btn1,
-        borderRadius: const BorderRadius.only(
-          bottomRight: Radius.circular(30),
-          bottomLeft: Radius.circular(30),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            spreadRadius: 3,
-            blurRadius: 7,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 1.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Flexible(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 10),
-                child: Text(
-                  '$employeeCode - $name \n$compName',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ),
-            Row(
-              children: [
-                IconButton(
-                  iconSize: 28,
-                  onPressed: () {
-                    getUserData();
-                    lastSelfieAtt(SelfieAttendanceModel());
-                  },
-                  icon: const Icon(Icons.refresh, color: Colors.white),
-                ),
-                GestureDetector(
-                  onTap: () => //etToken(),
-                      _showBottomSheet(context),
-                  child: const CircleAvatar(
-                    radius: 28,
-                    backgroundColor: Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-          ],
         ),
       ),
     );
@@ -286,4 +306,3 @@ class _InfoScreenState extends State<InfoScreen> {
 //     final supportContact = await supportContactViewModel.getSupportContact();
 //     print('Support Contact: $supportContact');
 //   }
-

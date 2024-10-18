@@ -33,8 +33,10 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   String formattedAccuracyValue = '';
   String uniqueIdv4 = "";
   String? inKm;
-
+  String? dutyInRemark;
+  String? dutyOutRemark;
   String? outKm;
+  String? errorMessage;
   final picker = ImagePicker();
   final SessionManager sessionManager = SessionManager();
   final MarkSelfieAttendance markSelfieAttendance = MarkSelfieAttendance();
@@ -124,11 +126,16 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                         ),
                       ),
                       onPressed: () {
-                        if ((punchTimeDateIn == null && (punchTimeDateOut == null || punchTimeDateOut == "-")) || (punchTimeDateIn != null && punchTimeDateOut != null && punchTimeDateOut != "-")) {
+                        if ((punchTimeDateIn == null && (punchTimeDateOut == null || punchTimeDateOut == "-")) ||
+                            (punchTimeDateIn != null &&
+                                punchTimeDateOut != null &&
+                                punchTimeDateOut != "-")) {
                           setState(() {
                             _onMarkIn();
                           });
-                        } else if (punchTimeDateIn != null && (punchTimeDateOut == null || punchTimeDateOut == "-")) {
+                        } else if (punchTimeDateIn != null &&
+                            (punchTimeDateOut == null ||
+                                punchTimeDateOut == "-")) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('Already marked IN!'),
@@ -161,7 +168,8 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                         fontSize: 14, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 5),
-                  if (savedPunchOutImagePath != null && savedPunchOutImagePath!.isNotEmpty)
+                  if (savedPunchOutImagePath != null &&
+                      savedPunchOutImagePath!.isNotEmpty)
                     Image.file(
                       File(savedPunchOutImagePath!),
                       height: 130,
@@ -180,8 +188,10 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                         ),
                       ),
                       onPressed: () {
-                        // Check if "IN" is marked (i.e., punchTimeDateIn is not null and not "-")
-                        if (punchTimeDateIn != null && punchTimeDateIn != "-" && (punchTimeDateOut == null || punchTimeDateOut == "-")) {
+                        if (punchTimeDateIn != null &&
+                            punchTimeDateIn != "-" &&
+                            (punchTimeDateOut == null ||
+                                punchTimeDateOut == "-")) {
                           setState(() {
                             _onMarkOut();
                           });
@@ -245,8 +255,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   }
 
   String _setDeviceDateTime() {
-    String currentDateTime =
-        DateFormat('dd/MM/yyyy hh:mm').format(DateTime.now());
+    String currentDateTime = DateFormat('dd/MM/yyyy hh:mm').format(DateTime.now());
     setState(() {
       timeDateDisplay = currentDateTime;
     });
@@ -306,8 +315,25 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     });
   }
 
-  // Function called when 'Mark In' is clicked
+  // Clear Punch Out image from SharedPreferences
+  Future<void> _clearPunchOutImageFromSP() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.remove('savedPunchOutImagePath'); // Remove Punch Out image path
+    setState(() {
+      savedPunchOutImagePath = null; // Update UI to clear image
+    });
+  }
+
+
   Future<void> _onMarkIn() async {
+    if (formattedLatLng.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No location found. Please enable location services.')),
+      );
+      return; // Exit the function early
+    }
+    await _clearPunchOutImageFromSP();
+
     final ImagePicker picker = ImagePicker();
     final XFile? markInImage = await picker.pickImage(
       source: ImageSource.camera,
@@ -316,7 +342,6 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
 
     if (markInImage != null) {
       final File image = File(markInImage.path);
-
       final List<int>? compressedBytes = await FlutterImageCompress.compressWithFile(
         image.absolute.path,
         minWidth: 400,
@@ -326,7 +351,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
 
       if (compressedBytes != null) {
         final String base64Image = base64Encode(compressedBytes);
-        final base64InImage = base64Image; // Compressed image as base64
+        final base64InImage = base64Image;
 
         punchTimeDateIn = DateFormat('dd/MM/yyyy hh:mm a').format(DateTime.now());
 
@@ -339,10 +364,11 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Image.file(image, height: 100, width: 100), // Display the original image
+                  Image.file(image, height: 100, width: 100),
                   TextField(
                     decoration: const InputDecoration(labelText: 'Comment'),
                     onChanged: (value) {
+                      dutyInRemark = value;
                     },
                   ),
                   TextField(
@@ -357,7 +383,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
               actions: [
                 TextButton(
                   onPressed: () {
-                    Navigator.of(context).pop(); // Close the dialog
+                    Navigator.of(context).pop();
                   },
                   child: const Text("Cancel"),
                 ),
@@ -367,8 +393,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                       await _saveImageToSP(markInImage.path);
                       uniqueIdv4 = const Uuid().v4();
 
-                      SelfieAttendanceModel selfieAttendanceModel =
-                      SelfieAttendanceModel(
+                      SelfieAttendanceModel selfieAttendanceModel = SelfieAttendanceModel(
                         table: [
                           AttendanceTable(
                             uniqueId: uniqueIdv4,
@@ -394,15 +419,14 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
 
                       punchTimeDateIn = DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now());
 
-                      final String fullDeviceDetails = deviceDetails;
-
-                      String apiResponse = await markSelfieAttendance.markAttendance(token!,
+                      String apiResponse = await markSelfieAttendance.markAttendance(
+                          token!,
                           PunchDetails(
-                            deviceDetails: fullDeviceDetails,
+                            deviceDetails: deviceDetails,
                             deviceImei: uniqueId,
                             deviceIp: ipAddress,
-                            userPhoto: base64InImage, // Compressed base64 image
-                            remark: '',
+                            userPhoto: base64InImage,
+                            remark: dutyInRemark ?? '',
                             isOffline: '',
                             version: 'v$appVersion',
                             dataStatus: '',
@@ -422,25 +446,19 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
 
                       if (apiResponse == '200') {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('Attendance marked successfully!!!!!!')),
+                          const SnackBar(content: Text('Attendance marked successfully!')),
                         );
+                        _loadPunchInImageFromSP();
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text(apiResponse)),
+                          SnackBar(content: Text(apiResponse)),
                         );
                       }
 
                       Navigator.of(context).pop();
-                      _loadPunchInImageFromSP(); // Load image into UI
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text(
-                              'Please fill in all fields.',
-                              style: TextStyle(),
-                            )),
+                        const SnackBar(content: Text('Please fill in all fields.')),
                       );
                     }
                   },
@@ -453,10 +471,20 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
       }
     }
   }
-  // Function called when 'Mark Out' is clicked
+
+
+// Function called when 'Mark Out' is clicked
   Future<void> _onMarkOut() async {
+    if (formattedLatLng.isEmpty) {
+      // Show a message indicating no location found
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No location found. Please enable location services.')),
+      );
+      return; // Exit the function early
+    }
     final ImagePicker picker = ImagePicker();
-    final XFile? markOutImage = await picker.pickImage(source: ImageSource.camera, imageQuality: 1);
+    final XFile? markOutImage =
+    await picker.pickImage(source: ImageSource.camera, imageQuality: 1);
 
     if (markOutImage != null) {
       final image = File(markOutImage.path);
@@ -486,6 +514,12 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                 children: [
                   Image.file(image, height: 100, width: 100),
                   TextField(
+                    decoration: const InputDecoration(labelText: 'Out Remark'),
+                    onChanged: (value) {
+                      dutyOutRemark = value;
+                    },
+                  ),
+                  TextField(
                     decoration: const InputDecoration(labelText: 'OUT KM'),
                     keyboardType: TextInputType.number,
                     onChanged: (value) {
@@ -506,8 +540,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                     if (outKm != null && outKm!.isNotEmpty) {
                       // Save image path and punch out data
                       await _savePunchOutImageToSP(markOutImage.path);
-                      SelfieAttendanceModel selfieAttendanceModel =
-                      SelfieAttendanceModel(
+                      SelfieAttendanceModel selfieAttendanceModel = SelfieAttendanceModel(
                         table: [
                           AttendanceTable(
                             uniqueId: uniqueIdv4,
@@ -521,29 +554,34 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                         ],
                       );
                       // Save attendance model using sessionManager
-                      await sessionManager.saveSelfieAttendance(selfieAttendanceModel);
+                      await sessionManager
+                          .saveSelfieAttendance(selfieAttendanceModel);
 
                       String? token = await sessionManager.getToken();
-                      MarkSelfieAttendance markSelfieAttendance = MarkSelfieAttendance();
-                      final String deviceDetails = await Utils.getDeviceDetails(context);
+                      MarkSelfieAttendance markSelfieAttendance =
+                      MarkSelfieAttendance();
+                      final String deviceDetails =
+                      await Utils.getDeviceDetails(context);
                       final String appVersion = await Utils.getAppVersion();
                       final String ipAddress = await Utils.getIpAddress();
                       final String uniqueId = await Utils.getUniqueID();
                       final int battery = await Utils.getBatteryLevel();
 
-                      punchTimeDateOut = DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now());
+                      punchTimeDateOut =
+                          DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now());
 
                       final String fullDeviceDetails = deviceDetails;
 
-                      String apiResponse = await markSelfieAttendance.markAttendance(
+                      String apiResponse =
+                      await markSelfieAttendance.markAttendance(
                         token!,
                         PunchDetails(
                           deviceDetails: fullDeviceDetails,
                           deviceImei: uniqueId,
                           deviceIp: ipAddress,
                           userPhoto: base64OutImage,
-                          remark: '',
-                          isOffline: '',
+                          remark: '$dutyOutRemark',
+                          isOffline: 'false',
                           version: appVersion,
                           dataStatus: '',
                           checkInId: uniqueIdv4,
@@ -569,8 +607,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                       } else {
                         // Show error if API failed
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text('OUT$apiResponse')),
+                          SnackBar(content: Text('OUT$apiResponse')),
                         );
                       }
                       Navigator.of(context).pop();

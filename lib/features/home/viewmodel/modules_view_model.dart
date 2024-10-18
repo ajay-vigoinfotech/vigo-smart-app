@@ -20,10 +20,6 @@ class ModulesViewModel {
       );
 
       if (response.statusCode == 200) {
-        // final List<String> moduleCodes = (response.data['table1'] as List)
-        //     .map((item) => (item['moduleCode'] as String).substring(3))
-        //     .toList();
-
         final Set<String> seen = {};
         final List<String> moduleCodes = (response.data['table1'] as List)
             .map((item) => (item['moduleCode'] as String).substring(3))

@@ -28,6 +28,20 @@ class _HomePageState extends State<HomePage> {
       'page': const MarkdutyPage(),
     },
     {
+      'code': 'FieldReportingQRApp',
+      'icon': AppConstants.markDutyIcon,
+      'name': Strings.fieldReportingQRApp,
+      'color': Pallete.btn1,
+      'page': const MarkdutyPage(),
+    },
+    {
+      'code': 'SupervisorQRDutyManagementApp',
+      'icon': AppConstants.markDutyIcon,
+      'name': Strings.supervisorQRDutyManagementApp,
+      'color': Pallete.btn1,
+      'page': const PunchHistory(),
+    },
+    {
       'code': 'PunchHistory',
       'icon': AppConstants.punchHistoryIcon,
       'name': Strings.punchHistory,
@@ -52,20 +66,6 @@ class _HomePageState extends State<HomePage> {
       'code': 'SupervisorDutyManagementApp',
       'icon': AppConstants.markDutyIcon,
       'name': Strings.calendarViewApp,
-      'color': Pallete.btn1,
-      'page': const MarkdutyPage(),
-    },
-    {
-      'code': 'SupervisorQRDutyManagementApp',
-      'icon': AppConstants.markDutyIcon,
-      'name': Strings.supervisorQRDutyManagementApp,
-      'color': Pallete.btn1,
-      'page': const MarkdutyPage(),
-    },
-    {
-      'code': 'FieldReportingQRApp',
-      'icon': AppConstants.markDutyIcon,
-      'name': Strings.fieldReportingQRApp,
       'color': Pallete.btn1,
       'page': const MarkdutyPage(),
     },
@@ -140,10 +140,8 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     sessionManager.getModuleCodes().then((savedModules) {
-      // Check if savedModules is not null and contains values
       if (savedModules != null && savedModules.isNotEmpty) {
         setState(() {
-          // Filter allModules based on savedModules (which contains codes)
           filteredModules = allModules
               .where((module) => savedModules.contains(module['code']))
               .toList();
@@ -186,11 +184,6 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Your action here
-        },
       ),
     );
   }
