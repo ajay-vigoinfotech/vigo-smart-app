@@ -1,8 +1,10 @@
 import 'dart:core';
+import 'package:app_settings/app_settings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:open_settings_plus/core/open_settings_plus.dart';
 
 class MapPage extends StatefulWidget {
   final Function(String)
@@ -146,8 +148,16 @@ class _MapPageState extends State<MapPage> {
           CupertinoDialogAction(
             isDestructiveAction: false,
             onPressed: () {
-              Geolocator
-                  .openLocationSettings(); // Open location settings directly
+              switch (OpenSettingsPlus.shared) {
+                case OpenSettingsPlusAndroid settings:
+                  settings.locationSource();
+                  break;
+                case OpenSettingsPlusIOS settings:
+                  settings.locationServices();
+                  break;
+                default:
+                  throw Exception('Platform not supported');
+              }
               Navigator.of(context).pop();
             },
             child: const Text("Open Settings"),
@@ -156,6 +166,7 @@ class _MapPageState extends State<MapPage> {
       ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {

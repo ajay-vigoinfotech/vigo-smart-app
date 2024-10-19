@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:vigo_smart_app/features/auth/model/checksession_model.dart';
 import 'package:vigo_smart_app/features/auth/model/marklogin_model.dart';
+import 'package:vigo_smart_app/features/auth/viewmodel/checksession_view_model.dart';
 import 'package:vigo_smart_app/features/auth/viewmodel/getuserdetails_view_model.dart';
 import 'package:vigo_smart_app/features/home/view/home_page.dart';
 import '../../../core/strings/strings.dart';
@@ -33,6 +35,7 @@ class _LoginPageState extends State<LoginPage> {
   final MarkLoginViewModel markLoginViewModel = MarkLoginViewModel();
   final UserViewModel userViewModel = UserViewModel();
   final GetlastselfieattViewModel getlastselfieattViewModel = GetlastselfieattViewModel();
+  final CheckSessionViewModel checkSessionViewModel = CheckSessionViewModel();
 
   Future<void> _onSubmit() async {
     if (_formKey.currentState?.validate() ?? false) {
@@ -57,6 +60,7 @@ class _LoginPageState extends State<LoginPage> {
           final String uniqueId = await Utils.getUniqueID();
           final int battery = await Utils.getBatteryLevel();
           final String? fcmToken = await Utils.getFCMToken();
+          print(fcmToken);
 
           final String fullDeviceDetails = "$deviceDetails/$uniqueId/$ipAddress";
 

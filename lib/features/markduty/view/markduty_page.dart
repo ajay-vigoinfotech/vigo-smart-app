@@ -67,166 +67,171 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
       appBar: AppBar(
         title: const Text('Mark Duty'),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(15.0),
-            child: Center(
-              child: Text(
-                '$timeDateDisplay',
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+      body: SingleChildScrollView(
+        // Wrap the body in SingleChildScrollView
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(15.0),
+              child: Center(
+                child: Text(
+                  '$timeDateDisplay',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
-          ),
-          SizedBox(
-            height: 270,
-            width: double.infinity,
-            child: MapPage(
-              locationReceived: _onLocationReceived,
-              speedReceived: _onSpeedReceived,
-              accuracyReceived: _onAccuracyReceived,
+            SizedBox(
+              height: 270,
+              width: double.infinity,
+              child: MapPage(
+                locationReceived: _onLocationReceived,
+                speedReceived: _onSpeedReceived,
+                accuracyReceived: _onAccuracyReceived,
+              ),
             ),
-          ),
-          const SizedBox(height: 25),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Column(
-                children: [
-                  Text(
-                    '$punchTimeDateIn',
-                    style: const TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    '$inKm',
-                    style: const TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 5),
-                  if (savedImagePath != null && savedImagePath!.isNotEmpty)
-                    Image.file(
-                      File(savedImagePath!),
-                      height: 130,
-                      width: 120,
+            const SizedBox(height: 25),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Column(
+                  children: [
+                    Text(
+                      '$punchTimeDateIn',
+                      style: const TextStyle(
+                          fontSize: 14, fontWeight: FontWeight.bold),
                     ),
-                  const SizedBox(height: 15),
-                  SizedBox(
-                    height: 70,
-                    width: 100,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        elevation: 5,
-                        backgroundColor: Colors.green,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                    Text(
+                      '$inKm',
+                      style: const TextStyle(
+                          fontSize: 14, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 5),
+                    if (savedImagePath != null && savedImagePath!.isNotEmpty)
+                      Image.file(
+                        File(savedImagePath!),
+                        height: 130,
+                        width: 120,
+                      ),
+                    const SizedBox(height: 15),
+                    SizedBox(
+                      height: 70,
+                      width: 100,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          elevation: 5,
+                          backgroundColor: Colors.green,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        onPressed: () {
+                          if ((punchTimeDateIn == null &&
+                                  (punchTimeDateOut == null ||
+                                      punchTimeDateOut == "-")) ||
+                              (punchTimeDateIn != null &&
+                                  punchTimeDateOut != null &&
+                                  punchTimeDateOut != "-")) {
+                            setState(() {
+                              _onMarkIn();
+                            });
+                          } else if (punchTimeDateIn != null &&
+                              (punchTimeDateOut == null ||
+                                  punchTimeDateOut == "-")) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Already marked IN!'),
+                                backgroundColor: Colors.orange,
+                              ),
+                            );
+                          }
+                        },
+                        child: const Text(
+                          'IN',
+                          style: TextStyle(
+                              fontSize: 22,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold),
                         ),
                       ),
-                      onPressed: () {
-                        if ((punchTimeDateIn == null && (punchTimeDateOut == null || punchTimeDateOut == "-")) ||
-                            (punchTimeDateIn != null &&
-                                punchTimeDateOut != null &&
-                                punchTimeDateOut != "-")) {
-                          setState(() {
-                            _onMarkIn();
-                          });
-                        } else if (punchTimeDateIn != null &&
-                            (punchTimeDateOut == null ||
-                                punchTimeDateOut == "-")) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Already marked IN!'),
-                              backgroundColor: Colors.orange,
-                            ),
-                          );
-                        }
-                      },
-                      child: const Text(
-                        'IN',
-                        style: TextStyle(
-                            fontSize: 22,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+                Column(
+                  children: [
+                    Text(
+                      '$punchTimeDateOut',
+                      style: const TextStyle(
+                          fontSize: 14, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      '$outKm',
+                      style: const TextStyle(
+                          fontSize: 14, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 5),
+                    if (savedPunchOutImagePath != null &&
+                        savedPunchOutImagePath!.isNotEmpty)
+                      Image.file(
+                        File(savedPunchOutImagePath!),
+                        height: 130,
+                        width: 120,
                       ),
-                    ),
-                  ),
-                ],
-              ),
-              Column(
-                children: [
-                  Text(
-                    '$punchTimeDateOut',
-                    style: const TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    '$outKm',
-                    style: const TextStyle(
-                        fontSize: 14, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 5),
-                  if (savedPunchOutImagePath != null &&
-                      savedPunchOutImagePath!.isNotEmpty)
-                    Image.file(
-                      File(savedPunchOutImagePath!),
-                      height: 130,
-                      width: 120,
-                    ),
-                  const SizedBox(height: 15),
-                  SizedBox(
-                    height: 70,
-                    width: 100,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        elevation: 5,
-                        backgroundColor: Colors.red,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                    const SizedBox(height: 15),
+                    SizedBox(
+                      height: 70,
+                      width: 100,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          elevation: 5,
+                          backgroundColor: Colors.red,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        onPressed: () {
+                          if (punchTimeDateIn != null &&
+                              punchTimeDateIn != "-" &&
+                              (punchTimeDateOut == null ||
+                                  punchTimeDateOut == "-")) {
+                            setState(() {
+                              _onMarkOut();
+                            });
+                          } else if (punchTimeDateIn == null ||
+                              punchTimeDateIn == "-") {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content:
+                                    Text('Please mark IN before marking OUT!'),
+                                backgroundColor: Colors.orange,
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Already marked OUT!'),
+                                backgroundColor: Colors.orange,
+                              ),
+                            );
+                          }
+                        },
+                        child: const Text(
+                          'OUT',
+                          style: TextStyle(
+                              fontSize: 22,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold),
                         ),
                       ),
-                      onPressed: () {
-                        if (punchTimeDateIn != null &&
-                            punchTimeDateIn != "-" &&
-                            (punchTimeDateOut == null ||
-                                punchTimeDateOut == "-")) {
-                          setState(() {
-                            _onMarkOut();
-                          });
-                        } else if (punchTimeDateIn == null ||
-                            punchTimeDateIn == "-") {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content:
-                                  Text('Please mark IN before marking OUT!'),
-                              backgroundColor: Colors.orange,
-                            ),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Already marked OUT!'),
-                              backgroundColor: Colors.orange,
-                            ),
-                          );
-                        }
-                      },
-                      child: const Text(
-                        'OUT',
-                        style: TextStyle(
-                            fontSize: 22,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold),
-                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -255,7 +260,8 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   }
 
   String _setDeviceDateTime() {
-    String currentDateTime = DateFormat('dd/MM/yyyy hh:mm').format(DateTime.now());
+    String currentDateTime =
+        DateFormat('dd/MM/yyyy hh:mm').format(DateTime.now());
     setState(() {
       timeDateDisplay = currentDateTime;
     });
@@ -324,15 +330,16 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     });
   }
 
-
   Future<void> _onMarkIn() async {
     if (formattedLatLng.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No location found. Please enable location services.')),
+        const SnackBar(
+            content:
+                Text('No location found. Please enable location services.')),
       );
       return; // Exit the function early
     }
-    await _clearPunchOutImageFromSP();
+    // await _clearPunchOutImageFromSP();
 
     final ImagePicker picker = ImagePicker();
     final XFile? markInImage = await picker.pickImage(
@@ -342,7 +349,8 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
 
     if (markInImage != null) {
       final File image = File(markInImage.path);
-      final List<int>? compressedBytes = await FlutterImageCompress.compressWithFile(
+      final List<int>? compressedBytes =
+          await FlutterImageCompress.compressWithFile(
         image.absolute.path,
         minWidth: 400,
         minHeight: 400,
@@ -353,7 +361,8 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
         final String base64Image = base64Encode(compressedBytes);
         final base64InImage = base64Image;
 
-        punchTimeDateIn = DateFormat('dd/MM/yyyy hh:mm a').format(DateTime.now());
+        punchTimeDateIn =
+            DateFormat('dd/MM/yyyy hh:mm a').format(DateTime.now());
 
         showDialog(
           barrierDismissible: false,
@@ -389,7 +398,9 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                 ),
                 ElevatedButton(
                   onPressed: () async {
-                    if (punchTimeDateIn != null && inKm != null && inKm!.isNotEmpty) {
+                    if (punchTimeDateIn != null &&
+                        inKm != null &&
+                        inKm!.isNotEmpty) {
                       await _saveImageToSP(markInImage.path);
                       uniqueIdv4 = const Uuid().v4();
 
@@ -419,34 +430,38 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
 
                       punchTimeDateIn = DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now());
 
-                      String apiResponse = await markSelfieAttendance.markAttendance(
-                          token!,
-                          PunchDetails(
-                            deviceDetails: deviceDetails,
-                            deviceImei: uniqueId,
-                            deviceIp: ipAddress,
-                            userPhoto: base64InImage,
-                            remark: dutyInRemark ?? '',
-                            isOffline: '',
-                            version: 'v$appVersion',
-                            dataStatus: '',
-                            checkInId: uniqueIdv4,
-                            punchAction: 'IN',
-                            locationAccuracy: formattedAccuracyValue,
-                            locationSpeed: formattedSpeedValue,
-                            batteryStatus: '$battery%',
-                            locationStatus: 'true',
-                            time: '$punchTimeDateIn',
-                            latLong: formattedLatLng,
-                            kmsDriven: '$inKm',
-                            siteId: '',
-                            locationId: '',
-                            distance: '',
-                          ));
+                      String apiResponse =
+                          await markSelfieAttendance.markAttendance(
+                              token!,
+                              PunchDetails(
+                                deviceDetails: deviceDetails,
+                                deviceImei: uniqueId,
+                                deviceIp: ipAddress,
+                                userPhoto: base64InImage,
+                                remark: dutyInRemark ?? '',
+                                isOffline: '',
+                                version: 'v$appVersion',
+                                dataStatus: '',
+                                checkInId: uniqueIdv4,
+                                punchAction: 'IN',
+                                locationAccuracy: formattedAccuracyValue,
+                                locationSpeed: formattedSpeedValue,
+                                batteryStatus: '$battery%',
+                                locationStatus: 'true',
+                                time: '$punchTimeDateIn',
+                                latLong: formattedLatLng,
+                                kmsDriven: '$inKm',
+                                siteId: '',
+                                locationId: '',
+                                distance: '',
+                              ));
+
+                      await _clearPunchOutImageFromSP();
 
                       if (apiResponse == '200') {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Attendance marked successfully!')),
+                          const SnackBar(
+                              content: Text('Attendance marked successfully!')),
                         );
                         _loadPunchInImageFromSP();
                       } else {
@@ -454,11 +469,11 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                           SnackBar(content: Text(apiResponse)),
                         );
                       }
-
                       Navigator.of(context).pop();
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please fill in all fields.')),
+                        const SnackBar(
+                            content: Text('Please fill in all fields.')),
                       );
                     }
                   },
@@ -472,23 +487,25 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     }
   }
 
-
 // Function called when 'Mark Out' is clicked
   Future<void> _onMarkOut() async {
     if (formattedLatLng.isEmpty) {
       // Show a message indicating no location found
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No location found. Please enable location services.')),
+        const SnackBar(
+            content:
+                Text('No location found. Please enable location services.')),
       );
       return; // Exit the function early
     }
     final ImagePicker picker = ImagePicker();
     final XFile? markOutImage =
-    await picker.pickImage(source: ImageSource.camera, imageQuality: 1);
+        await picker.pickImage(source: ImageSource.camera, imageQuality: 1);
 
     if (markOutImage != null) {
       final image = File(markOutImage.path);
-      punchTimeDateOut = DateFormat('dd/MM/yyyy hh:mm a').format(DateTime.now());
+      punchTimeDateOut =
+          DateFormat('dd/MM/yyyy hh:mm a').format(DateTime.now());
 
       // Compress the image
       final compressedImageBytes = await FlutterImageCompress.compressWithFile(
@@ -540,7 +557,8 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                     if (outKm != null && outKm!.isNotEmpty) {
                       // Save image path and punch out data
                       await _savePunchOutImageToSP(markOutImage.path);
-                      SelfieAttendanceModel selfieAttendanceModel = SelfieAttendanceModel(
+                      SelfieAttendanceModel selfieAttendanceModel =
+                          SelfieAttendanceModel(
                         table: [
                           AttendanceTable(
                             uniqueId: uniqueIdv4,
@@ -559,9 +577,9 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
 
                       String? token = await sessionManager.getToken();
                       MarkSelfieAttendance markSelfieAttendance =
-                      MarkSelfieAttendance();
+                          MarkSelfieAttendance();
                       final String deviceDetails =
-                      await Utils.getDeviceDetails(context);
+                          await Utils.getDeviceDetails(context);
                       final String appVersion = await Utils.getAppVersion();
                       final String ipAddress = await Utils.getIpAddress();
                       final String uniqueId = await Utils.getUniqueID();
@@ -573,7 +591,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                       final String fullDeviceDetails = deviceDetails;
 
                       String apiResponse =
-                      await markSelfieAttendance.markAttendance(
+                          await markSelfieAttendance.markAttendance(
                         token!,
                         PunchDetails(
                           deviceDetails: fullDeviceDetails,

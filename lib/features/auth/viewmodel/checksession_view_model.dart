@@ -1,31 +1,36 @@
-// import 'package:dio/dio.dart';
-// import 'package:vigo_smart_app/core/constants/constants.dart';
-//
-// class CheckSessionViewModel {
-//   final Dio _dio = Dio();
-//
-//   Future<String> checkSession(String token) async {
-//     const url = '${AppConstants.baseUrl}/API/Kotlin/CheckSession';
-//
-//     try {
-//       final response = await _dio.post(
-//         url,
-//         options: Options(
-//           headers: {
-//             'Authorization': 'Bearer $token',
-//             'Content-Type': 'application/x-www-form-urlencoded',
-//           },
-//         ),
-//       );
-//
-//       if (response.statusCode == 200) {
-//         return response.data;
-//       } else {
-//         print('error ${response.statusCode}');
-//         return response.data;
-//       }
-//     } catch (e) {
-//       print('Exception : ${e}');
-//     }
-//   }
-// }
+import 'package:dio/dio.dart';
+
+import '../../../core/constants/constants.dart';
+import '../model/checksession_model.dart';
+
+class CheckSessionViewModel {
+  final Dio _dio = Dio();
+
+  Future<int?> checkSession(String token, CheckSessionModel checkSessionModel) async {
+    const url = '${AppConstants.baseUrl}/API/Kotlin/CheckSession';
+
+    try {
+      final response = await _dio.post(
+        url,
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+          contentType: Headers.formUrlEncodedContentType,
+        ),
+        data: checkSessionModel.toJson(),
+      );
+
+      if (response.statusCode == 200) {
+        // Return the status code directly as an int
+        return response.statusCode;
+      } else {
+        print('Error: ${response.statusCode}');
+        return response.statusCode; // Return the error status code as an int
+      }
+    } catch (e) {
+      print('Exception: $e');
+      return null; // Return null if there's an exception
+    }
+  }
+}

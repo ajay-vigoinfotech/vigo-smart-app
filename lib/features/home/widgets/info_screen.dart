@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:vigo_smart_app/features/auth/viewmodel/checksession_view_model.dart';
 import 'package:vigo_smart_app/features/home/viewmodel/modules_view_model.dart';
 import 'package:vigo_smart_app/features/home/widgets/setting_page.dart';
 import '../../../core/theme/app_pallete.dart';
+import '../../../core/utils.dart';
+import '../../auth/model/checksession_model.dart';
 import '../../auth/model/getlastselfieattendancemodel.dart';
 import '../../auth/session_manager/session_manager.dart';
 import '../../auth/view/login_page.dart';
@@ -84,7 +87,7 @@ class _InfoScreenState extends State<InfoScreen> {
                   icon: const Icon(Icons.refresh, color: Colors.white),
                 ),
                 GestureDetector(
-                  onTap: () => //etToken(),
+                  onTap: () => //getToken(),
                       _showBottomSheet(context),
                   child: const CircleAvatar(
                     radius: 28,
@@ -247,7 +250,6 @@ class _InfoScreenState extends State<InfoScreen> {
 // Future<void> getToken() async {
 //   final SessionManager sessionManager = SessionManager();
 //   final token = await sessionManager.getToken();
-//
 //   if (token == null || token.isEmpty) {
 //     print('Failed to retrieve token.');
 //     return;
@@ -262,18 +264,32 @@ class _InfoScreenState extends State<InfoScreen> {
 //     if (selfieAttendance != null) {
 //       print('Comp ID: ${selfieAttendance.compId}');
 //       print('Date Time In: ${selfieAttendance.dateTimeIn}');
-//       print('Data Time Out: ${selfieAttendance.dateTimeOut}');
-//       print('Location: ${selfieAttendance.location}');
-//       print('Location: ${selfieAttendance.outLocation}');
-//       print('In Photo: ${selfieAttendance.inPhoto}');
-//       print('Out Photo: ${selfieAttendance.outPhoto}');
-//       print('In Remarks: ${selfieAttendance.inRemarks}');
-//       print('In Kms Driven: ${selfieAttendance.inKmsDriven}');
 //     } else {
 //       print('No attendance data available.');
 //     }
 //   } else {
 //     print('Failed to fetch attendance data.');
+//   }
+// }
+
+// Future<void> checkUserSession() async {
+//   final SessionManager sessionManager = SessionManager();
+//   final token = await sessionManager.getToken();
+//
+//   if (token == null || token.isEmpty) {
+//     debugPrint('Failed to retrieve token.');
+//     return;
+//   }
+//   final CheckSessionViewModel checkSessionViewModel = CheckSessionViewModel();
+//   String? fcmToken = await Utils.getFCMToken();
+//   final String appVersion = await Utils.getAppVersion();
+//
+//   String checkSessionApiRes = await checkSessionViewModel.checkSession(
+//       token, CheckSessionModel(
+//       fcmToken: '$fcmToken',
+//       appVersion: appVersion));
+//   if (checkSessionApiRes.hashCode == 200) {
+//     debugPrint('Success');
 //   }
 // }
 
