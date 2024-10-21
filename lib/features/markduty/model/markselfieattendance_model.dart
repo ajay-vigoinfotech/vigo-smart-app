@@ -44,7 +44,7 @@ class PunchDetails {
   });
 
   // Convert the class instance to a map (JSON)
-  Map<String, String> toJson() {
+  Map<String, dynamic> toJson() {
     return {
       'deviceDetails': deviceDetails,
       'deviceImei': deviceImei,

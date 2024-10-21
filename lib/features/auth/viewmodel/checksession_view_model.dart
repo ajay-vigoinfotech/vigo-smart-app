@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 
 import '../../../core/constants/constants.dart';
 import '../model/checksession_model.dart';
@@ -25,11 +26,11 @@ class CheckSessionViewModel {
         // Return the status code directly as an int
         return response.statusCode;
       } else {
-        print('Error: ${response.statusCode}');
+        debugPrint('Error: ${response.statusCode}');
         return response.statusCode; // Return the error status code as an int
       }
     } catch (e) {
-      print('Exception: $e');
+      debugPrint('Exception: $e');
       return null; // Return null if there's an exception
     }
   }

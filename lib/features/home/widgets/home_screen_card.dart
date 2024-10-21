@@ -24,36 +24,42 @@ class HomeScreenCard extends StatelessWidget {
         );
       },
       child: Card(
-        elevation: 10,
+        elevation: 6, // Subtle shadow for better card appearance
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12), // Make corners slightly rounded
+          borderRadius: BorderRadius.circular(16), // Slightly sharper corners
         ),
         child: Container(
+          padding: const EdgeInsets.all(15), // Maintain padding inside the card
           decoration: BoxDecoration(
             color: cardColor,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16), // Match the card's border radius
           ),
-          child: Center( // Align contents to the center
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center, // Center vertically
-              crossAxisAlignment: CrossAxisAlignment.center, // Center horizontally
-              children: [
-                IconTheme( // Ensures the icon is white
-                  data: const IconThemeData(color: Colors.white, size: 50), // Adjust the icon size and color
-                  child: icon,
-                ),
-                const SizedBox(height: 1), // Add space between icon and text
-                Text(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              IconTheme(
+                data: const IconThemeData(color: Colors.white, size: 50), // Icon size and color
+                child: icon,
+              ),
+              const SizedBox(width: 20), // Increased space between icon and text for balance
+              Expanded(
+                child: Text(
                   modulename,
-                  textAlign: TextAlign.center, // Ensure text is centered
+                  textAlign: TextAlign.left,
                   style: const TextStyle(
-                    fontSize: 20, // Slightly reduced font size for balance
+                    fontSize: 21, // Slightly smaller for balance
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                 ),
-              ],
-            ),
+              ),
+              const Icon(
+                Icons.arrow_forward_ios, // Add a forward arrow for navigation feedback
+                color: Colors.white54,
+                size: 18,
+              ),
+            ],
           ),
         ),
       ),

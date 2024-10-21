@@ -10,8 +10,8 @@ class Strings {
 
   static const String supervisorDutyManagementApp = "SupervisorDutyManagement App";
   static const String supervisorQRDutyManagementApp = "SupervisorQR Duty ManagementApp";
-  static const String punchHistory = "Punch\nHistory";
-  static const String fieldReportingApp = "Field\nReporting";
+  static const String punchHistory = "Punch History";
+  static const String fieldReportingApp = "Field Reporting";
   static const String fieldReportingQRApp = "FieldReportingQRApp";
   static const String siteReportingApp = "Site Reporting App";
   static const String siteReportingQRApp = "Site ReportingQR App";

@@ -259,6 +259,30 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     }
   }
 
+
+  Future<void> _loadPunchInDateTime() async {
+    final sessionManager = SessionManager();
+    final getCurrentDateViewModel = GetCurrentDateViewModel();
+    String? currentDateTime;
+
+    try {
+      currentDateTime = await getCurrentDateViewModel.getTimeDate();
+      if (currentDateTime != null) {
+        final formattedDateTime = Utils.formatDateTime(currentDateTime);
+        await sessionManager.saveCurrentDateTime(formattedDateTime);
+
+        setState(() {
+          timeDateDisplay = formattedDateTime;
+        });
+      } else {
+        currentDateTime = _setDeviceDateTime(); // Fallback to device time
+      }
+    } catch (e) {
+      debugPrint('Error fetching date from API: $e');
+      currentDateTime = _setDeviceDateTime(); // Fallback to device time
+    }
+  }
+
   String _setDeviceDateTime() {
     String currentDateTime =
         DateFormat('dd/MM/yyyy hh:mm').format(DateTime.now());
@@ -361,8 +385,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
         final String base64Image = base64Encode(compressedBytes);
         final base64InImage = base64Image;
 
-        punchTimeDateIn =
-            DateFormat('dd/MM/yyyy hh:mm a').format(DateTime.now());
+        punchTimeDateIn = DateFormat('dd/MM/yyyy hh:mm a').format(DateTime.now());
 
         showDialog(
           barrierDismissible: false,

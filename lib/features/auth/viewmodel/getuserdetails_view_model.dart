@@ -1,7 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:vigo_smart_app/core/constants/constants.dart';
 import 'package:vigo_smart_app/features/auth/model/getuserdetails.dart';
-
 import '../session_manager/session_manager.dart';
 
 class UserViewModel {

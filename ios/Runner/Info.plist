@@ -30,26 +30,19 @@
 	<string>This app requires access to the camera.</string>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>This app needs  saccess to the local network to retrieve the device's IP address.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>We need access to your location for maps functionality</string>
 	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
 	<dict>
 		<key>YourPurposeKey</key>
 		<string>The example App requires temporary access to the device's precise location.</string>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>This app needs access to location when open.</string>
+	<string>We need access to your location for maps functionality</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app require access for Photo Library usage</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
-
-	<key>NSLocationWhenInUseUsageDescription</key>
-    <string>We need access to your location for maps functionality</string>
-    <key>NSLocationAlwaysUsageDescription</key>
-    <string>We need access to your location for maps functionality</string>
-    <key>io.flutter.embedded_views_preview</key>
-    <true/>
-
-
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
@@ -63,15 +56,13 @@
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 	</array>
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>

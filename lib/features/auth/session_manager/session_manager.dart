@@ -170,12 +170,10 @@ class SessionManager {
     await prefs.setString(_intervalKey, user.interval.toString());
     await prefs.setString(_checkInTKey, user.checkInT.toString());
     await prefs.setString(_checkOutTKey, user.checkOutT.toString());
-    await prefs.setString(
-        _companyContactNoKey, user.companyContactNo.toString());
+    await prefs.setString(_companyContactNoKey, user.companyContactNo.toString());
     await prefs.setString(_companyAddressKey, user.companyAddress.toString());
     await prefs.setString(_helplineNoKey, user.helplineNo.toString());
-    await prefs.setString(
-        _helpLineWhatsappKey, user.helpLineWhatsapp.toString());
+    await prefs.setString(_helpLineWhatsappKey, user.helpLineWhatsapp.toString());
   }
 
   // Get user details

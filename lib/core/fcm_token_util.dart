@@ -5,8 +5,7 @@ import 'package:flutter/widgets.dart';
 
 class NotificationUtils {
   static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
-  static final FlutterLocalNotificationsPlugin _localNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  static final FlutterLocalNotificationsPlugin _localNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
   // Get FCM Device Token
   static Future<String> getDeviceToken() async {
