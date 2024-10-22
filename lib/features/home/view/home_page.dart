@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vigo_smart_app/features/home/widgets/setting_page.dart';
 import 'package:vigo_smart_app/features/markduty/view/markduty_page.dart';
 import 'package:vigo_smart_app/features/punchHistory/view/punch_history.dart';
@@ -36,6 +38,9 @@ class _HomePageState extends State<HomePage> {
   String? userName;
   String? name;
   String? punchTimeDateIn;
+  String helplineNo = '';
+  String? helpLineWhatsapp = '';
+
   final _formKey = GlobalKey<FormState>();
 
   TextEditingController partnerCodeController = TextEditingController();
@@ -71,6 +76,13 @@ class _HomePageState extends State<HomePage> {
       'page': const PunchHistory(),
     },
     {
+      'code': 'SupervisorDutyManagementApp',
+      'icon': AppConstants.markDutyIcon,
+      'name': Strings.supervisorDutyManagementApp,
+      'color': Pallete.btn1,
+      'page': const MarkdutyPage(),
+    },
+    {
       'code': 'PunchHistory',
       'icon': AppConstants.punchHistoryIcon,
       'name': Strings.punchHistory,
@@ -90,13 +102,6 @@ class _HomePageState extends State<HomePage> {
       'name': Strings.settingsApp,
       'color': Pallete.greyColor,
       'page': const SettingPage(),
-    },
-    {
-      'code': 'SupervisorDutyManagementApp',
-      'icon': AppConstants.markDutyIcon,
-      'name': Strings.calendarViewApp,
-      'color': Pallete.btn1,
-      'page': const MarkdutyPage(),
     },
     {
       'code': 'SiteReportingApp',
@@ -168,6 +173,8 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    getModules();
+    getUserData();
     checkUserSession();
     sessionManager.getModuleCodes().then((savedModules) {
       if (savedModules != null && savedModules.isNotEmpty) {
@@ -177,11 +184,26 @@ class _HomePageState extends State<HomePage> {
               .toList();
         });
       } else {
-        // If no modules are saved, keep filteredModules empty or handle as needed
         filteredModules = [];
       }
     });
   }
+
+  void refreshServerData() async {
+    List<String>? updatedModules = await sessionManager.getModuleCodes();
+
+    setState(() {
+      filteredModules = allModules
+          .where((module) => updatedModules!.contains(module['code']))
+          .toList();
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Modules updated successfully')),
+    );
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -249,20 +271,101 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
 
-          // Space at the bottom of the page
-          const SizedBox(height: 20), // Equivalent to 2 lines of space
-
-          // Add any content at the bottom of the page here
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 10),
-            child: Text(
-              'Content at the bottom (2-line space)',
-              style: TextStyle(fontSize: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                GestureDetector(
+                  onTap: () => _launchDialer(helplineNo),
+                  child: const Icon(
+                    Icons.support_agent_sharp,
+                    color: Colors.green,
+                    size: 40,
+                  ),
+                ),
+                // const SizedBox(width: 5),
+                GestureDetector(
+                  onTap: () => _launchDialer(helplineNo),
+                  child: Text(
+                    helplineNo,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 17,
+                      color: Colors.blue,
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
+          const SizedBox(width: 5),
+
+          //whatsapp support
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                GestureDetector(
+                  onTap: () => _launchWhatsApp(helpLineWhatsapp!),
+                  child: SvgPicture.asset(
+                    'assets/icons/whatsapp.svg',
+                    width: 35,
+                    height: 35,
+                  ),
+                ),
+
+                const SizedBox(width: 5),
+
+                GestureDetector(
+                  onTap: () => _launchWhatsApp(helpLineWhatsapp!),
+                  child: Text(
+                    helpLineWhatsapp!,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 17,
+                      color: Colors.blue,
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 30)
         ],
       ),
     );
+  }
+
+  // Function to launch the WhatsApp
+  Future<void> _launchDialer(String number) async {
+    final Uri phoneUri = Uri(scheme: 'tel', path: number);
+    if (await canLaunchUrl(phoneUri)) {
+      await launchUrl(phoneUri);
+    } else {
+      throw 'Could not launch $number';
+    }
+  }
+
+  // Function to launch WhatsApp
+  Future<void> _launchWhatsApp(String number) async {
+    final Uri whatsappUri = Uri(
+      scheme: 'https',
+      host: 'api.whatsapp.com',
+      path: 'send',
+      queryParameters: {
+        'phone': number,
+        'text': 'Hello',
+      },
+    );
+    if (await canLaunchUrl(whatsappUri)) {
+      await launchUrl(whatsappUri);
+    } else {
+      throw 'Could not launch WhatsApp with $number';
+    }
   }
 
   void _showBottomSheet(BuildContext context) {
@@ -289,6 +392,7 @@ class _HomePageState extends State<HomePage> {
                   getUserData();
                   lastSelfieAtt(SelfieAttendanceModel());
                   getModules();
+                  refreshServerData();
                 },
               ),
               ListTile(
@@ -364,12 +468,14 @@ class _HomePageState extends State<HomePage> {
       final UserViewModel userViewModel = UserViewModel();
       userViewModel.getUserDetails(token!);
       sessionManager.getUserDetails().then((data) async {
-        setState(() {
+        setState(() async {
           employeeCode = data.employeeCode;
           name = data.name;
           compCode = data.compCode;
           compName = data.compName;
-          userName = data.userName;
+          userName = await sessionManager.getUsername();
+          helplineNo = data.helplineNo!;
+          helpLineWhatsapp = data.helpLineWhatsapp;
         });
       }).catchError((onError) {
         debugPrint(onError.toString());
@@ -406,17 +512,6 @@ class _HomePageState extends State<HomePage> {
       debugPrint('No Token Found');
     }
   }
-
-  // void onSelected(BuildContext context, int item) {
-  //   switch (item) {
-  //     case 0:
-  //       // Handle Option 1 action
-  //       break;
-  //     case 1:
-  //       // Handle Option 2 action
-  //       break;
-  //   }
-  // }
 
   Future<void> checkUserSession() async {
     final SessionManager sessionManager = SessionManager();

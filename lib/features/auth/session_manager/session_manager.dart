@@ -10,11 +10,9 @@ class SessionManager {
   static const String _usernameKey = 'username';
   static const String _accessToken = 'access_token';
   static const String _moduleCodesKey = 'module_codes';
-  static const String _userDetailsKey = 'user_details';
-  static const String _SelfieAttendanceKey = 'selfie_attendance';
   static const String _currentDateTimeKey = 'currentDateTime';
-  static const String _supportContactKey = 'supportContact';
-  static const String _checkSessionKey = 'checkSession';
+  static const String _punchIntDateTimeKey = '_punchIntDateTimeKey';
+
 
   //save last selfie att strings
   static const String _checkinId = 'checkinId';
@@ -170,10 +168,12 @@ class SessionManager {
     await prefs.setString(_intervalKey, user.interval.toString());
     await prefs.setString(_checkInTKey, user.checkInT.toString());
     await prefs.setString(_checkOutTKey, user.checkOutT.toString());
-    await prefs.setString(_companyContactNoKey, user.companyContactNo.toString());
+    await prefs.setString(
+        _companyContactNoKey, user.companyContactNo.toString());
     await prefs.setString(_companyAddressKey, user.companyAddress.toString());
     await prefs.setString(_helplineNoKey, user.helplineNo.toString());
-    await prefs.setString(_helpLineWhatsappKey, user.helpLineWhatsapp.toString());
+    await prefs.setString(
+        _helpLineWhatsappKey, user.helpLineWhatsapp.toString());
   }
 
   // Get user details
@@ -227,24 +227,26 @@ class SessionManager {
     );
   }
 
-  Future<void> saveSelfieAttendance(SelfieAttendanceModel selfieAttendanceModel) async {
-    if (selfieAttendanceModel.table != null && selfieAttendanceModel.table!.isNotEmpty) {
+  Future<void> saveSelfieAttendance(
+      SelfieAttendanceModel selfieAttendanceModel) async {
+    if (selfieAttendanceModel.table != null &&
+        selfieAttendanceModel.table!.isNotEmpty) {
       final prefs = await SharedPreferences.getInstance();
 
-      await prefs.setString(
-          _uniqueId, selfieAttendanceModel.table![0].uniqueId?.toString() ?? "");
-      await prefs.setString(
-          _dateTimeIn, selfieAttendanceModel.table![0].dateTimeIn?.toString() ?? "");
-      await prefs.setString(
-          _dateTimeOut, selfieAttendanceModel.table![0].dateTimeOut?.toString() ?? "");
-      await prefs.setString(
-          _inKmsDriven, selfieAttendanceModel.table![0].inKmsDriven?.toString() ?? "");
-      await prefs.setString(
-          _outKmsDriven, selfieAttendanceModel.table![0].outKmsDriven?.toString() ?? "");
+      await prefs.setString(_uniqueId,
+          selfieAttendanceModel.table![0].uniqueId?.toString() ?? "");
+      await prefs.setString(_dateTimeIn,
+          selfieAttendanceModel.table![0].dateTimeIn?.toString() ?? "");
+      await prefs.setString(_dateTimeOut,
+          selfieAttendanceModel.table![0].dateTimeOut?.toString() ?? "");
+      await prefs.setString(_inKmsDriven,
+          selfieAttendanceModel.table![0].inKmsDriven?.toString() ?? "");
+      await prefs.setString(_outKmsDriven,
+          selfieAttendanceModel.table![0].outKmsDriven?.toString() ?? "");
       await prefs.setString(
           _siteId, selfieAttendanceModel.table![0].siteId?.toString() ?? "");
-      await prefs.setString(
-          _siteName, selfieAttendanceModel.table![0].siteName?.toString() ?? "");
+      await prefs.setString(_siteName,
+          selfieAttendanceModel.table![0].siteName?.toString() ?? "");
 
       print('Selfie Attendance saved successfully!');
     } else {
@@ -272,47 +274,9 @@ class SessionManager {
     await prefs.setString(_currentDateTimeKey, dateTime);
   }
 
-// Get saved DateTime
-  Future<String?> getTimeDate() async {
+  // Save Current DateTime
+  Future<void> savePunchInDateTime(String dateTime) async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_currentDateTimeKey);
-  }
-
-  // Save SupportContact
-  Future<void> saveSupportContact(String contact) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_supportContactKey, contact);
-  }
-
-  // Get SupportContact
-  Future<String?> getStoredSupportContact() async {
-    final prefs = await SharedPreferences.getInstance();
-    final supportContact = prefs.getString(_supportContactKey);
-    return supportContact;
-  }
-
-// Save punch-in image path to shared preferences
-  Future<void> savePunchInPath(String path) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('punchInImagePath', path);
-  }
-
-  // Save punch-in image path to shared preferences
-  Future<void> savePunchOutPath(String path) async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('savePunchOutPath', path);
-  }
-
-// Get punch-in image path from shared preferences
-  Future<String?> getPunchInPath() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    return prefs.getString('punchInImagePath');
+    await prefs.setString(_punchIntDateTimeKey, dateTime);
   }
 }
-
-
-
-
-
-
-

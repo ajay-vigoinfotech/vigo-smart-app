@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'package:vigo_smart_app/features/auth/model/getlastselfieattendancemodel.dart';
 import 'package:vigo_smart_app/features/markduty/model/markselfieattendance_model.dart';
+import 'package:vigo_smart_app/testing/success_dialog.dart';
 import '../../../core/utils.dart';
 import '../../auth/session_manager/session_manager.dart';
 import '../viewmodel/get_current_date_view_model.dart';
@@ -128,18 +129,12 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                           ),
                         ),
                         onPressed: () {
-                          if ((punchTimeDateIn == null &&
-                                  (punchTimeDateOut == null ||
-                                      punchTimeDateOut == "-")) ||
-                              (punchTimeDateIn != null &&
-                                  punchTimeDateOut != null &&
+                          if ((punchTimeDateIn == null && (punchTimeDateOut == null || punchTimeDateOut == "-")) || (punchTimeDateIn != null && punchTimeDateOut != null &&
                                   punchTimeDateOut != "-")) {
                             setState(() {
                               _onMarkIn();
                             });
-                          } else if (punchTimeDateIn != null &&
-                              (punchTimeDateOut == null ||
-                                  punchTimeDateOut == "-")) {
+                          } else if (punchTimeDateIn != null && (punchTimeDateOut == null || punchTimeDateOut == "-")) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Already marked IN!'),
@@ -172,8 +167,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                           fontSize: 14, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 5),
-                    if (savedPunchOutImagePath != null &&
-                        savedPunchOutImagePath!.isNotEmpty)
+                    if (savedPunchOutImagePath != null && savedPunchOutImagePath!.isNotEmpty)
                       Image.file(
                         File(savedPunchOutImagePath!),
                         height: 130,
@@ -192,15 +186,11 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                           ),
                         ),
                         onPressed: () {
-                          if (punchTimeDateIn != null &&
-                              punchTimeDateIn != "-" &&
-                              (punchTimeDateOut == null ||
-                                  punchTimeDateOut == "-")) {
+                          if (punchTimeDateIn != null && punchTimeDateIn != "-" && (punchTimeDateOut == null || punchTimeDateOut == "-")) {
                             setState(() {
                               _onMarkOut();
                             });
-                          } else if (punchTimeDateIn == null ||
-                              punchTimeDateIn == "-") {
+                          } else if (punchTimeDateIn == null || punchTimeDateIn == "-") {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content:
@@ -237,7 +227,6 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   }
 
   Future<void> _loadCurrentDateTime() async {
-    final sessionManager = SessionManager();
     final getCurrentDateViewModel = GetCurrentDateViewModel();
     String? currentDateTime;
 
@@ -245,37 +234,11 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
       currentDateTime = await getCurrentDateViewModel.getTimeDate();
       if (currentDateTime != null) {
         final formattedDateTime = Utils.formatDateTime(currentDateTime);
-        await sessionManager.saveCurrentDateTime(formattedDateTime);
-
         setState(() {
           timeDateDisplay = formattedDateTime;
         });
       } else {
-        currentDateTime = _setDeviceDateTime(); // Fallback to device time
-      }
-    } catch (e) {
-      debugPrint('Error fetching date from API: $e');
-      currentDateTime = _setDeviceDateTime(); // Fallback to device time
-    }
-  }
-
-
-  Future<void> _loadPunchInDateTime() async {
-    final sessionManager = SessionManager();
-    final getCurrentDateViewModel = GetCurrentDateViewModel();
-    String? currentDateTime;
-
-    try {
-      currentDateTime = await getCurrentDateViewModel.getTimeDate();
-      if (currentDateTime != null) {
-        final formattedDateTime = Utils.formatDateTime(currentDateTime);
-        await sessionManager.saveCurrentDateTime(formattedDateTime);
-
-        setState(() {
-          timeDateDisplay = formattedDateTime;
-        });
-      } else {
-        currentDateTime = _setDeviceDateTime(); // Fallback to device time
+        currentDateTime = _setDeviceDateTime();
       }
     } catch (e) {
       debugPrint('Error fetching date from API: $e');
@@ -285,12 +248,13 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
 
   String _setDeviceDateTime() {
     String currentDateTime =
-        DateFormat('dd/MM/yyyy hh:mm').format(DateTime.now());
+    DateFormat('dd/MM/yyyy hh:mm').format(DateTime.now());
     setState(() {
       timeDateDisplay = currentDateTime;
     });
     return currentDateTime;
   }
+
 
   void _onLocationReceived(String formattedLocation) {
     setState(() {
@@ -331,39 +295,45 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   Future<void> _loadPunchOutImageFromSP() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      savedPunchOutImagePath =
-          prefs.getString('savedPunchOutImagePath'); // Load image path
+      savedPunchOutImagePath = prefs.getString('savedPunchOutImagePath');
     });
   }
 
   // Save Punch Out image path to SharedPreferences
   Future<void> _savePunchOutImageToSP(String imagePath) async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.setString('savedPunchOutImagePath', imagePath); // Save image path
+    prefs.setString('savedPunchOutImagePath', imagePath);
     setState(() {
-      savedPunchOutImagePath = imagePath; // Update UI with new image
+      savedPunchOutImagePath = imagePath;
     });
   }
 
   // Clear Punch Out image from SharedPreferences
   Future<void> _clearPunchOutImageFromSP() async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.remove('savedPunchOutImagePath'); // Remove Punch Out image path
+    prefs.remove('savedPunchOutImagePath');
     setState(() {
-      savedPunchOutImagePath = null; // Update UI to clear image
+      savedPunchOutImagePath = null;
     });
   }
+
+  // void showSuccessDialog(BuildContext context){
+  //   showDialog(context: context,
+  //       builder: (BuildContext context) {
+  //         return SuccessDialog();
+  //       });
+  // }
 
   Future<void> _onMarkIn() async {
     if (formattedLatLng.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             content:
-                Text('No location found. Please enable location services.')),
+                Text('No location found. Please enable location services.'),
+        ),
       );
-      return; // Exit the function early
+      return;
     }
-    // await _clearPunchOutImageFromSP();
 
     final ImagePicker picker = ImagePicker();
     final XFile? markInImage = await picker.pickImage(
@@ -421,9 +391,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                 ),
                 ElevatedButton(
                   onPressed: () async {
-                    if (punchTimeDateIn != null &&
-                        inKm != null &&
-                        inKm!.isNotEmpty) {
+                    if (punchTimeDateIn != null && inKm != null && inKm!.isNotEmpty) {
                       await _saveImageToSP(markInImage.path);
                       uniqueIdv4 = const Uuid().v4();
 
@@ -513,13 +481,12 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
 // Function called when 'Mark Out' is clicked
   Future<void> _onMarkOut() async {
     if (formattedLatLng.isEmpty) {
-      // Show a message indicating no location found
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
             content:
                 Text('No location found. Please enable location services.')),
       );
-      return; // Exit the function early
+      return;
     }
     final ImagePicker picker = ImagePicker();
     final XFile? markOutImage =
@@ -527,8 +494,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
 
     if (markOutImage != null) {
       final image = File(markOutImage.path);
-      punchTimeDateOut =
-          DateFormat('dd/MM/yyyy hh:mm a').format(DateTime.now());
+      punchTimeDateOut = DateFormat('dd/MM/yyyy hh:mm a').format(DateTime.now());
 
       // Compress the image
       final compressedImageBytes = await FlutterImageCompress.compressWithFile(
@@ -595,21 +561,17 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                         ],
                       );
                       // Save attendance model using sessionManager
-                      await sessionManager
-                          .saveSelfieAttendance(selfieAttendanceModel);
+                      await sessionManager.saveSelfieAttendance(selfieAttendanceModel);
 
                       String? token = await sessionManager.getToken();
-                      MarkSelfieAttendance markSelfieAttendance =
-                          MarkSelfieAttendance();
-                      final String deviceDetails =
-                          await Utils.getDeviceDetails(context);
+                      MarkSelfieAttendance markSelfieAttendance = MarkSelfieAttendance();
+                      final String deviceDetails = await Utils.getDeviceDetails(context);
                       final String appVersion = await Utils.getAppVersion();
                       final String ipAddress = await Utils.getIpAddress();
                       final String uniqueId = await Utils.getUniqueID();
                       final int battery = await Utils.getBatteryLevel();
 
-                      punchTimeDateOut =
-                          DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now());
+                      punchTimeDateOut = DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now());
 
                       final String fullDeviceDetails = deviceDetails;
 

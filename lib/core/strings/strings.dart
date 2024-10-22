@@ -8,9 +8,9 @@ class Strings {
   static const String privacyPolicy = "Privacy Policy";
   static const String login = "Login";
 
-  static const String supervisorDutyManagementApp = "SupervisorDutyManagement App";
+  static const String supervisorDutyManagementApp = "Attendance";
   static const String supervisorQRDutyManagementApp = "SupervisorQR Duty ManagementApp";
-  static const String punchHistory = "Punch History";
+  static const String punchHistory = "Attendance History";
   static const String fieldReportingApp = "Field Reporting";
   static const String fieldReportingQRApp = "FieldReportingQRApp";
   static const String siteReportingApp = "Site Reporting App";

@@ -48,7 +48,7 @@ class HomeScreenCard extends StatelessWidget {
                   modulename,
                   textAlign: TextAlign.left,
                   style: const TextStyle(
-                    fontSize: 21, // Slightly smaller for balance
+                    fontSize: 20, // Slightly smaller for balance
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
