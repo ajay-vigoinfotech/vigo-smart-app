@@ -9,7 +9,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'package:vigo_smart_app/features/auth/model/getlastselfieattendancemodel.dart';
 import 'package:vigo_smart_app/features/markduty/model/markselfieattendance_model.dart';
-import 'package:vigo_smart_app/testing/success_dialog.dart';
 import '../../../core/utils.dart';
 import '../../auth/session_manager/session_manager.dart';
 import '../viewmodel/get_current_date_view_model.dart';
@@ -47,7 +46,6 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     super.initState();
     _loadPunchInImageFromSP();
     _loadPunchOutImageFromSP();
-
     sessionManager.getCheckinData().then((data) {
       if (mounted) {
         setState(() {
@@ -69,30 +67,10 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
         title: const Text('Mark Duty'),
       ),
       body: SingleChildScrollView(
-        // Wrap the body in SingleChildScrollView
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.all(15.0),
-              child: Center(
-                child: Text(
-                  '$timeDateDisplay',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(
-              height: 270,
-              width: double.infinity,
-              child: MapPage(
-                locationReceived: _onLocationReceived,
-                speedReceived: _onSpeedReceived,
-                accuracyReceived: _onAccuracyReceived,
-              ),
-            ),
+            _buildTimeDateDisplay(),
+            _buildMapView(),
             const SizedBox(height: 25),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -226,12 +204,44 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     );
   }
 
+
+  Widget _buildTimeDateDisplay() {
+    return Padding(
+      padding: const EdgeInsets.all(15.0),
+      child: Center(
+        child: timeDateDisplay == null || timeDateDisplay!.isEmpty
+            ? const CircularProgressIndicator() // Show progress indicator when loading
+            : Text(
+          '$timeDateDisplay', // Show the actual time/date when available
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
+
+  Widget _buildMapView() {
+    return SizedBox(
+      height: 270,
+      width: double.infinity,
+      child: MapPage(
+        locationReceived: _onLocationReceived,
+        speedReceived: _onSpeedReceived,
+        accuracyReceived: _onAccuracyReceived,
+      ),
+    );
+  }
+
   Future<void> _loadCurrentDateTime() async {
     final getCurrentDateViewModel = GetCurrentDateViewModel();
     String? currentDateTime;
 
     try {
       currentDateTime = await getCurrentDateViewModel.getTimeDate();
+
       if (currentDateTime != null) {
         final formattedDateTime = Utils.formatDateTime(currentDateTime);
         setState(() {
@@ -242,19 +252,17 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
       }
     } catch (e) {
       debugPrint('Error fetching date from API: $e');
-      currentDateTime = _setDeviceDateTime(); // Fallback to device time
+      currentDateTime = _setDeviceDateTime();
     }
   }
 
   String _setDeviceDateTime() {
-    String currentDateTime =
-    DateFormat('dd/MM/yyyy hh:mm').format(DateTime.now());
+    String currentDateTime = DateFormat('dd/MM/yyyy hh:mm').format(DateTime.now());
     setState(() {
       timeDateDisplay = currentDateTime;
     });
     return currentDateTime;
   }
-
 
   void _onLocationReceived(String formattedLocation) {
     setState(() {
@@ -328,8 +336,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     if (formattedLatLng.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content:
-                Text('No location found. Please enable location services.'),
+          content: Text('No location found. Please enable location services.'),
         ),
       );
       return;
@@ -344,7 +351,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     if (markInImage != null) {
       final File image = File(markInImage.path);
       final List<int>? compressedBytes =
-          await FlutterImageCompress.compressWithFile(
+      await FlutterImageCompress.compressWithFile(
         image.absolute.path,
         minWidth: 400,
         minHeight: 400,
@@ -354,8 +361,6 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
       if (compressedBytes != null) {
         final String base64Image = base64Encode(compressedBytes);
         final base64InImage = base64Image;
-
-        punchTimeDateIn = DateFormat('dd/MM/yyyy hh:mm a').format(DateTime.now());
 
         showDialog(
           barrierDismissible: false,
@@ -391,7 +396,12 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                 ),
                 ElevatedButton(
                   onPressed: () async {
-                    if (punchTimeDateIn != null && inKm != null && inKm!.isNotEmpty) {
+                    if (inKm != null && inKm!.isNotEmpty) {
+                      await _loadCurrentDateTime();
+                      if (timeDateDisplay != null) {
+                        punchTimeDateIn = timeDateDisplay;
+                      }
+
                       await _saveImageToSP(markInImage.path);
                       uniqueIdv4 = const Uuid().v4();
 
@@ -419,33 +429,45 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                       final String uniqueId = await Utils.getUniqueID();
                       final int battery = await Utils.getBatteryLevel();
 
-                      punchTimeDateIn = DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now());
+                      // Function to format the date
+                      String formatDate(String dateString) {
+                        DateFormat inputFormat = DateFormat("dd/MM/yyyy hh:mm a");
+                        DateTime dateTime = inputFormat.parse(dateString);
+                        DateFormat outputFormat = DateFormat("yyyy-MM-dd HH:mm");
+                        return outputFormat.format(dateTime);
+                      }
 
-                      String apiResponse =
-                          await markSelfieAttendance.markAttendance(
-                              token!,
-                              PunchDetails(
-                                deviceDetails: deviceDetails,
-                                deviceImei: uniqueId,
-                                deviceIp: ipAddress,
-                                userPhoto: base64InImage,
-                                remark: dutyInRemark ?? '',
-                                isOffline: '',
-                                version: 'v$appVersion',
-                                dataStatus: '',
-                                checkInId: uniqueIdv4,
-                                punchAction: 'IN',
-                                locationAccuracy: formattedAccuracyValue,
-                                locationSpeed: formattedSpeedValue,
-                                batteryStatus: '$battery%',
-                                locationStatus: 'true',
-                                time: '$punchTimeDateIn',
-                                latLong: formattedLatLng,
-                                kmsDriven: '$inKm',
-                                siteId: '',
-                                locationId: '',
-                                distance: '',
-                              ));
+                      // Format the date before using it
+                      String formattedDateTimeIn = formatDate(punchTimeDateIn!);
+
+                      //Use server time
+                      // punchTimeDateIn = DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now());
+
+                      String apiResponse = await markSelfieAttendance.markAttendance(
+                        token!,
+                        PunchDetails(
+                          deviceDetails: deviceDetails,
+                          deviceImei: uniqueId,
+                          deviceIp: ipAddress,
+                          userPhoto: base64InImage,
+                          remark: dutyInRemark ?? '',
+                          isOffline: '',
+                          version: 'v$appVersion',
+                          dataStatus: '',
+                          checkInId: uniqueIdv4,
+                          punchAction: 'IN',
+                          locationAccuracy: formattedAccuracyValue,
+                          locationSpeed: formattedSpeedValue,
+                          batteryStatus: '$battery%',
+                          locationStatus: 'true',
+                          time: formattedDateTimeIn, // Server time
+                          latLong: formattedLatLng,
+                          kmsDriven: '$inKm',
+                          siteId: '',
+                          locationId: '',
+                          distance: '',
+                        ),
+                      );
 
                       await _clearPunchOutImageFromSP();
 
@@ -477,6 +499,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
       }
     }
   }
+
 
 // Function called when 'Mark Out' is clicked
   Future<void> _onMarkOut() async {
@@ -544,15 +567,20 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                 ElevatedButton(
                   onPressed: () async {
                     if (outKm != null && outKm!.isNotEmpty) {
-                      // Save image path and punch out data
+                      await _loadCurrentDateTime();
+                      if(timeDateDisplay != null){
+                        punchTimeDateOut = timeDateDisplay;
+                      }
+
                       await _savePunchOutImageToSP(markOutImage.path);
-                      SelfieAttendanceModel selfieAttendanceModel =
-                          SelfieAttendanceModel(
+
+
+                      SelfieAttendanceModel selfieAttendanceModel = SelfieAttendanceModel(
                         table: [
                           AttendanceTable(
                             uniqueId: uniqueIdv4,
-                            dateTimeIn: punchTimeDateIn,
-                            inKmsDriven: '$inKm',
+                            dateTimeIn: punchTimeDateIn ?? '-',
+                            inKmsDriven: (inKm == null || inKm!.isEmpty) ? '-' : '$inKm',
                             dateTimeOut: punchTimeDateOut,
                             outKmsDriven: '$outKm KM',
                             siteId: "",
@@ -571,12 +599,23 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                       final String uniqueId = await Utils.getUniqueID();
                       final int battery = await Utils.getBatteryLevel();
 
-                      punchTimeDateOut = DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now());
+                      // punchTimeDateOut = DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now());
+
+                      // Function to format the date
+                      String formatDate(String dateString) {
+                        DateFormat inputFormat = DateFormat("dd/MM/yyyy hh:mm a");
+                        DateTime dateTime = inputFormat.parse(dateString);
+                        DateFormat outputFormat = DateFormat("yyyy-MM-dd HH:mm");
+                        return outputFormat.format(dateTime);
+                      }
+
+                      // Format the date before using it
+                      String formattedDateTimeOut = formatDate(punchTimeDateOut!);
+
 
                       final String fullDeviceDetails = deviceDetails;
 
-                      String apiResponse =
-                          await markSelfieAttendance.markAttendance(
+                      String apiResponse = await markSelfieAttendance.markAttendance(
                         token!,
                         PunchDetails(
                           deviceDetails: fullDeviceDetails,
@@ -593,7 +632,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                           locationSpeed: formattedSpeedValue,
                           batteryStatus: '$battery',
                           locationStatus: '',
-                          time: '$punchTimeDateOut',
+                          time: formattedDateTimeOut,
                           latLong: formattedLatLng,
                           kmsDriven: '$outKm',
                           siteId: '',
@@ -632,3 +671,52 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     }
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Future<void> _loadCurrentDateTime() async {
+//   final getCurrentDateViewModel = GetCurrentDateViewModel();
+//   String? currentDateTime;
+//
+//   try {
+//     // Attempt to get server time with a 10-second timeout
+//     currentDateTime = await Future.any([
+//       getCurrentDateViewModel.getTimeDate(),
+//       Future.delayed(Duration(seconds: 10), () => null) // Fallback after 10 seconds
+//     ]);
+//
+//     // If server time is retrieved within 10 seconds, format and display it
+//     if (currentDateTime != null) {
+//       final formattedDateTime = Utils.formatDateTime(currentDateTime);
+//       setState(() {
+//         timeDateDisplay = formattedDateTime;
+//       });
+//     } else {
+//       // If no server time, use device time as fallback
+//       currentDateTime = _setDeviceDateTime();
+//     }
+//   } catch (e) {
+//     debugPrint('Error fetching date from API: $e');
+//     currentDateTime = _setDeviceDateTime(); // Fallback to device time
+//   }
+// }
+//
+// String _setDeviceDateTime() {
+//   String currentDateTime = DateFormat('dd/MM/yyyy hh:mm').format(DateTime.now());
+//   setState(() {
+//     timeDateDisplay = currentDateTime;
+//   });
+//   return currentDateTime;
+// }
+

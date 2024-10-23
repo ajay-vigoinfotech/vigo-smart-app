@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:vigo_smart_app/features/auth/model/checksession_model.dart';
 import 'package:vigo_smart_app/features/auth/model/marklogin_model.dart';
 import 'package:vigo_smart_app/features/auth/viewmodel/checksession_view_model.dart';
 import 'package:vigo_smart_app/features/auth/viewmodel/getuserdetails_view_model.dart';
@@ -31,11 +30,102 @@ class _LoginPageState extends State<LoginPage> {
 
   final _formKey = GlobalKey<FormState>();
   bool isPasswordVisible = false;
+
   final LoginViewModel _viewModel = LoginViewModel();
   final MarkLoginViewModel markLoginViewModel = MarkLoginViewModel();
   final UserViewModel userViewModel = UserViewModel();
   final GetlastselfieattViewModel getlastselfieattViewModel = GetlastselfieattViewModel();
   final CheckSessionViewModel checkSessionViewModel = CheckSessionViewModel();
+
+  @override
+  void initState() {
+
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: constraints.maxWidth * 0.1,
+                vertical: constraints.maxHeight * 0.05,
+              ),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 50),
+                    _buildLoginImage(constraints),
+                    const SizedBox(height: 10),
+                    _buildLoginTitle(),
+                    const SizedBox(height: 30),
+                    AuthField(
+                      labelText: Strings.partnerCode,
+                      controller: _partnerCodeController,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Partner Code is Required';
+                        }
+                        _partnerCodeController.text = value.trim();
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    AuthField(
+                      labelText: Strings.userID,
+                      controller: _userIDController,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'User ID is Required';
+                        }
+                        _userIDController.text = value.trim();
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    AuthField(
+                      labelText: Strings.password,
+                      controller: _passwordController,
+                      obscureText: !isPasswordVisible,
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          isPasswordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            isPasswordVisible = !isPasswordVisible;
+                          });
+                        },
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Password is Required';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 40),
+                    _buildSubmitButton(),
+                    const SizedBox(height: 20),
+                    const PrivacyPolicy(),
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
 
   Future<void> _onSubmit() async {
     if (_formKey.currentState?.validate() ?? false) {
@@ -134,90 +224,6 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          return SingleChildScrollView(
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: constraints.maxWidth * 0.1,
-                vertical: constraints.maxHeight * 0.05,
-              ),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 50),
-                    _buildLoginImage(constraints),
-                    const SizedBox(height: 10),
-                    _buildLoginTitle(),
-                    const SizedBox(height: 30),
-                    AuthField(
-                      labelText: Strings.partnerCode,
-                      controller: _partnerCodeController,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Partner Code is Required';
-                        }
-                        _partnerCodeController.text = value.trim();
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    AuthField(
-                      labelText: Strings.userID,
-                      controller: _userIDController,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'User ID is Required';
-                        }
-                        _userIDController.text = value.trim();
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    AuthField(
-                      labelText: Strings.password,
-                      controller: _passwordController,
-                      obscureText: !isPasswordVisible,
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          isPasswordVisible
-                              ? Icons.visibility
-                              : Icons.visibility_off,
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            isPasswordVisible = !isPasswordVisible;
-                          });
-                        },
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Password is Required';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 40),
-                    _buildSubmitButton(),
-                    const SizedBox(height: 20),
-                    const PrivacyPolicy(),
-                    const SizedBox(height: 20),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
   }
 
   Widget _buildLoginImage(BoxConstraints constraints) {

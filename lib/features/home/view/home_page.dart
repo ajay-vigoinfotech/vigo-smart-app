@@ -173,8 +173,10 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    getModules();
-    getUserData();
+    getUserData().then((_) {
+      getModules();
+      refreshServerData();
+    });
     checkUserSession();
     sessionManager.getModuleCodes().then((savedModules) {
       if (savedModules != null && savedModules.isNotEmpty) {
@@ -188,22 +190,6 @@ class _HomePageState extends State<HomePage> {
       }
     });
   }
-
-  void refreshServerData() async {
-    List<String>? updatedModules = await sessionManager.getModuleCodes();
-
-    setState(() {
-      filteredModules = allModules
-          .where((module) => updatedModules!.contains(module['code']))
-          .toList();
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Modules updated successfully')),
-    );
-  }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -230,142 +216,148 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Column(
         children: [
-          // Space below the AppBar
           const SizedBox(height: 5),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Text(
-              '$employeeCode - $name',
-              style: const TextStyle(
-                  fontSize: 18,
-                  color: Colors.redAccent,
-                  fontWeight: FontWeight.w600),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Text(
-              '$compName ($compCode)',
-              style: const TextStyle(fontSize: 16),
-            ),
-          ),
-          // Expanded list view in the middle of the page
+          _buildEmployeeInfo(employeeCode, name, compName, compCode),
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: ListView.builder(
-                itemCount: filteredModules.length,
-                itemBuilder: (context, index) {
-                  final module = filteredModules[index];
+            child: FutureBuilder<List<Map<String, dynamic>>>(
+              future: sessionManager.getModuleCodes().then((savedModules) {
+                return allModules
+                    .where((module) => savedModules != null && savedModules.contains(module['code']))
+                    .toList();
+              }),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 5.0),
-                    child: HomeScreenCard(
-                      icon: module['icon'],
-                      modulename: module['name'],
-                      cardColor: module['color'],
-                      nextPage: module['page'],
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: ListView.builder(
+                      itemCount: snapshot.data!.length,
+                      itemBuilder: (context, index) {
+                        final module = snapshot.data![index];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 5.0),
+                          child: HomeScreenCard(
+                            icon: module['icon'],
+                            modulename: module['name'],
+                            cardColor: module['color'],
+                            nextPage: module['page'],
+                          ),
+                        );
+                      },
                     ),
                   );
-                },
-              ),
+                } else {
+                  return const Center(child: Text('No modules found'));
+                }
+              },
             ),
           ),
-
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                GestureDetector(
-                  onTap: () => _launchDialer(helplineNo),
-                  child: const Icon(
-                    Icons.support_agent_sharp,
-                    color: Colors.green,
-                    size: 40,
-                  ),
-                ),
-                // const SizedBox(width: 5),
-                GestureDetector(
-                  onTap: () => _launchDialer(helplineNo),
-                  child: Text(
-                    helplineNo,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 17,
-                      color: Colors.blue,
-                      decoration: TextDecoration.none,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 5),
-
-          //whatsapp support
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                GestureDetector(
-                  onTap: () => _launchWhatsApp(helpLineWhatsapp!),
-                  child: SvgPicture.asset(
-                    'assets/icons/whatsapp.svg',
-                    width: 35,
-                    height: 35,
-                  ),
-                ),
-
-                const SizedBox(width: 5),
-
-                GestureDetector(
-                  onTap: () => _launchWhatsApp(helpLineWhatsapp!),
-                  child: Text(
-                    helpLineWhatsapp!,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 17,
-                      color: Colors.blue,
-                      decoration: TextDecoration.none,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          _buildSupportContact(),
           const SizedBox(height: 30)
         ],
       ),
     );
   }
 
-  // Function to launch the WhatsApp
-  Future<void> _launchDialer(String number) async {
-    final Uri phoneUri = Uri(scheme: 'tel', path: number);
-    if (await canLaunchUrl(phoneUri)) {
-      await launchUrl(phoneUri);
-    } else {
-      throw 'Could not launch $number';
-    }
+  Widget _buildEmployeeInfo(String? employeeCode, String? name, String? compName, String? compCode) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Center(
+            child: Text(
+              '${employeeCode ?? "-"} - ${name ?? "-"}',
+              style: const TextStyle(
+                fontSize: 18,
+                color: Colors.redAccent,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Center(
+            child: Text(
+              '${compName ?? "-"} (${compCode ?? "-"})',
+              style: const TextStyle(
+                fontSize: 16,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
-  // Function to launch WhatsApp
-  Future<void> _launchWhatsApp(String number) async {
-    final Uri whatsappUri = Uri(
-      scheme: 'https',
-      host: 'api.whatsapp.com',
-      path: 'send',
-      queryParameters: {
-        'phone': number,
-        'text': 'Hello',
-      },
+  Widget _buildSupportContact() {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: () => _launchDialer(helplineNo),
+                child: const Icon(
+                  Icons.support_agent_sharp,
+                  color: Colors.green,
+                  size: 40,
+                ),
+              ),
+              GestureDetector(
+                onTap: () => _launchDialer(helplineNo),
+                child: Text(
+                  helplineNo,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 17,
+                    color: Colors.blue,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 5), // Spacer
+
+        // WhatsApp support
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: () => _launchWhatsApp(helpLineWhatsapp!),
+                child: SvgPicture.asset(
+                  'assets/icons/whatsapp.svg',
+                  width: 35,
+                  height: 35,
+                ),
+              ),
+              const SizedBox(width: 5),
+              GestureDetector(
+                onTap: () => _launchWhatsApp(helpLineWhatsapp!),
+                child: Text(
+                  helpLineWhatsapp!,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 17,
+                    color: Colors.blue,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
-    if (await canLaunchUrl(whatsappUri)) {
-      await launchUrl(whatsappUri);
-    } else {
-      throw 'Could not launch WhatsApp with $number';
-    }
   }
 
   void _showBottomSheet(BuildContext context) {
@@ -385,7 +377,7 @@ class _HomePageState extends State<HomePage> {
                 leading: const Icon(
                   Icons.refresh,
                   color: Colors.black54,
-                ), // Corrected syntax
+                ),
                 title: const Text('Refresh Server Data'),
                 onTap: () {
                   Navigator.pop(context);
@@ -428,6 +420,78 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // Get Filtered Modules
+  Future<void> getModules() async {
+    ModulesViewModel modulesViewModel = ModulesViewModel();
+    String? token = await sessionManager.getToken();
+
+    if (token != null && token.isNotEmpty) {
+      List<String> modules = await modulesViewModel.getModules(token);
+
+      if (modules.isNotEmpty) {
+        debugPrint('Modules fetched: $modules');
+        await sessionManager.saveModuleCodes(modules);  // Save modules to session
+        refreshServerData();  // Refresh data after saving modules
+      } else {
+        debugPrint('No Modules Found');
+      }
+    } else {
+      debugPrint('No Token Found');
+    }
+  }
+
+// Function to refresh server data
+  void refreshServerData() async {
+    List<String>? updatedModules = await sessionManager.getModuleCodes();
+
+    if (updatedModules != null && updatedModules.isNotEmpty) {
+      setState(() {
+        filteredModules = allModules
+            .where((module) => updatedModules.contains(module['code']))
+            .toList();
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Modules updated successfully')),
+      );
+    } else {
+      setState(() {
+        filteredModules = [];
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No modules found')),
+      );
+    }
+  }
+
+  // Function to launch the Dialer
+  Future<void> _launchDialer(String number) async {
+    final Uri phoneUri = Uri(scheme: 'tel', path: number);
+    if (await canLaunchUrl(phoneUri)) {
+      await launchUrl(phoneUri);
+    } else {
+      throw 'Could not launch $number';
+    }
+  }
+
+  // Function to launch WhatsApp
+  Future<void> _launchWhatsApp(String number) async {
+    final Uri whatsappUri = Uri(
+      scheme: 'https',
+      host: 'api.whatsapp.com',
+      path: 'send',
+      queryParameters: {
+        'phone': number,
+        'text': 'Hello',
+      },
+    );
+    if (await canLaunchUrl(whatsappUri)) {
+      await launchUrl(whatsappUri);
+    } else {
+      throw 'Could not launch WhatsApp with $number';
+    }
+  }
+
+  //Function for Logout
   Future<void> _logout(BuildContext context) async {
     showDialog(
       context: context,
@@ -462,28 +526,34 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+// Function to Get User Details
   Future<void> getUserData() async {
-    final SessionManager sessionManager = SessionManager();
-    sessionManager.getToken().then((token) async {
-      final UserViewModel userViewModel = UserViewModel();
-      userViewModel.getUserDetails(token!);
-      sessionManager.getUserDetails().then((data) async {
-        setState(() async {
-          employeeCode = data.employeeCode;
-          name = data.name;
-          compCode = data.compCode;
-          compName = data.compName;
-          userName = await sessionManager.getUsername();
-          helplineNo = data.helplineNo!;
-          helpLineWhatsapp = data.helpLineWhatsapp;
+    try {
+      final sessionManager = SessionManager();
+      String? token = await sessionManager.getToken();
+
+      if (token != null && token.isNotEmpty) {
+        final userViewModel = UserViewModel();
+        await userViewModel.getUserDetails(token);
+
+        var data = await sessionManager.getUserDetails();
+
+        setState(() {
+          employeeCode = data.employeeCode ?? "-";
+          name = data.name ?? "-";
+          compCode = data.compCode ?? "-";
+          compName = data.compName ?? "-";
+          helplineNo = data.helplineNo ?? "-";
+          helpLineWhatsapp = data.helpLineWhatsapp ?? "-";
         });
-      }).catchError((onError) {
-        debugPrint(onError.toString());
-      });
-    }).catchError((error) {
-      debugPrint('Error: $error');
-    });
+      } else {
+        debugPrint('No Token Found');
+      }
+    } catch (error) {
+      debugPrint('Error fetching user data: $error');
+    }
   }
+
 
   Future<void> lastSelfieAtt(
       SelfieAttendanceModel selfieAttendanceModel) async {
@@ -493,23 +563,6 @@ class _HomePageState extends State<HomePage> {
       debugPrint('Selfie Attendance saved successfully!!!!!!!!!');
     } catch (error) {
       debugPrint('Error saving selfie attendance: $error');
-    }
-  }
-
-  Future<void> getModules() async {
-    ModulesViewModel modulesViewModel = ModulesViewModel();
-    String? token = await sessionManager.getToken();
-
-    if (token != null && token.isNotEmpty) {
-      List<String> modules = await modulesViewModel.getModules(token);
-
-      if (modules.isNotEmpty) {
-        debugPrint('Modules fetched: $modules');
-      } else {
-        debugPrint('No Modules Found');
-      }
-    } else {
-      debugPrint('No Token Found');
     }
   }
 
@@ -571,8 +624,7 @@ class _HomePageState extends State<HomePage> {
           final int battery = await Utils.getBatteryLevel();
           final String? fcmToken = await Utils.getFCMToken();
 
-          final String fullDeviceDetails =
-              "$deviceDetails/$uniqueId/$ipAddress";
+          final String fullDeviceDetails = "$deviceDetails/$uniqueId/$ipAddress";
 
           final markLoginModel = MarkLoginModel(
             deviceDetails: fullDeviceDetails,

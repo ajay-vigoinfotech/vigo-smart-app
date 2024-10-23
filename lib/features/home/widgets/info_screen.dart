@@ -10,6 +10,7 @@ import '../../auth/model/getlastselfieattendancemodel.dart';
 import '../../auth/session_manager/session_manager.dart';
 import '../../auth/view/login_page.dart';
 import '../../auth/viewmodel/getuserdetails_view_model.dart';
+import '../../markduty/viewmodel/get_current_date_view_model.dart';
 
 class InfoScreen extends StatefulWidget {
   final double barHeight;
@@ -309,9 +310,10 @@ class _InfoScreenState extends State<InfoScreen> {
 //   await sessionManager.saveCurrentDateTime(formattedDateTime);
 //
 //   // Get the saved date from SharedPreferences
-//   final savedDate = await sessionManager.getTimeDate();
-//   print('Saved Date from SharedPreferences: $savedDate');
+//   // final savedDate = await sessionManager.getTimeDate();
+//   // print('Saved Date from SharedPreferences: $savedDate');
 // }
+
 
 //   Future<void> getToken() async {
 //     // Assuming SessionManager is already implemented to manage tokens
@@ -324,3 +326,5 @@ class _InfoScreenState extends State<InfoScreen> {
 //     final supportContact = await supportContactViewModel.getSupportContact();
 //     print('Support Contact: $supportContact');
 //   }
+
+
