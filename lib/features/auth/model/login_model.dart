@@ -9,7 +9,7 @@ class LoginRequest {
     required this.password,
   });
 
-  Map<String, String> toMap() {
+  Map<String, dynamic> toMap() {
     return {
       'grant_type': grantType,
       'username': username,

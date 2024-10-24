@@ -23,15 +23,14 @@ class CheckSessionViewModel {
       );
 
       if (response.statusCode == 200) {
-        // Return the status code directly as an int
         return response.statusCode;
       } else {
         debugPrint('Error: ${response.statusCode}');
-        return response.statusCode; // Return the error status code as an int
+        return response.statusCode;
       }
     } catch (e) {
       debugPrint('Exception: $e');
-      return null; // Return null if there's an exception
+      return null;
     }
   }
 }

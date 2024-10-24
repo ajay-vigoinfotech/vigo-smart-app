@@ -1,5 +1,4 @@
-import 'dart:ui';
-
+import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vigo_smart_app/features/auth/model/getuserdetails.dart';
 import '../../markduty/viewmodel/mark_selfie_view_model.dart';
@@ -248,9 +247,9 @@ class SessionManager {
       await prefs.setString(_siteName,
           selfieAttendanceModel.table![0].siteName?.toString() ?? "");
 
-      print('Selfie Attendance saved successfully!');
+      debugPrint('Selfie Attendance saved successfully!');
     } else {
-      print('Error: SelfieAttendanceModel table is null or empty.');
+      debugPrint('Error: SelfieAttendanceModel table is null or empty.');
     }
   }
 

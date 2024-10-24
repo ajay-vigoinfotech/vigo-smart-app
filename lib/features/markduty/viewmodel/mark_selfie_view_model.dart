@@ -1,12 +1,11 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:vigo_smart_app/core/constants/constants.dart';
 import '../model/markselfieattendance_model.dart';
 
 class MarkSelfieAttendance {
   final Dio _dio = Dio();
 
-  Future<String> markAttendance(String token, PunchDetails punchDetails) async {
+  Future<Map<String, dynamic>> markAttendance(String token, PunchDetails punchDetails) async {
     const url = '${AppConstants.baseUrl}/API/Kotlin/MarkSelfieAttendance';
 
     try {
@@ -24,16 +23,17 @@ class MarkSelfieAttendance {
       );
 
       if (response.statusCode == 200) {
-        debugPrint('${response.data}');
-        return response.data.toString();
+        // Assuming response is JSON and contains a map with 'code' and 'status'
+        return response.data as Map<String, dynamic>;
       } else {
-        return 'Error: ${response.statusCode} - ${response.statusMessage}';
+        return {'code': response.statusCode, 'status': 'Error: ${response.statusMessage}'};
       }
     } catch (e) {
       if (e is DioException) {
-        return 'Error occurred: ${e.response?.data ?? e.message}';
+        return {'code': 500, 'status': 'Error occurred: ${e.response?.data ?? e.message}'};
       }
-      return 'Unexpected error: $e';
+      return {'code': 500, 'status': 'Unexpected error: $e'};
     }
   }
 }
+

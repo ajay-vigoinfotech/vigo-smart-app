@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'package:vigo_smart_app/features/auth/model/getlastselfieattendancemodel.dart';
 import 'package:vigo_smart_app/features/markduty/model/markselfieattendance_model.dart';
+import 'package:vigo_smart_app/features/markduty/widgets/success_dialog.dart';
 import '../../../core/utils.dart';
 import '../../auth/session_manager/session_manager.dart';
 import '../viewmodel/get_current_date_view_model.dart';
@@ -204,7 +205,6 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     );
   }
 
-
   Widget _buildTimeDateDisplay() {
     return Padding(
       padding: const EdgeInsets.all(15.0),
@@ -222,7 +222,6 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     );
   }
 
-
   Widget _buildMapView() {
     return SizedBox(
       height: 270,
@@ -236,33 +235,36 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   }
 
   Future<void> _loadCurrentDateTime() async {
-    final getCurrentDateViewModel = GetCurrentDateViewModel();
-    String? currentDateTime;
+  final getCurrentDateViewModel = GetCurrentDateViewModel();
+  String? currentDateTime;
 
-    try {
-      currentDateTime = await getCurrentDateViewModel.getTimeDate();
+  try {
+    currentDateTime = await Future.any([
+      getCurrentDateViewModel.getTimeDate(),
+      Future.delayed(const Duration(seconds: 3), () => null)
+    ]);
 
-      if (currentDateTime != null) {
-        final formattedDateTime = Utils.formatDateTime(currentDateTime);
-        setState(() {
-          timeDateDisplay = formattedDateTime;
-        });
-      } else {
-        currentDateTime = _setDeviceDateTime();
-      }
-    } catch (e) {
-      debugPrint('Error fetching date from API: $e');
+    if (currentDateTime != null) {
+      final formattedDateTime = Utils.formatDateTime(currentDateTime);
+      setState(() {
+        timeDateDisplay = formattedDateTime;
+      });
+    } else {
       currentDateTime = _setDeviceDateTime();
     }
+  } catch (e) {
+    debugPrint('Error fetching date from API: $e');
+    currentDateTime = _setDeviceDateTime(); // Fallback to device time
   }
+}
 
-  String _setDeviceDateTime() {
-    String currentDateTime = DateFormat('dd/MM/yyyy hh:mm').format(DateTime.now());
-    setState(() {
-      timeDateDisplay = currentDateTime;
-    });
-    return currentDateTime;
-  }
+String _setDeviceDateTime() {
+  String currentDateTime = DateFormat('dd/MM/yyyy hh:mm').format(DateTime.now());
+  setState(() {
+    timeDateDisplay = currentDateTime;
+  });
+  return currentDateTime;
+}
 
   void _onLocationReceived(String formattedLocation) {
     setState(() {
@@ -325,13 +327,6 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     });
   }
 
-  // void showSuccessDialog(BuildContext context){
-  //   showDialog(context: context,
-  //       builder: (BuildContext context) {
-  //         return SuccessDialog();
-  //       });
-  // }
-
   Future<void> _onMarkIn() async {
     if (formattedLatLng.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -339,7 +334,6 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
           content: Text('No location found. Please enable location services.'),
         ),
       );
-      return;
     }
 
     final ImagePicker picker = ImagePicker();
@@ -361,7 +355,6 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
       if (compressedBytes != null) {
         final String base64Image = base64Encode(compressedBytes);
         final base64InImage = base64Image;
-
         showDialog(
           barrierDismissible: false,
           context: context,
@@ -401,7 +394,6 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                       if (timeDateDisplay != null) {
                         punchTimeDateIn = timeDateDisplay;
                       }
-
                       await _saveImageToSP(markInImage.path);
                       uniqueIdv4 = const Uuid().v4();
 
@@ -420,7 +412,6 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                       );
 
                       await sessionManager.saveSelfieAttendance(selfieAttendanceModel);
-
                       String? token = await sessionManager.getToken();
                       MarkSelfieAttendance markSelfieAttendance = MarkSelfieAttendance();
                       final String deviceDetails = await Utils.getDeviceDetails(context);
@@ -437,13 +428,9 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                         return outputFormat.format(dateTime);
                       }
 
-                      // Format the date before using it
                       String formattedDateTimeIn = formatDate(punchTimeDateIn!);
 
-                      //Use server time
-                      // punchTimeDateIn = DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now());
-
-                      String apiResponse = await markSelfieAttendance.markAttendance(
+                      Map<String, dynamic> response = await markSelfieAttendance.markAttendance(
                         token!,
                         PunchDetails(
                           deviceDetails: deviceDetails,
@@ -471,22 +458,20 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
 
                       await _clearPunchOutImageFromSP();
 
-                      if (apiResponse == '200') {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('Attendance marked successfully!')),
-                        );
+                      if (response['code'] == 200) {
+                        Navigator.of(context).pop();
+                        showSuccessDialog(context,
+                            'Mark In Success',
+                            '${response['status']}');
                         _loadPunchInImageFromSP();
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(apiResponse)),
+                          SnackBar(content: Text('Error: ${response['status']}')),
                         );
                       }
-                      Navigator.of(context).pop();
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('Please fill in all fields.')),
+                        const SnackBar(content: Text('Please fill in all fields.')),
                       );
                     }
                   },
@@ -500,7 +485,6 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     }
   }
 
-
 // Function called when 'Mark Out' is clicked
   Future<void> _onMarkOut() async {
     if (formattedLatLng.isEmpty) {
@@ -509,17 +493,14 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
             content:
                 Text('No location found. Please enable location services.')),
       );
-      return;
     }
+
     final ImagePicker picker = ImagePicker();
     final XFile? markOutImage =
         await picker.pickImage(source: ImageSource.camera, imageQuality: 1);
 
     if (markOutImage != null) {
       final image = File(markOutImage.path);
-      punchTimeDateOut = DateFormat('dd/MM/yyyy hh:mm a').format(DateTime.now());
-
-      // Compress the image
       final compressedImageBytes = await FlutterImageCompress.compressWithFile(
         markOutImage.path,
         minWidth: 400,
@@ -527,7 +508,6 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
         quality: 1,
       );
 
-      // Convert compressed image to Base64
       if (compressedImageBytes != null) {
         final String base64Image = base64Encode(compressedImageBytes);
         final base64OutImage = base64Image;
@@ -571,10 +551,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                       if(timeDateDisplay != null){
                         punchTimeDateOut = timeDateDisplay;
                       }
-
                       await _savePunchOutImageToSP(markOutImage.path);
-
-
                       SelfieAttendanceModel selfieAttendanceModel = SelfieAttendanceModel(
                         table: [
                           AttendanceTable(
@@ -588,7 +565,6 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                           ),
                         ],
                       );
-                      // Save attendance model using sessionManager
                       await sessionManager.saveSelfieAttendance(selfieAttendanceModel);
 
                       String? token = await sessionManager.getToken();
@@ -612,10 +588,9 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                       // Format the date before using it
                       String formattedDateTimeOut = formatDate(punchTimeDateOut!);
 
-
                       final String fullDeviceDetails = deviceDetails;
 
-                      String apiResponse = await markSelfieAttendance.markAttendance(
+                      Map<String, dynamic> response = await markSelfieAttendance.markAttendance(
                         token!,
                         PunchDetails(
                           deviceDetails: fullDeviceDetails,
@@ -641,24 +616,18 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                         ),
                       );
 
-                      if (apiResponse == '200') {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('Attendance marked successfully')),
-                        );
+                      if (response['code'] == 200) {
+                        Navigator.of(context).pop();
+                        showSuccessDialog(context,
+                            'Mark Out Success',
+                            '${response['status']}');
+                        _loadPunchInImageFromSP();
                       } else {
-                        // Show error if API failed
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('OUT$apiResponse')),
+                          SnackBar(content: Text('Error: ${response['status']}')),
                         );
                       }
-                      Navigator.of(context).pop();
                       _loadPunchOutImageFromSP(); // Load image into UI
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('Please fill in all fields.')),
-                      );
                     }
                   },
                   child: const Text("Submit"),
@@ -690,25 +659,19 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
 //   String? currentDateTime;
 //
 //   try {
-//     // Attempt to get server time with a 10-second timeout
-//     currentDateTime = await Future.any([
-//       getCurrentDateViewModel.getTimeDate(),
-//       Future.delayed(Duration(seconds: 10), () => null) // Fallback after 10 seconds
-//     ]);
+//     currentDateTime = await getCurrentDateViewModel.getTimeDate();
 //
-//     // If server time is retrieved within 10 seconds, format and display it
 //     if (currentDateTime != null) {
 //       final formattedDateTime = Utils.formatDateTime(currentDateTime);
 //       setState(() {
 //         timeDateDisplay = formattedDateTime;
 //       });
 //     } else {
-//       // If no server time, use device time as fallback
 //       currentDateTime = _setDeviceDateTime();
 //     }
 //   } catch (e) {
 //     debugPrint('Error fetching date from API: $e');
-//     currentDateTime = _setDeviceDateTime(); // Fallback to device time
+//     currentDateTime = _setDeviceDateTime();
 //   }
 // }
 //

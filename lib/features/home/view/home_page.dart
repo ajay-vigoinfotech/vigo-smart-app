@@ -50,7 +50,8 @@ class _HomePageState extends State<HomePage> {
   final LoginViewModel _viewModel = LoginViewModel();
   final MarkLoginViewModel markLoginViewModel = MarkLoginViewModel();
   final UserViewModel userViewModel = UserViewModel();
-  final GetlastselfieattViewModel getlastselfieattViewModel = GetlastselfieattViewModel();
+  final GetlastselfieattViewModel getlastselfieattViewModel =
+      GetlastselfieattViewModel();
   final CheckSessionViewModel checkSessionViewModel = CheckSessionViewModel();
 
   final List<Map<String, dynamic>> allModules = [
@@ -222,7 +223,9 @@ class _HomePageState extends State<HomePage> {
             child: FutureBuilder<List<Map<String, dynamic>>>(
               future: sessionManager.getModuleCodes().then((savedModules) {
                 return allModules
-                    .where((module) => savedModules != null && savedModules.contains(module['code']))
+                    .where((module) =>
+                        savedModules != null &&
+                        savedModules.contains(module['code']))
                     .toList();
               }),
               builder: (context, snapshot) {
@@ -260,7 +263,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildEmployeeInfo(String? employeeCode, String? name, String? compName, String? compCode) {
+  Widget _buildEmployeeInfo(
+      String? employeeCode, String? name, String? compName, String? compCode) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -430,8 +434,9 @@ class _HomePageState extends State<HomePage> {
 
       if (modules.isNotEmpty) {
         debugPrint('Modules fetched: $modules');
-        await sessionManager.saveModuleCodes(modules);  // Save modules to session
-        refreshServerData();  // Refresh data after saving modules
+        await sessionManager
+            .saveModuleCodes(modules); // Save modules to session
+        refreshServerData(); // Refresh data after saving modules
       } else {
         debugPrint('No Modules Found');
       }
@@ -450,16 +455,10 @@ class _HomePageState extends State<HomePage> {
             .where((module) => updatedModules.contains(module['code']))
             .toList();
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Modules updated successfully')),
-      );
     } else {
       setState(() {
         filteredModules = [];
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No modules found')),
-      );
     }
   }
 
@@ -554,7 +553,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-
   Future<void> lastSelfieAtt(
       SelfieAttendanceModel selfieAttendanceModel) async {
     final SessionManager sessionManager = SessionManager();
@@ -624,7 +622,8 @@ class _HomePageState extends State<HomePage> {
           final int battery = await Utils.getBatteryLevel();
           final String? fcmToken = await Utils.getFCMToken();
 
-          final String fullDeviceDetails = "$deviceDetails/$uniqueId/$ipAddress";
+          final String fullDeviceDetails =
+              "$deviceDetails/$uniqueId/$ipAddress";
 
           final markLoginModel = MarkLoginModel(
             deviceDetails: fullDeviceDetails,

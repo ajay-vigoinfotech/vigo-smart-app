@@ -68,6 +68,8 @@ dependencies:
   flutter_image_compress: ^2.3.0
   font_awesome_flutter: ^10.7.0
   flutter_svg: ^2.0.10+1
+  awesome_dialog: ^3.2.1
+  dartz: ^0.10.1
 
 dev_dependencies:
   flutter_test:
