@@ -1,3 +1,5 @@
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:vigo_smart_app/features/auth/model/marklogin_model.dart';
@@ -127,104 +129,147 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Future<void> _onSubmit() async {
+  Future<dynamic> _onSubmit() async {
     if (_formKey.currentState?.validate() ?? false) {
-      final username = "${_partnerCodeController.text}/${_userIDController.text}";
-      final loginRequest = LoginRequest(
-        grantType: Strings.grantType,
-        username: username,
-        password: _passwordController.text,
-      );
-
-      final success = await _viewModel.makeRequest(loginRequest);
-
-      if (success) {
-        final sessionManager = SessionManager();
-        await sessionManager.saveLoginInfo(username);
-
-        sessionManager.getToken().then((token) async {
-          final String formattedDateTime = Utils.getCurrentFormattedDateTime();
-          final String deviceDetails = await Utils.getDeviceDetails(context);
-          final String appVersion = await Utils.getAppVersion();
-          final String ipAddress = await Utils.getIpAddress();
-          final String uniqueId = await Utils.getUniqueID();
-          final int battery = await Utils.getBatteryLevel();
-          final String? fcmToken = await Utils.getFCMToken();
-          print(fcmToken);
-
-          final String fullDeviceDetails = "$deviceDetails/$uniqueId/$ipAddress";
-
-          final markLoginModel = MarkLoginModel(
-            deviceDetails: fullDeviceDetails,
-            punchAction: 'LOGIN.',
-            locationDetails: '',
-            batteryStatus: '$battery%',
-            time: formattedDateTime,
-            latLong: '',
-            version: 'v$appVersion',
-            fcmToken: fcmToken ?? '',
-            dataStatus: '',
-          );
-
-          final markLoginResponse = await markLoginViewModel.markLogin(token!, markLoginModel);
-
-          if (markLoginResponse is String &&
-              markLoginResponse == "Device Logged-In successfully.") {
-            Fluttertoast.showToast(
-              msg: markLoginResponse,
-              toastLength: Toast.LENGTH_SHORT,
-              gravity: ToastGravity.BOTTOM,
-              timeInSecForIosWeb: 1,
-              backgroundColor: Colors.green,
-              textColor: Colors.white,
-              fontSize: 17.0,
-            );
-          }
-
-          ModulesViewModel moduleService = ModulesViewModel();
-          List<String> moduleCodes = await moduleService.getModules(token);
-
-          List<String> distinctModuleCodes = moduleCodes.toSet().toList();
-
-          // Save the distinct module codes
-          await sessionManager.saveModuleCodes(distinctModuleCodes);
-
-          // Print saved distinct module codes
-          sessionManager.getModuleCodes().then((savedModuleCodes) {
-            //print(savedModuleCodes);
-          });
-
-          sessionManager.saveModuleCodes(moduleCodes);
-          sessionManager.getModuleCodes().then((modulesCodes) async {
-            //print(modulesCodes);
-          });
-
-          userViewModel.getUserDetails(token);
-          getlastselfieattViewModel.getLastSelfieAttendance(token);
-        }).catchError((error) {
-          //print('Error: $error');
-        });
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
+      try {
+        final username = "${_partnerCodeController.text}/${_userIDController.text}";
+        final loginRequest = LoginRequest(
+          grantType: Strings.grantType,
+          username: username,
+          password: _passwordController.text,
         );
-      } else {
+
+        final String?  error = await _viewModel.makeRequest(loginRequest);
+
+        if (error == null) {
+          // Login was successful
+          final sessionManager = SessionManager();
+          await sessionManager.saveLoginInfo(username);
+
+          sessionManager.getToken().then((token) async {
+            final String formattedDateTime = Utils.getCurrentFormattedDateTime();
+            final String deviceDetails = await Utils.getDeviceDetails(context);
+            final String appVersion = await Utils.getAppVersion();
+            final String ipAddress = await Utils.getIpAddress();
+            final String uniqueId = await Utils.getUniqueID();
+            final int battery = await Utils.getBatteryLevel();
+            final String? fcmToken = await Utils.getFCMToken();
+            print(fcmToken);
+
+            final String fullDeviceDetails = "$deviceDetails/$uniqueId/$ipAddress";
+
+            final markLoginModel = MarkLoginModel(
+              deviceDetails: fullDeviceDetails,
+              punchAction: 'LOGIN',
+              locationDetails: '',
+              batteryStatus: '$battery%',
+              time: formattedDateTime,
+              latLong: '',
+              version: 'v$appVersion',
+              fcmToken: fcmToken ?? '',
+              dataStatus: '',
+            );
+
+            final markLoginResponse = await markLoginViewModel.markLogin(token!, markLoginModel);
+
+            if (markLoginResponse is String &&
+                markLoginResponse == "Device Logged-In successfully.") {
+              Fluttertoast.showToast(
+                msg: markLoginResponse,
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.green,
+                textColor: Colors.white,
+                fontSize: 18.0,
+              );
+            }
+
+            ModulesViewModel moduleService = ModulesViewModel();
+            List<String> moduleCodes = await moduleService.getModules(token);
+
+            List<String> distinctModuleCodes = moduleCodes.toSet().toList();
+
+            // Save the distinct module codes
+            await sessionManager.saveModuleCodes(distinctModuleCodes);
+
+            // Print saved distinct module codes
+            sessionManager.getModuleCodes().then((savedModuleCodes) {
+              // print(savedModuleCodes);
+            });
+
+            sessionManager.saveModuleCodes(moduleCodes);
+            sessionManager.getModuleCodes().then((modulesCodes) async {
+              // print(modulesCodes);
+            });
+
+            userViewModel.getUserDetails(token);
+            getlastselfieattViewModel.getLastSelfieAttendance(token);
+          }).catchError((error) {
+            print('Error: $error');
+          });
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage()),
+          );
+        } else {
+          // Display the error message returned by makeRequest
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: Colors.red,
+              content: Text(
+                error,
+                style: const TextStyle(
+                    fontSize: 17,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold),
+              ),
+            ),
+          );
+          // AlertDialog(
+          //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          //   title: const Row(
+          //     children: [
+          //        Icon(Icons.error, color: Colors.yellowAccent),
+          //        SizedBox(width: 10),
+          //       Text(''),
+          //     ],
+          //   ),
+          //   content: Text(error),
+          //   actions: [
+          //     Center(
+          //       child: TextButton(
+          //         onPressed: () => Navigator.of(context).pop(),
+          //         child:  Text('ok'),
+          //       ),
+          //     ),
+          //   ],
+          // );
+        }
+      }
+      catch (e) {
+        // Handle any uncaught exceptions
+        print('General exception: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             backgroundColor: Colors.red,
             content: Text(
-              'Login failed. Please try again.',
+              'An error occurred. Please try again.',
               style: TextStyle(
-                  fontSize: 17,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold),
+                fontSize: 17,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         );
       }
     }
   }
+
+
+
 
   Widget _buildLoginImage(BoxConstraints constraints) {
     return Image.asset(

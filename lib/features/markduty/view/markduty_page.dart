@@ -79,12 +79,12 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                 Column(
                   children: [
                     Text(
-                      '$punchTimeDateIn',
+                      punchTimeDateIn ?? '-',
                       style: const TextStyle(
                           fontSize: 14, fontWeight: FontWeight.bold),
                     ),
                     Text(
-                      '$inKm',
+                      inKm ?? '-',
                       style: const TextStyle(
                           fontSize: 14, fontWeight: FontWeight.bold),
                     ),
@@ -108,12 +108,18 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                           ),
                         ),
                         onPressed: () {
-                          if ((punchTimeDateIn == null && (punchTimeDateOut == null || punchTimeDateOut == "-")) || (punchTimeDateIn != null && punchTimeDateOut != null &&
+                          if ((punchTimeDateIn == null &&
+                                  (punchTimeDateOut == null ||
+                                      punchTimeDateOut == "-")) ||
+                              (punchTimeDateIn != null &&
+                                  punchTimeDateOut != null &&
                                   punchTimeDateOut != "-")) {
                             setState(() {
                               _onMarkIn();
                             });
-                          } else if (punchTimeDateIn != null && (punchTimeDateOut == null || punchTimeDateOut == "-")) {
+                          } else if (punchTimeDateIn != null &&
+                              (punchTimeDateOut == null ||
+                                  punchTimeDateOut == "-")) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Already marked IN!'),
@@ -136,17 +142,18 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                 Column(
                   children: [
                     Text(
-                      '$punchTimeDateOut',
+                      punchTimeDateOut ?? '-',
                       style: const TextStyle(
                           fontSize: 14, fontWeight: FontWeight.bold),
                     ),
                     Text(
-                      '$outKm',
+                      outKm ?? '-',
                       style: const TextStyle(
                           fontSize: 14, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 5),
-                    if (savedPunchOutImagePath != null && savedPunchOutImagePath!.isNotEmpty)
+                    if (savedPunchOutImagePath != null &&
+                        savedPunchOutImagePath!.isNotEmpty)
                       Image.file(
                         File(savedPunchOutImagePath!),
                         height: 130,
@@ -165,11 +172,15 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                           ),
                         ),
                         onPressed: () {
-                          if (punchTimeDateIn != null && punchTimeDateIn != "-" && (punchTimeDateOut == null || punchTimeDateOut == "-")) {
+                          if (punchTimeDateIn != null &&
+                              punchTimeDateIn != "-" &&
+                              (punchTimeDateOut == null ||
+                                  punchTimeDateOut == "-")) {
                             setState(() {
                               _onMarkOut();
                             });
-                          } else if (punchTimeDateIn == null || punchTimeDateIn == "-") {
+                          } else if (punchTimeDateIn == null ||
+                              punchTimeDateIn == "-") {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content:
@@ -212,12 +223,12 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
         child: timeDateDisplay == null || timeDateDisplay!.isEmpty
             ? const CircularProgressIndicator() // Show progress indicator when loading
             : Text(
-          '$timeDateDisplay', // Show the actual time/date when available
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+                '$timeDateDisplay', // Show the actual time/date when available
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
       ),
     );
   }
@@ -235,36 +246,37 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   }
 
   Future<void> _loadCurrentDateTime() async {
-  final getCurrentDateViewModel = GetCurrentDateViewModel();
-  String? currentDateTime;
+    final getCurrentDateViewModel = GetCurrentDateViewModel();
+    String? currentDateTime;
 
-  try {
-    currentDateTime = await Future.any([
-      getCurrentDateViewModel.getTimeDate(),
-      Future.delayed(const Duration(seconds: 3), () => null)
-    ]);
+    try {
+      currentDateTime = await Future.any([
+        getCurrentDateViewModel.getTimeDate(),
+        Future.delayed(const Duration(seconds: 3), () => null)
+      ]);
 
-    if (currentDateTime != null) {
-      final formattedDateTime = Utils.formatDateTime(currentDateTime);
-      setState(() {
-        timeDateDisplay = formattedDateTime;
-      });
-    } else {
-      currentDateTime = _setDeviceDateTime();
+      if (currentDateTime != null) {
+        final formattedDateTime = Utils.formatDateTime(currentDateTime);
+        setState(() {
+          timeDateDisplay = formattedDateTime;
+        });
+      } else {
+        currentDateTime = _setDeviceDateTime();
+      }
+    } catch (e) {
+      debugPrint('Error fetching date from API: $e');
+      currentDateTime = _setDeviceDateTime(); // Fallback to device time
     }
-  } catch (e) {
-    debugPrint('Error fetching date from API: $e');
-    currentDateTime = _setDeviceDateTime(); // Fallback to device time
   }
-}
 
-String _setDeviceDateTime() {
-  String currentDateTime = DateFormat('dd/MM/yyyy hh:mm').format(DateTime.now());
-  setState(() {
-    timeDateDisplay = currentDateTime;
-  });
-  return currentDateTime;
-}
+  String _setDeviceDateTime() {
+    String currentDateTime =
+        DateFormat('dd/MM/yyyy hh:mm').format(DateTime.now());
+    setState(() {
+      timeDateDisplay = currentDateTime;
+    });
+    return currentDateTime;
+  }
 
   void _onLocationReceived(String formattedLocation) {
     setState(() {
@@ -345,7 +357,7 @@ String _setDeviceDateTime() {
     if (markInImage != null) {
       final File image = File(markInImage.path);
       final List<int>? compressedBytes =
-      await FlutterImageCompress.compressWithFile(
+          await FlutterImageCompress.compressWithFile(
         image.absolute.path,
         minWidth: 400,
         minHeight: 400,
@@ -397,12 +409,13 @@ String _setDeviceDateTime() {
                       await _saveImageToSP(markInImage.path);
                       uniqueIdv4 = const Uuid().v4();
 
-                      SelfieAttendanceModel selfieAttendanceModel = SelfieAttendanceModel(
+                      SelfieAttendanceModel selfieAttendanceModel =
+                          SelfieAttendanceModel(
                         table: [
                           AttendanceTable(
                             uniqueId: uniqueIdv4,
                             dateTimeIn: punchTimeDateIn,
-                            inKmsDriven: '$inKm KM',
+                            inKmsDriven: '$inKm',
                             dateTimeOut: "-",
                             outKmsDriven: "-",
                             siteId: "",
@@ -411,10 +424,13 @@ String _setDeviceDateTime() {
                         ],
                       );
 
-                      await sessionManager.saveSelfieAttendance(selfieAttendanceModel);
+                      await sessionManager
+                          .saveSelfieAttendance(selfieAttendanceModel);
                       String? token = await sessionManager.getToken();
-                      MarkSelfieAttendance markSelfieAttendance = MarkSelfieAttendance();
-                      final String deviceDetails = await Utils.getDeviceDetails(context);
+                      MarkSelfieAttendance markSelfieAttendance =
+                          MarkSelfieAttendance();
+                      final String deviceDetails =
+                          await Utils.getDeviceDetails(context);
                       final String appVersion = await Utils.getAppVersion();
                       final String ipAddress = await Utils.getIpAddress();
                       final String uniqueId = await Utils.getUniqueID();
@@ -430,7 +446,8 @@ String _setDeviceDateTime() {
 
                       String formattedDateTimeIn = formatDate(punchTimeDateIn!);
 
-                      Map<String, dynamic> response = await markSelfieAttendance.markAttendance(
+                      Map<String, dynamic> response =
+                          await markSelfieAttendance.markAttendance(
                         token!,
                         PunchDetails(
                           deviceDetails: deviceDetails,
@@ -447,7 +464,7 @@ String _setDeviceDateTime() {
                           locationSpeed: formattedSpeedValue,
                           batteryStatus: '$battery%',
                           locationStatus: 'true',
-                          time: formattedDateTimeIn, // Server time
+                          time: formattedDateTimeIn,
                           latLong: formattedLatLng,
                           kmsDriven: '$inKm',
                           siteId: '',
@@ -460,18 +477,19 @@ String _setDeviceDateTime() {
 
                       if (response['code'] == 200) {
                         Navigator.of(context).pop();
-                        showSuccessDialog(context,
-                            'Mark In Success',
+                        showSuccessDialog(context, 'Mark In Success',
                             '${response['status']}');
                         _loadPunchInImageFromSP();
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Error: ${response['status']}')),
+                          SnackBar(
+                              content: Text('Error: ${response['status']}')),
                         );
                       }
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Please fill in all fields.')),
+                        const SnackBar(
+                            content: Text('Please fill in all fields.')),
                       );
                     }
                   },
@@ -548,15 +566,17 @@ String _setDeviceDateTime() {
                   onPressed: () async {
                     if (outKm != null && outKm!.isNotEmpty) {
                       await _loadCurrentDateTime();
-                      if(timeDateDisplay != null){
+                      if (timeDateDisplay != null) {
                         punchTimeDateOut = timeDateDisplay;
                       }
+
                       await _savePunchOutImageToSP(markOutImage.path);
-                      SelfieAttendanceModel selfieAttendanceModel = SelfieAttendanceModel(
+                      SelfieAttendanceModel selfieAttendanceModel =
+                          SelfieAttendanceModel(
                         table: [
                           AttendanceTable(
                             uniqueId: uniqueIdv4,
-                            dateTimeIn: punchTimeDateIn ?? '-',
+                            dateTimeIn: punchTimeDateIn,
                             inKmsDriven: (inKm == null || inKm!.isEmpty) ? '-' : '$inKm',
                             dateTimeOut: punchTimeDateOut,
                             outKmsDriven: '$outKm KM',
@@ -565,11 +585,15 @@ String _setDeviceDateTime() {
                           ),
                         ],
                       );
-                      await sessionManager.saveSelfieAttendance(selfieAttendanceModel);
+
+                      await sessionManager
+                          .saveSelfieAttendance(selfieAttendanceModel);
 
                       String? token = await sessionManager.getToken();
-                      MarkSelfieAttendance markSelfieAttendance = MarkSelfieAttendance();
-                      final String deviceDetails = await Utils.getDeviceDetails(context);
+                      MarkSelfieAttendance markSelfieAttendance =
+                          MarkSelfieAttendance();
+                      final String deviceDetails =
+                          await Utils.getDeviceDetails(context);
                       final String appVersion = await Utils.getAppVersion();
                       final String ipAddress = await Utils.getIpAddress();
                       final String uniqueId = await Utils.getUniqueID();
@@ -579,18 +603,22 @@ String _setDeviceDateTime() {
 
                       // Function to format the date
                       String formatDate(String dateString) {
-                        DateFormat inputFormat = DateFormat("dd/MM/yyyy hh:mm a");
+                        DateFormat inputFormat =
+                            DateFormat("dd/MM/yyyy hh:mm a");
                         DateTime dateTime = inputFormat.parse(dateString);
-                        DateFormat outputFormat = DateFormat("yyyy-MM-dd HH:mm");
+                        DateFormat outputFormat =
+                            DateFormat("yyyy-MM-dd HH:mm");
                         return outputFormat.format(dateTime);
                       }
 
                       // Format the date before using it
-                      String formattedDateTimeOut = formatDate(punchTimeDateOut!);
+                      String formattedDateTimeOut =
+                          formatDate(punchTimeDateOut!);
 
                       final String fullDeviceDetails = deviceDetails;
 
-                      Map<String, dynamic> response = await markSelfieAttendance.markAttendance(
+                      Map<String, dynamic> response =
+                          await markSelfieAttendance.markAttendance(
                         token!,
                         PunchDetails(
                           deviceDetails: fullDeviceDetails,
@@ -618,16 +646,16 @@ String _setDeviceDateTime() {
 
                       if (response['code'] == 200) {
                         Navigator.of(context).pop();
-                        showSuccessDialog(context,
-                            'Mark Out Success',
+                        showSuccessDialog(context, 'Mark Out Success',
                             '${response['status']}');
                         _loadPunchInImageFromSP();
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Error: ${response['status']}')),
+                          SnackBar(
+                              content: Text('Error: ${response['status']}')),
                         );
                       }
-                      _loadPunchOutImageFromSP(); // Load image into UI
+                      _loadPunchOutImageFromSP();
                     }
                   },
                   child: const Text("Submit"),
@@ -643,16 +671,14 @@ String _setDeviceDateTime() {
 
 
 
-
-
-
-
-
-
-
-
-
-
+// if(double.parse(outKm!) <=  double.parse(inKm!)) {
+//   ScaffoldMessenger.of(context).showSnackBar(
+//     const SnackBar(
+//         content: Text(
+//             'Out KM should be greater than In KM.')),
+//   );
+//   print('Out km should be greater than In Km');
+// }
 
 // Future<void> _loadCurrentDateTime() async {
 //   final getCurrentDateViewModel = GetCurrentDateViewModel();
@@ -682,4 +708,3 @@ String _setDeviceDateTime() {
 //   });
 //   return currentDateTime;
 // }
-

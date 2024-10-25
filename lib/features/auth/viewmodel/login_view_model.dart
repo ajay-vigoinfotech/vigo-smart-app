@@ -9,7 +9,7 @@ class LoginViewModel {
   final SessionManager sessionManager = SessionManager();
   String? _accessToken;
 
-  Future<bool> makeRequest(LoginRequest request) async {
+  Future makeRequest(LoginRequest request) async {
     const url = '${AppConstants.baseUrl}/token';
 
     try {
@@ -24,25 +24,22 @@ class LoginViewModel {
       if (response.statusCode == 200) {
         final token = TokenModel.fromJson(response.data);
         await sessionManager.saveToken(token.accessToken.toString());
-        _accessToken = sessionManager.getToken() as String?;
-        return true;
+        _accessToken = await sessionManager.getToken();
+        return null;  // No error, login was successful
       } else {
-        // Handle the case when the response is not 200
-        print('Error: Received status code ${response.statusCode}');
-        return false;
+        return 'Error: Received status code ${response.statusCode}';
       }
     } catch (e) {
       if (e is DioException) {
         if (e.response != null && e.response!.data is Map<String, dynamic>) {
           final errorDescription = e.response!.data['error_description'];
-          print('Error: $errorDescription'); // Print error description
+          return errorDescription ?? 'Login failed due to an unknown error'; // Return error description
         } else {
-          print('Unexpected Dio error: $e'); // Handle Dio-related errors
+          return 'Unexpected error occurred: $e';
         }
       } else {
-        print('General exception: $e'); // Handle general exceptions
+        return 'General exception: $e';
       }
-      return false;
     }
   }
 }
