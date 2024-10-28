@@ -1,5 +1,6 @@
 
-import 'package:dio/dio.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:vigo_smart_app/features/auth/model/marklogin_model.dart';
@@ -41,7 +42,6 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   void initState() {
-
     super.initState();
   }
 
@@ -130,6 +130,8 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<dynamic> _onSubmit() async {
+    bool isConnected = await checkInternetConnection();
+    if (!isConnected) return;
     if (_formKey.currentState?.validate() ?? false) {
       try {
         final username = "${_partnerCodeController.text}/${_userIDController.text}";
@@ -309,4 +311,29 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
+
+  Future<bool> checkInternetConnection() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+      // Show dialog to ask user to turn on internet connection
+      showCupertinoDialog(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: const Text("No Internet Connection"),
+          content:
+          const Text("Please turn on the internet connection to proceed."),
+          actions: [
+            CupertinoDialogAction(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+      return false;
+    }
+    return true;
+  }
+
+
 }

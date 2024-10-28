@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
@@ -107,27 +109,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                        onPressed: () {
-                          if ((punchTimeDateIn == null &&
-                                  (punchTimeDateOut == null ||
-                                      punchTimeDateOut == "-")) ||
-                              (punchTimeDateIn != null &&
-                                  punchTimeDateOut != null &&
-                                  punchTimeDateOut != "-")) {
-                            setState(() {
-                              _onMarkIn();
-                            });
-                          } else if (punchTimeDateIn != null &&
-                              (punchTimeDateOut == null ||
-                                  punchTimeDateOut == "-")) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Already marked IN!'),
-                                backgroundColor: Colors.orange,
-                              ),
-                            );
-                          }
-                        },
+                        onPressed: _onInButtonPressed,
                         child: const Text(
                           'IN',
                           style: TextStyle(
@@ -136,7 +118,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                               fontWeight: FontWeight.bold),
                         ),
                       ),
-                    ),
+                    )
                   ],
                 ),
                 Column(
@@ -171,32 +153,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
-                        onPressed: () {
-                          if (punchTimeDateIn != null &&
-                              punchTimeDateIn != "-" &&
-                              (punchTimeDateOut == null ||
-                                  punchTimeDateOut == "-")) {
-                            setState(() {
-                              _onMarkOut();
-                            });
-                          } else if (punchTimeDateIn == null ||
-                              punchTimeDateIn == "-") {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content:
-                                    Text('Please mark IN before marking OUT!'),
-                                backgroundColor: Colors.orange,
-                              ),
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Already marked OUT!'),
-                                backgroundColor: Colors.orange,
-                              ),
-                            );
-                          }
-                        },
+                        onPressed: _onOutButtonPressed,
                         child: const Text(
                           'OUT',
                           style: TextStyle(
@@ -214,6 +171,86 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
         ),
       ),
     );
+  }
+
+  Future<bool> _checkInternetConnection() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+      // Show dialog to ask user to turn on internet connection
+      showCupertinoDialog(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: const Text("No Internet Connection"),
+          content: const Text("Please turn on the internet connection to proceed."),
+          actions: [
+            CupertinoDialogAction(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+      return false;
+    }
+    return true;
+  }
+
+  void _onInButtonPressed() async {
+    // First, check internet connection
+    bool isConnected = await _checkInternetConnection();
+    if (!isConnected) return;
+
+    // Proceed with punch-in logic only if connected
+    if ((punchTimeDateIn == null &&
+        (punchTimeDateOut == null || punchTimeDateOut == "-")) ||
+        (punchTimeDateIn != null && punchTimeDateOut != null && punchTimeDateOut != "-")) {
+      setState(() {
+        _onMarkIn();
+      });
+    } else if (punchTimeDateIn != null &&
+        (punchTimeDateOut == null || punchTimeDateOut == "-")) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Already marked IN!'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    } else {
+      // Add a fallback for other cases, if necessary
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Invalid punch-in attempt!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _onOutButtonPressed() async {
+    // First, check internet connection
+    bool isConnected = await _checkInternetConnection();
+    if (!isConnected) return;
+
+    if (punchTimeDateIn != null && punchTimeDateIn != "-" && (punchTimeDateOut == null || punchTimeDateOut == "-")) {
+      setState(() {
+        _onMarkOut();
+      });
+    } else if (punchTimeDateIn == null || punchTimeDateIn == "-") {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content:
+          Text('Please mark IN before marking OUT!'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Already marked OUT!'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    }
   }
 
   Widget _buildTimeDateDisplay() {
@@ -252,7 +289,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     try {
       currentDateTime = await Future.any([
         getCurrentDateViewModel.getTimeDate(),
-        Future.delayed(const Duration(seconds: 3), () => null)
+        Future.delayed(const Duration(seconds: 5), () => null)
       ]);
 
       if (currentDateTime != null) {
@@ -337,6 +374,13 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     setState(() {
       savedPunchOutImagePath = null;
     });
+  }
+
+  Future<void> _clearPunchOutData() async {
+    // Clear the punch-out date-time and other fields
+    punchTimeDateOut = '';
+    outKm = '';
+    await _clearPunchOutImageFromSP();
   }
 
   Future<void> _onMarkIn() async {
@@ -438,9 +482,11 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
 
                       // Function to format the date
                       String formatDate(String dateString) {
-                        DateFormat inputFormat = DateFormat("dd/MM/yyyy hh:mm a");
+                        DateFormat inputFormat =
+                            DateFormat("dd/MM/yyyy hh:mm a");
                         DateTime dateTime = inputFormat.parse(dateString);
-                        DateFormat outputFormat = DateFormat("yyyy-MM-dd HH:mm");
+                        DateFormat outputFormat =
+                            DateFormat("yyyy-MM-dd HH:mm");
                         return outputFormat.format(dateTime);
                       }
 
@@ -473,7 +519,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                         ),
                       );
 
-                      await _clearPunchOutImageFromSP();
+                      await _clearPunchOutData();
 
                       if (response['code'] == 200) {
                         Navigator.of(context).pop();
@@ -577,7 +623,8 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                           AttendanceTable(
                             uniqueId: uniqueIdv4,
                             dateTimeIn: punchTimeDateIn,
-                            inKmsDriven: (inKm == null || inKm!.isEmpty) ? '-' : '$inKm',
+                            inKmsDriven:
+                                (inKm == null || inKm!.isEmpty) ? '-' : '$inKm',
                             dateTimeOut: punchTimeDateOut,
                             outKmsDriven: '$outKm KM',
                             siteId: "",
@@ -668,8 +715,6 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     }
   }
 }
-
-
 
 // if(double.parse(outKm!) <=  double.parse(inKm!)) {
 //   ScaffoldMessenger.of(context).showSnackBar(

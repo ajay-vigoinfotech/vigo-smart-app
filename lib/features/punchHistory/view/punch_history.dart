@@ -1,3 +1,5 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../auth/session_manager/session_manager.dart';
 import '../model/getselfieattendance_model.dart';
@@ -19,31 +21,7 @@ class _PunchHistoryState extends State<PunchHistory> {
   void initState() {
     super.initState();
     fetchPunchHistory();
-  }
-
-  Future<void> fetchPunchHistory() async {
-    final SessionManager sessionManager = SessionManager();
-    final token = await sessionManager.getToken();
-
-    if (token == null || token.isEmpty) {
-      print('Failed to retrieve token.');
-      return;
-    }
-
-    final GetSelfieAttendanceViewModel getSelfieAttendanceViewModel = GetSelfieAttendanceViewModel();
-    final GetSelfieAttendanceViewModel? viewModel = await getSelfieAttendanceViewModel.getSelfieAttendance(token);
-
-    if (viewModel != null && viewModel.getSelfieAttendanceModel != null) {
-      setState(() {
-        punchData = viewModel.getSelfieAttendanceModel!.table ?? [];
-        isLoading = false; // Stop loading after data is fetched
-      });
-    } else {
-      print('Failed to fetch attendance data.');
-      setState(() {
-        isLoading = false; // Stop loading if there's an error
-      });
-    }
+    checkInternetConnection();
   }
 
   @override
@@ -168,11 +146,11 @@ class _PunchHistoryState extends State<PunchHistory> {
                                           height: 75,
                                           fit: BoxFit.cover,
                                           errorBuilder:
-                                              (context, error, stackTrace) => 
-                                                  // Text('Not Marked yet!!')
-                                              const Icon(Icons.supervised_user_circle_outlined,
-                                                      size: 70,
-                                                      color: Colors.grey),
+                                              (context, error, stackTrace) =>
+                                                  Image.asset(
+                                            'assets/images/place_holder.webp',
+                                            width: 130,
+                                          ),
                                         )
                                       else
                                         const Icon(Icons.image_not_supported,
@@ -206,6 +184,56 @@ class _PunchHistoryState extends State<PunchHistory> {
                   ),
                 ),
     );
+  }
+
+  Future<void> fetchPunchHistory() async {
+    final SessionManager sessionManager = SessionManager();
+    final token = await sessionManager.getToken();
+
+    if (token == null || token.isEmpty) {
+      debugPrint('Failed to retrieve token.');
+      return;
+    }
+
+    final GetSelfieAttendanceViewModel getSelfieAttendanceViewModel =
+        GetSelfieAttendanceViewModel();
+    final GetSelfieAttendanceViewModel? viewModel =
+        await getSelfieAttendanceViewModel.getSelfieAttendance(token);
+
+    if (viewModel != null && viewModel.getSelfieAttendanceModel != null) {
+      setState(() {
+        punchData = viewModel.getSelfieAttendanceModel!.table ?? [];
+        isLoading = false; // Stop loading after data is fetched
+      });
+    } else {
+      debugPrint('Failed to fetch attendance data.');
+      setState(() {
+        isLoading = false; // Stop loading if there's an error
+      });
+    }
+  }
+
+  Future<bool> checkInternetConnection() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+      // Show dialog to ask user to turn on internet connection
+      showCupertinoDialog(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: const Text("No Internet Connection"),
+          content:
+              const Text("Please turn on the internet connection to proceed."),
+          actions: [
+            CupertinoDialogAction(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+      return false;
+    }
+    return true;
   }
 }
 

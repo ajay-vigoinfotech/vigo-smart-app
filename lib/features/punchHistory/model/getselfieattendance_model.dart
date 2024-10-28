@@ -62,19 +62,20 @@ class SelfieAttendanceTable {
   });
 
   SelfieAttendanceTable.fromJson(Map<String, dynamic> json) {
-    compId = json['compId'].toString();
-    dateTimeIn = json['dateTimeIn'].toString();
-    dateTimeOut = json['dateTimeOut'].toString();
-    totalHours = json['totalHours'].toString();
-    location = json['location'].toString();
-    outLocation = json['outLocation'].toString();
-    inRemarks = json['inRemarks'].toString();
-    inPhoto = json['inPhoto'].toString();
-    outPhoto = json['outPhoto'].toString();
-    outRemarks = json['outRemarks'].toString();
-    inKmsDriven = json['inKmsDriven'].toString();
-    outKmsDriven = json['outKmsDriven'].toString();
+    compId = json['compId']?.toString() ?? "Not marked yet";
+    dateTimeIn = json['dateTimeIn']?.toString() ?? "Not marked yet";
+    dateTimeOut = json['dateTimeOut']?.toString() ?? "Not marked yet";
+    totalHours = json['totalHours']?.toString() ?? "Not marked yet";
+    location = json['location']?.toString() ?? "";
+    outLocation = json['outLocation']?.toString() ?? "";
+    inRemarks = json['inRemarks']?.toString() ?? "";
+    inPhoto = json['inPhoto']?.toString() ?? "";
+    outPhoto = json['outPhoto']?.toString() ?? "";
+    outRemarks = json['outRemarks']?.toString() ?? "";
+    inKmsDriven = json['inKmsDriven']?.toString() ?? "";
+    outKmsDriven = json['outKmsDriven']?.toString() ?? "";
   }
+
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, String>{};

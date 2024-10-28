@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class HomeScreenCard extends StatelessWidget {
-  final Widget icon;
+  final Image icon;
   final String modulename;
   final Color cardColor;
   final Widget nextPage;
@@ -24,39 +24,40 @@ class HomeScreenCard extends StatelessWidget {
         );
       },
       child: Card(
-        elevation: 6, // Subtle shadow for better card appearance
+        elevation: 6,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16), // Slightly sharper corners
+          borderRadius: BorderRadius.circular(16),
         ),
         child: Container(
-          padding: const EdgeInsets.all(15), // Maintain padding inside the card
+          padding: const EdgeInsets.all(15),
           decoration: BoxDecoration(
             color: cardColor,
-            borderRadius: BorderRadius.circular(16), // Match the card's border radius
+            borderRadius: BorderRadius.circular(16),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              IconTheme(
-                data: const IconThemeData(color: Colors.white, size: 50), // Icon size and color
+              SizedBox(
+                width: 50, // Set image size similar to icon size
+                height: 50,
                 child: icon,
               ),
-              const SizedBox(width: 20), // Increased space between icon and text for balance
+              const SizedBox(width: 20),
               Expanded(
                 child: Text(
                   modulename,
                   textAlign: TextAlign.left,
                   style: const TextStyle(
-                    fontSize: 20, // Slightly smaller for balance
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: Colors.black,
                   ),
                 ),
               ),
               const Icon(
-                Icons.arrow_forward_ios, // Add a forward arrow for navigation feedback
-                color: Colors.white54,
+                Icons.arrow_forward_ios,
+                color: Colors.black,
                 size: 18,
               ),
             ],

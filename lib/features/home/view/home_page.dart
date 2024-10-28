@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vigo_smart_app/features/home/widgets/setting_page.dart';
 import 'package:vigo_smart_app/features/markduty/view/markduty_page.dart';
@@ -40,6 +40,7 @@ class _HomePageState extends State<HomePage> {
   String? punchTimeDateIn;
   String helplineNo = '';
   String? helpLineWhatsapp = '';
+  String? userProfilePic = '';
 
   final _formKey = GlobalKey<FormState>();
 
@@ -50,8 +51,7 @@ class _HomePageState extends State<HomePage> {
   final LoginViewModel _viewModel = LoginViewModel();
   final MarkLoginViewModel markLoginViewModel = MarkLoginViewModel();
   final UserViewModel userViewModel = UserViewModel();
-  final GetlastselfieattViewModel getlastselfieattViewModel =
-      GetlastselfieattViewModel();
+  final GetlastselfieattViewModel getlastselfieattViewModel = GetlastselfieattViewModel();
   final CheckSessionViewModel checkSessionViewModel = CheckSessionViewModel();
 
   final List<Map<String, dynamic>> allModules = [
@@ -78,16 +78,16 @@ class _HomePageState extends State<HomePage> {
     },
     {
       'code': 'SupervisorDutyManagementApp',
-      'icon': AppConstants.markDutyIcon,
+      'icon': Image.asset('assets/images/attendance_new.webp'),
       'name': Strings.supervisorDutyManagementApp,
-      'color': Pallete.btn1,
+      'color': Pallete.backgroundColor,
       'page': const MarkdutyPage(),
     },
     {
       'code': 'PunchHistory',
-      'icon': AppConstants.punchHistoryIcon,
+      'icon': Image.asset('assets/images/ic_record.webp'),
       'name': Strings.punchHistory,
-      'color': Pallete.blueColor,
+      'color': Pallete.backgroundColor,
       'page': const PunchHistory(),
     },
     {
@@ -99,9 +99,9 @@ class _HomePageState extends State<HomePage> {
     },
     {
       'code': 'SettingsApp',
-      'icon': AppConstants.settingsIcon,
+      'icon': Image.asset('assets/images/settings.webp'),
       'name': Strings.settingsApp,
-      'color': Pallete.greyColor,
+      'color': Pallete.backgroundColor,
       'page': const SettingPage(),
     },
     {
@@ -192,19 +192,65 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  static Future<String> getAppVersion() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    return packageInfo.version;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.white70,
         elevation: 10,
-        title: const Text(
-          'Vigo Smart App v1.0',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 23),
+        title: FutureBuilder<String>(
+          future: getAppVersion(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Text(
+                'Vigo Smart App',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 23),
+              );
+            } else if (snapshot.hasError) {
+              return const Text(
+                'Vigo Smart App - Error',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 23),
+              );
+            } else {
+              final version = snapshot.data ?? '1.0';
+              return RichText(
+                text: TextSpan(
+                  children: [
+                    const TextSpan(
+                      text: 'Vigo Smart App ',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 23,
+                        color: Colors.black, // Customize color if needed
+                      ),
+                    ),
+                    TextSpan(
+                      text: 'v$version',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15, // Slightly smaller font for the version
+                        color: Colors.black, // Customize color if needed
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+          },
         ),
         centerTitle: false,
-        leading: IconButton(
-          onPressed: () {},
-          icon: const Icon(Icons.menu),
+        leading: Builder(
+          builder: (context) => IconButton(
+            onPressed: () {
+              Scaffold.of(context).openDrawer();
+            },
+            icon: const Icon(Icons.menu),
+          ),
         ),
         actions: [
           IconButton(
@@ -212,8 +258,58 @@ class _HomePageState extends State<HomePage> {
               _showBottomSheet(context);
             },
             icon: const Icon(Icons.settings),
-          )
+          ),
         ],
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            // Drawer Header with User Photo
+            UserAccountsDrawerHeader(
+              accountName: Text('$employeeCode'),
+              accountEmail: Text("$name"),
+              currentAccountPicture: const CircleAvatar(
+                backgroundImage: AssetImage("assets/images/place_holder.webp"),
+              ),
+            ),
+            // Drawer Items
+            ListTile(
+              leading: Icon(Icons.home),
+              title: Text("Home"),
+              onTap: () {
+                Navigator.pop(context); // Close the drawer
+                // Navigate to home or other action
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.timer),
+              title: const Text("Attendance"),
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const MarkdutyPage()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text("Settings"),
+              onTap: () {
+                Navigator.push(
+                  context,
+                MaterialPageRoute(builder: (context) => const SettingPage()));
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.contact_mail),
+              title: Text("Contact Us"),
+              onTap: () {
+                Navigator.pop(context);
+                // Navigate to contact us or other action
+              },
+            ),
+          ],
+        ),
       ),
       body: Column(
         children: [
@@ -307,10 +403,10 @@ class _HomePageState extends State<HomePage> {
             children: [
               GestureDetector(
                 onTap: () => _launchDialer(helplineNo),
-                child: const Icon(
-                  Icons.support_agent_sharp,
-                  color: Colors.green,
-                  size: 40,
+                child: Image.asset(
+                  'assets/images/ic_help_desk.webp', // Specify your image path
+                  width: 30, // Set desired width
+                  height: 30, // Set desired height
                 ),
               ),
               GestureDetector(
@@ -338,13 +434,12 @@ class _HomePageState extends State<HomePage> {
             children: [
               GestureDetector(
                 onTap: () => _launchWhatsApp(helpLineWhatsapp!),
-                child: SvgPicture.asset(
-                  'assets/icons/whatsapp.svg',
-                  width: 35,
-                  height: 35,
+                child: Image.asset(
+                  'assets/images/ic_whatsapp.webp', // Specify your image path
+                  width: 30, // Set desired width
+                  height: 30, // Set desired height
                 ),
               ),
-              const SizedBox(width: 5),
               GestureDetector(
                 onTap: () => _launchWhatsApp(helpLineWhatsapp!),
                 child: Text(
@@ -544,6 +639,7 @@ class _HomePageState extends State<HomePage> {
           compName = data.compName ?? "-";
           helplineNo = data.helplineNo ?? "-";
           helpLineWhatsapp = data.helpLineWhatsapp ?? "-";
+          userProfilePic = data.userProfilePic ?? "-";
         });
       } else {
         debugPrint('No Token Found');
@@ -601,7 +697,8 @@ class _HomePageState extends State<HomePage> {
   Future<void> _onSubmit() async {
     if (_formKey.currentState?.validate() ?? false) {
       try {
-        final username = "${partnerCodeController.text}/${userIDController.text}";
+        final username =
+            "${partnerCodeController.text}/${userIDController.text}";
         final loginRequest = LoginRequest(
           grantType: Strings.grantType,
           username: username,
@@ -617,7 +714,8 @@ class _HomePageState extends State<HomePage> {
           await sessionManager.saveLoginInfo(username);
 
           sessionManager.getToken().then((token) async {
-            final String formattedDateTime = Utils.getCurrentFormattedDateTime();
+            final String formattedDateTime =
+                Utils.getCurrentFormattedDateTime();
             final String deviceDetails = await Utils.getDeviceDetails(context);
             final String appVersion = await Utils.getAppVersion();
             final String ipAddress = await Utils.getIpAddress();
@@ -641,7 +739,7 @@ class _HomePageState extends State<HomePage> {
             );
 
             final markLoginResponse =
-            await markLoginViewModel.markLogin(token!, markLoginModel);
+                await markLoginViewModel.markLogin(token!, markLoginModel);
 
             if (markLoginResponse is String &&
                 markLoginResponse == "Device Logged-In successfully.") {
@@ -710,7 +808,6 @@ class _HomePageState extends State<HomePage> {
       }
     }
   }
-
 
   Future<void> reLoginDialog(BuildContext context) async {
     bool isPasswordVisible = false;
