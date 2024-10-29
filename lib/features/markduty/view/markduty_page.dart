@@ -7,11 +7,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:quickalert/models/quickalert_animtype.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'package:vigo_smart_app/features/auth/model/getlastselfieattendancemodel.dart';
 import 'package:vigo_smart_app/features/markduty/model/markselfieattendance_model.dart';
-import 'package:vigo_smart_app/features/markduty/widgets/success_dialog.dart';
 import '../../../core/utils.dart';
 import '../../auth/session_manager/session_manager.dart';
 import '../viewmodel/get_current_date_view_model.dart';
@@ -81,12 +83,12 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                 Column(
                   children: [
                     Text(
-                      punchTimeDateIn ?? '-',
+                      punchTimeDateIn ?? '',
                       style: const TextStyle(
                           fontSize: 14, fontWeight: FontWeight.bold),
                     ),
                     Text(
-                      inKm ?? '-',
+                      inKm ?? '',
                       style: const TextStyle(
                           fontSize: 14, fontWeight: FontWeight.bold),
                     ),
@@ -124,12 +126,12 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                 Column(
                   children: [
                     Text(
-                      punchTimeDateOut ?? '-',
+                      punchTimeDateOut ?? '',
                       style: const TextStyle(
                           fontSize: 14, fontWeight: FontWeight.bold),
                     ),
                     Text(
-                      outKm ?? '-',
+                      outKm ?? '',
                       style: const TextStyle(
                           fontSize: 14, fontWeight: FontWeight.bold),
                     ),
@@ -209,12 +211,17 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
       });
     } else if (punchTimeDateIn != null &&
         (punchTimeDateOut == null || punchTimeDateOut == "-")) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Already marked IN!'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+      QuickAlert.show(
+        context: context,
+        type: QuickAlertType.warning,
+        text: 'Already marked IN!'
+      ); // That's it to display an alert, use other properties to customize.
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(
+      //     content: Text('Already marked IN!'),
+      //     backgroundColor: Colors.orange,
+      //   ),
+      // );
     } else {
       // Add a fallback for other cases, if necessary
       ScaffoldMessenger.of(context).showSnackBar(
@@ -236,19 +243,25 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
         _onMarkOut();
       });
     } else if (punchTimeDateIn == null || punchTimeDateIn == "-") {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content:
-          Text('Please mark IN before marking OUT!'),
-          backgroundColor: Colors.orange,
-        ),
+      QuickAlert.show(
+        confirmBtnText: 'OK',
+        // animType: QuickAlertAnimType.scale,
+        context: context,
+        type: QuickAlertType.warning,
+        text: 'Please mark IN before marking OUT!',
       );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(
+      //     content:
+      //     Text('Please mark IN before marking OUT!'),
+      //     backgroundColor: Colors.orange,
+      //   ),
+      // );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Already marked OUT!'),
-          backgroundColor: Colors.orange,
-        ),
+      QuickAlert.show(
+        context: context,
+        type: QuickAlertType.warning,
+        text: 'Already marked OUT!',
       );
     }
   }
@@ -523,8 +536,11 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
 
                       if (response['code'] == 200) {
                         Navigator.of(context).pop();
-                        showSuccessDialog(context, 'Mark In Success',
-                            '${response['status']}');
+                        QuickAlert.show(
+                          context: context,
+                          type: QuickAlertType.success,
+                          text: '${response['status']}',
+                        );
                         _loadPunchInImageFromSP();
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -623,8 +639,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                           AttendanceTable(
                             uniqueId: uniqueIdv4,
                             dateTimeIn: punchTimeDateIn,
-                            inKmsDriven:
-                                (inKm == null || inKm!.isEmpty) ? '-' : '$inKm',
+                            inKmsDriven: (inKm == null || inKm!.isEmpty) ? '-' : '$inKm',
                             dateTimeOut: punchTimeDateOut,
                             outKmsDriven: '$outKm KM',
                             siteId: "",
@@ -693,8 +708,11 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
 
                       if (response['code'] == 200) {
                         Navigator.of(context).pop();
-                        showSuccessDialog(context, 'Mark Out Success',
-                            '${response['status']}');
+                        QuickAlert.show(
+                          context: context,
+                          type: QuickAlertType.success,
+                          text: '${response['status']}',
+                        );
                         _loadPunchInImageFromSP();
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(

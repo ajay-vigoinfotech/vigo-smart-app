@@ -52,13 +52,13 @@ class AttendanceTable {  // Renamed from Table to AttendanceTable
         this.siteName});
 
   AttendanceTable.fromJson(Map<String, dynamic> json) {
-    uniqueId = json['uniqueId'].toString();
-    dateTimeIn = json['dateTimeIn'].toString();
-    dateTimeOut = json['dateTimeOut'].toString();
-    inKmsDriven = json['inKmsDriven'].toString();
-    outKmsDriven = json['outKmsDriven'].toString();
-    siteId = json['siteId'].toString();
-    siteName = json['siteName'].toString();
+    uniqueId = json['uniqueId']?.toString() ?? "";
+    dateTimeIn = json['dateTimeIn']?.toString() ?? "";
+    dateTimeOut = json['dateTimeOut']?.toString() ?? "";
+    inKmsDriven = json['inKmsDriven']?.toString() ?? "";
+    outKmsDriven = json['outKmsDriven']?.toString() ?? "";
+    siteId = json['siteId']?.toString() ?? "";
+    siteName = json['siteName']?.toString() ?? "";
   }
 
   Map<String, dynamic> toJson() {

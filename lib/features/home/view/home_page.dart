@@ -41,6 +41,7 @@ class _HomePageState extends State<HomePage> {
   String helplineNo = '';
   String? helpLineWhatsapp = '';
   String? userProfilePic = '';
+  String? newUserProfilePic = '';
 
   final _formKey = GlobalKey<FormState>();
 
@@ -51,7 +52,8 @@ class _HomePageState extends State<HomePage> {
   final LoginViewModel _viewModel = LoginViewModel();
   final MarkLoginViewModel markLoginViewModel = MarkLoginViewModel();
   final UserViewModel userViewModel = UserViewModel();
-  final GetlastselfieattViewModel getlastselfieattViewModel = GetlastselfieattViewModel();
+  final GetlastselfieattViewModel getlastselfieattViewModel =
+      GetlastselfieattViewModel();
   final CheckSessionViewModel checkSessionViewModel = CheckSessionViewModel();
 
   final List<Map<String, dynamic>> allModules = [
@@ -92,9 +94,9 @@ class _HomePageState extends State<HomePage> {
     },
     {
       'code': 'SyncData',
-      'icon': AppConstants.syncDataIcon,
+      'icon': Image.asset('assets/images/settings.webp'),
       'name': Strings.syncData,
-      'color': Pallete.vibrantOrangeColor,
+      'color': Pallete.backgroundColor,
       'page': const SettingPage(),
     },
     {
@@ -197,6 +199,41 @@ class _HomePageState extends State<HomePage> {
     return packageInfo.version;
   }
 
+  // Function to build the Drawer
+  Widget buildDrawer() {
+    return Drawer(
+      child: ListView(
+        children: [
+          UserAccountsDrawerHeader(
+            accountName: Text('$employeeCode'),
+            accountEmail: Text("$name"),
+            currentAccountPicture: CircleAvatar(
+              backgroundImage: newUserProfilePic != "-"
+                  ? NetworkImage(newUserProfilePic!)
+                  : const AssetImage("assets/images/place_holder.webp")
+                      as ImageProvider,
+              onBackgroundImageError: (error, stackTrace) {
+                debugPrint("Failed to load profile picture: $error");
+              },
+            ),
+          ),
+          ...filteredModules.map((module) {
+            return ListTile(
+              title: Text(module['name']),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => module['page'],
+                  ),
+                );
+              },
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -261,56 +298,72 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            // Drawer Header with User Photo
-            UserAccountsDrawerHeader(
-              accountName: Text('$employeeCode'),
-              accountEmail: Text("$name"),
-              currentAccountPicture: const CircleAvatar(
-                backgroundImage: AssetImage("assets/images/place_holder.webp"),
-              ),
-            ),
-            // Drawer Items
-            ListTile(
-              leading: Icon(Icons.home),
-              title: Text("Home"),
-              onTap: () {
-                Navigator.pop(context); // Close the drawer
-                // Navigate to home or other action
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.timer),
-              title: const Text("Attendance"),
-              onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const MarkdutyPage()));
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text("Settings"),
-              onTap: () {
-                Navigator.push(
-                  context,
-                MaterialPageRoute(builder: (context) => const SettingPage()));
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.contact_mail),
-              title: Text("Contact Us"),
-              onTap: () {
-                Navigator.pop(context);
-                // Navigate to contact us or other action
-              },
-            ),
-          ],
-        ),
-      ),
+      drawer: buildDrawer(),
+      // Drawer(
+      //   child: ListView(
+      //     padding: EdgeInsets.zero,
+      //     children: <Widget>[
+      //       UserAccountsDrawerHeader(
+      //         accountName: Text(
+      //           '$employeeCode',
+      //           style: const TextStyle(fontSize: 18),
+      //         ),
+      //         accountEmail: Text(
+      //           "$name",
+      //           style: TextStyle(fontSize: 17),
+      //         ),
+      //         currentAccountPicture: CircleAvatar(
+      //           backgroundImage: userProfilePic != "-"
+      //               ? NetworkImage(userProfilePic!)
+      //               : const AssetImage("assets/images/place_holder.webp")
+      //                   as ImageProvider,
+      //           onBackgroundImageError: (error, stackTrace) {
+      //             debugPrint("Failed to load profile picture: $error");
+      //           },
+      //         ),
+      //       ),
+      //       ListTile(
+      //         leading: const Icon(Icons.timer),
+      //         title: const Text(
+      //           "Attendance",
+      //           style: TextStyle(fontSize: 19),
+      //         ),
+      //         onTap: () {
+      //           Navigator.push(
+      //               context,
+      //               MaterialPageRoute(
+      //                   builder: (context) => const MarkdutyPage()));
+      //         },
+      //       ),
+      //       ListTile(
+      //         leading: const Icon(Icons.fact_check_outlined),
+      //         title: const Text(
+      //           "Attendance History",
+      //           style: TextStyle(fontSize: 19),
+      //         ),
+      //         onTap: () {
+      //           Navigator.push(
+      //               context,
+      //               MaterialPageRoute(
+      //                   builder: (context) => const PunchHistory()));
+      //         },
+      //       ),
+      //       ListTile(
+      //         leading: const Icon(Icons.settings),
+      //         title: const Text(
+      //           "Settings",
+      //           style: TextStyle(fontSize: 19),
+      //         ),
+      //         onTap: () {
+      //           Navigator.push(
+      //               context,
+      //               MaterialPageRoute(
+      //                   builder: (context) => const SettingPage()));
+      //         },
+      //       ),
+      //     ],
+      //   ),
+      // ),
       body: Column(
         children: [
           const SizedBox(height: 5),
@@ -639,7 +692,11 @@ class _HomePageState extends State<HomePage> {
           compName = data.compName ?? "-";
           helplineNo = data.helplineNo ?? "-";
           helpLineWhatsapp = data.helpLineWhatsapp ?? "-";
-          userProfilePic = data.userProfilePic ?? "-";
+          userProfilePic = data.userProfilePic!.substring(2);
+
+          newUserProfilePic = data.userProfilePic != null
+              ? "${AppConstants.baseUrl}${data.userProfilePic}"
+              : "-";
         });
       } else {
         debugPrint('No Token Found');

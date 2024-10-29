@@ -201,7 +201,7 @@ class SessionManager {
       mobile: prefs.getString(_mobileKey),
       email: prefs.getString(_emailKey),
       panNo: prefs.getString(_panNoKey),
-      userProfilePic: prefs.getString(_usernameKey),
+      userProfilePic: prefs.getString(_userProfilePicKey),
       compId: prefs.getInt(_compIdKey),
       branchId: prefs.getInt(_branchIdKey),
       createdBy: prefs.getString(_createdByKey),
@@ -228,25 +228,15 @@ class SessionManager {
 
   Future<void> saveSelfieAttendance(
       SelfieAttendanceModel selfieAttendanceModel) async {
-    if (selfieAttendanceModel.table != null &&
-        selfieAttendanceModel.table!.isNotEmpty) {
+    if (selfieAttendanceModel.table != null && selfieAttendanceModel.table!.isNotEmpty) {
       final prefs = await SharedPreferences.getInstance();
-
-      await prefs.setString(_uniqueId,
-          selfieAttendanceModel.table![0].uniqueId?.toString() ?? "");
-      await prefs.setString(_dateTimeIn,
-          selfieAttendanceModel.table![0].dateTimeIn?.toString() ?? "");
-      await prefs.setString(_dateTimeOut,
-          selfieAttendanceModel.table![0].dateTimeOut?.toString() ?? "");
-      await prefs.setString(_inKmsDriven,
-          selfieAttendanceModel.table![0].inKmsDriven?.toString() ?? "");
-      await prefs.setString(_outKmsDriven,
-          selfieAttendanceModel.table![0].outKmsDriven?.toString() ?? "");
-      await prefs.setString(
-          _siteId, selfieAttendanceModel.table![0].siteId?.toString() ?? "");
-      await prefs.setString(_siteName,
-          selfieAttendanceModel.table![0].siteName?.toString() ?? "");
-
+      await prefs.setString(_uniqueId, selfieAttendanceModel.table![0].uniqueId?.toString() ?? "");
+      await prefs.setString(_dateTimeIn, selfieAttendanceModel.table![0].dateTimeIn?.toString() ?? "");
+      await prefs.setString(_dateTimeOut, selfieAttendanceModel.table![0].dateTimeOut?.toString() ?? "");
+      await prefs.setString(_inKmsDriven, selfieAttendanceModel.table![0].inKmsDriven?.toString() ?? "");
+      await prefs.setString(_outKmsDriven, selfieAttendanceModel.table![0].outKmsDriven?.toString() ?? "");
+      await prefs.setString(_siteId, selfieAttendanceModel.table![0].siteId?.toString() ?? "");
+      await prefs.setString(_siteName, selfieAttendanceModel.table![0].siteName?.toString() ?? "");
       debugPrint('Selfie Attendance saved successfully!');
     } else {
       debugPrint('Error: SelfieAttendanceModel table is null or empty.');
