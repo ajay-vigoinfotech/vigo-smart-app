@@ -32,7 +32,7 @@ class SelfieAttendanceModel {
   }
 }
 
-class AttendanceTable {  // Renamed from Table to AttendanceTable
+class AttendanceTable {
   String? uniqueId;
   String? dateTimeIn;
   String? dateTimeOut;

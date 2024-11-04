@@ -299,71 +299,7 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       drawer: buildDrawer(),
-      // Drawer(
-      //   child: ListView(
-      //     padding: EdgeInsets.zero,
-      //     children: <Widget>[
-      //       UserAccountsDrawerHeader(
-      //         accountName: Text(
-      //           '$employeeCode',
-      //           style: const TextStyle(fontSize: 18),
-      //         ),
-      //         accountEmail: Text(
-      //           "$name",
-      //           style: TextStyle(fontSize: 17),
-      //         ),
-      //         currentAccountPicture: CircleAvatar(
-      //           backgroundImage: userProfilePic != "-"
-      //               ? NetworkImage(userProfilePic!)
-      //               : const AssetImage("assets/images/place_holder.webp")
-      //                   as ImageProvider,
-      //           onBackgroundImageError: (error, stackTrace) {
-      //             debugPrint("Failed to load profile picture: $error");
-      //           },
-      //         ),
-      //       ),
-      //       ListTile(
-      //         leading: const Icon(Icons.timer),
-      //         title: const Text(
-      //           "Attendance",
-      //           style: TextStyle(fontSize: 19),
-      //         ),
-      //         onTap: () {
-      //           Navigator.push(
-      //               context,
-      //               MaterialPageRoute(
-      //                   builder: (context) => const MarkdutyPage()));
-      //         },
-      //       ),
-      //       ListTile(
-      //         leading: const Icon(Icons.fact_check_outlined),
-      //         title: const Text(
-      //           "Attendance History",
-      //           style: TextStyle(fontSize: 19),
-      //         ),
-      //         onTap: () {
-      //           Navigator.push(
-      //               context,
-      //               MaterialPageRoute(
-      //                   builder: (context) => const PunchHistory()));
-      //         },
-      //       ),
-      //       ListTile(
-      //         leading: const Icon(Icons.settings),
-      //         title: const Text(
-      //           "Settings",
-      //           style: TextStyle(fontSize: 19),
-      //         ),
-      //         onTap: () {
-      //           Navigator.push(
-      //               context,
-      //               MaterialPageRoute(
-      //                   builder: (context) => const SettingPage()));
-      //         },
-      //       ),
-      //     ],
-      //   ),
-      // ),
+
       body: Column(
         children: [
           const SizedBox(height: 5),
@@ -534,7 +470,7 @@ class _HomePageState extends State<HomePage> {
                 onTap: () {
                   Navigator.pop(context);
                   getUserData();
-                  lastSelfieAtt(SelfieAttendanceModel());
+                  // lastSelfieAtt(SelfieAttendanceModel());
                   getModules();
                   refreshServerData();
                 },
@@ -706,16 +642,15 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> lastSelfieAtt(
-      SelfieAttendanceModel selfieAttendanceModel) async {
-    final SessionManager sessionManager = SessionManager();
-    try {
-      await sessionManager.saveSelfieAttendance(selfieAttendanceModel);
-      debugPrint('Selfie Attendance saved successfully!!!!!!!!!');
-    } catch (error) {
-      debugPrint('Error saving selfie attendance: $error');
-    }
-  }
+  // Future<void> lastSelfieAtt(SelfieAttendanceModel selfieAttendanceModel) async {
+  //   final SessionManager sessionManager = SessionManager();
+  //   try {
+  //     await sessionManager.saveSelfieAttendance(selfieAttendanceModel);
+  //     debugPrint('Selfie Attendance saved successfully!!!!!!!!!');
+  //   } catch (error) {
+  //     debugPrint('Error saving selfie attendance: $error');
+  //   }
+  // }
 
   Future<void> checkUserSession() async {
     final SessionManager sessionManager = SessionManager();
@@ -754,19 +689,16 @@ class _HomePageState extends State<HomePage> {
   Future<void> _onSubmit() async {
     if (_formKey.currentState?.validate() ?? false) {
       try {
-        final username =
-            "${partnerCodeController.text}/${userIDController.text}";
+        final username = "${partnerCodeController.text}/${userIDController.text}";
         final loginRequest = LoginRequest(
           grantType: Strings.grantType,
           username: username,
           password: passwordController.text,
         );
 
-        // Get the error description (if any) from the makeRequest function
         final String? error = await _viewModel.makeRequest(loginRequest);
 
         if (error == null) {
-          // Login was successful
           final sessionManager = SessionManager();
           await sessionManager.saveLoginInfo(username);
 
@@ -795,11 +727,9 @@ class _HomePageState extends State<HomePage> {
               dataStatus: '',
             );
 
-            final markLoginResponse =
-                await markLoginViewModel.markLogin(token!, markLoginModel);
+            final markLoginResponse = await markLoginViewModel.markLogin(token!, markLoginModel);
 
-            if (markLoginResponse is String &&
-                markLoginResponse == "Device Logged-In successfully.") {
+            if (markLoginResponse is String && markLoginResponse == "Device Logged-In successfully.") {
               Fluttertoast.showToast(
                 msg: markLoginResponse,
                 toastLength: Toast.LENGTH_SHORT,
@@ -848,7 +778,7 @@ class _HomePageState extends State<HomePage> {
         }
       } catch (e) {
         // Handle any unexpected exceptions
-        print('General exception: $e');
+        debugPrint('General exception: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             backgroundColor: Colors.red,

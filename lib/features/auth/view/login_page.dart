@@ -11,6 +11,7 @@ import '../../../core/strings/strings.dart';
 import '../../../core/theme/app_pallete.dart';
 import '../../../core/utils.dart';
 import '../../home/viewmodel/modules_view_model.dart';
+import '../model/checksession_model.dart';
 import '../model/login_model.dart';
 import '../session_manager/session_manager.dart';
 import '../viewmodel/getlastselfieatt_view_model.dart';
@@ -207,6 +208,7 @@ class _LoginPageState extends State<LoginPage> {
 
             userViewModel.getUserDetails(token);
             getlastselfieattViewModel.getLastSelfieAttendance(token);
+            checkSessionViewModel.checkSession(token, CheckSessionModel as CheckSessionModel );
           }).catchError((error) {
             print('Error: $error');
           });

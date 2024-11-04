@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vigo_smart_app/features/auth/model/getuserdetails.dart';
-import '../../markduty/viewmodel/mark_selfie_view_model.dart';
 import '../model/getlastselfieattendancemodel.dart';
 
 class SessionManager {
@@ -14,7 +13,6 @@ class SessionManager {
 
 
   //save last selfie att strings
-  static const String _checkinId = 'checkinId';
   static const String _uniqueId = 'uniqueId';
   static const String _dateTimeIn = 'dateTimeIn';
   static const String _dateTimeOut = 'dateTimeOut';
@@ -167,12 +165,10 @@ class SessionManager {
     await prefs.setString(_intervalKey, user.interval.toString());
     await prefs.setString(_checkInTKey, user.checkInT.toString());
     await prefs.setString(_checkOutTKey, user.checkOutT.toString());
-    await prefs.setString(
-        _companyContactNoKey, user.companyContactNo.toString());
+    await prefs.setString(_companyContactNoKey, user.companyContactNo.toString());
     await prefs.setString(_companyAddressKey, user.companyAddress.toString());
     await prefs.setString(_helplineNoKey, user.helplineNo.toString());
-    await prefs.setString(
-        _helpLineWhatsappKey, user.helpLineWhatsapp.toString());
+    await prefs.setString(_helpLineWhatsappKey, user.helpLineWhatsapp.toString());
   }
 
   // Get user details
@@ -226,8 +222,7 @@ class SessionManager {
     );
   }
 
-  Future<void> saveSelfieAttendance(
-      SelfieAttendanceModel selfieAttendanceModel) async {
+  Future<void> saveSelfieAttendance(SelfieAttendanceModel selfieAttendanceModel) async {
     if (selfieAttendanceModel.table != null && selfieAttendanceModel.table!.isNotEmpty) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_uniqueId, selfieAttendanceModel.table![0].uniqueId?.toString() ?? "");

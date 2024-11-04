@@ -23,7 +23,6 @@ class MarkSelfieAttendance {
       );
 
       if (response.statusCode == 200) {
-        // Assuming response is JSON and contains a map with 'code' and 'status'
         return response.data as Map<String, dynamic>;
       } else {
         return {'code': response.statusCode, 'status': 'Error: ${response.statusMessage}'};

@@ -5,32 +5,30 @@ class GetSelfieAttendanceModel {
   GetSelfieAttendanceModel({this.table, this.httpResponseStatus});
 
   GetSelfieAttendanceModel.fromJson(Map<String, dynamic> json) {
-    if (json['table'] != null) {
+    if (json['table'] != null && json['table'] is List) {
       table = <SelfieAttendanceTable>[];
       json['table'].forEach((v) {
-        table!.add(SelfieAttendanceTable.fromJson(v));
+        if (v is Map<String, dynamic>) {
+          table!.add(SelfieAttendanceTable.fromJson(v));
+        }
       });
+    } else {
+      print("Unexpected format for 'table' in JSON.");
     }
-    if (json['httpResponseStatus'] != null) {
+
+    if (json['httpResponseStatus'] != null && json['httpResponseStatus'] is List) {
       httpResponseStatus = <HttpResponseStatus>[];
       json['httpResponseStatus'].forEach((v) {
-        httpResponseStatus!.add(HttpResponseStatus.fromJson(v));
+        if (v is Map<String, dynamic>) {
+          httpResponseStatus!.add(HttpResponseStatus.fromJson(v));
+        }
       });
+    } else {
+      print("Unexpected format for 'httpResponseStatus' in JSON.");
     }
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    if (table != null) {
-      data['table'] = table!.map((v) => v.toJson()).toList();
-    }
-    if (httpResponseStatus != null) {
-      data['httpResponseStatus'] =
-          httpResponseStatus!.map((v) => v.toJson()).toList();
-    }
-    return data;
   }
 }
+
 
 class SelfieAttendanceTable {
   String? compId;
@@ -76,9 +74,8 @@ class SelfieAttendanceTable {
     outKmsDriven = json['outKmsDriven']?.toString() ?? "";
   }
 
-
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, String>{};
+    final Map<String, dynamic> data = <String, dynamic>{};  // Updated to <String, dynamic>
     data['compId'] = compId;
     data['dateTimeIn'] = dateTimeIn;
     data['dateTimeOut'] = dateTimeOut;
@@ -94,6 +91,7 @@ class SelfieAttendanceTable {
     return data;
   }
 }
+
 
 class HttpResponseStatus {
   int? code;

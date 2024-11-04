@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:quickalert/models/quickalert_animtype.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,6 +15,7 @@ import 'package:vigo_smart_app/features/auth/model/getlastselfieattendancemodel.
 import 'package:vigo_smart_app/features/markduty/model/markselfieattendance_model.dart';
 import '../../../core/utils.dart';
 import '../../auth/session_manager/session_manager.dart';
+import '../../auth/viewmodel/getlastselfieatt_view_model.dart';
 import '../viewmodel/get_current_date_view_model.dart';
 import '../viewmodel/mark_selfie_view_model.dart';
 import '../widgets/map_page.dart';
@@ -38,21 +38,42 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   String formattedAccuracyValue = '';
   String uniqueIdv4 = "";
   String? inKm;
+  // double inKm = 0.0;
   String? dutyInRemark;
   String? dutyOutRemark;
   String? outKm;
   String? errorMessage;
+
   final picker = ImagePicker();
   final SessionManager sessionManager = SessionManager();
   final MarkSelfieAttendance markSelfieAttendance = MarkSelfieAttendance();
+  final GetlastselfieattViewModel getlastselfieattViewModel =
+      GetlastselfieattViewModel();
 
   @override
   void initState() {
     super.initState();
     _loadPunchInImageFromSP();
     _loadPunchOutImageFromSP();
-    sessionManager.getCheckinData().then((data) {
-      if (mounted) {
+    _loadCurrentDateTime();
+    _fetchSelfieAttendanceData();
+
+    // sessionManager.getCheckinData().then((data) {
+    //   setState(() {
+    //     uniqueIdv4 = data.uniqueId ?? "";
+    //     punchTimeDateIn = data.dateTimeIn;
+    //     inKm = data.inKmsDriven;
+    //     punchTimeDateOut = data.dateTimeOut;
+    //     outKm = data.outKmsDriven;
+    //   });
+    // });
+  }
+
+  Future<void> _fetchSelfieAttendanceData() async {
+    try {
+      String? token = await sessionManager.getToken();
+      await getlastselfieattViewModel.getLastSelfieAttendance(token!);
+      sessionManager.getCheckinData().then((data) {
         setState(() {
           uniqueIdv4 = data.uniqueId ?? "";
           punchTimeDateIn = data.dateTimeIn;
@@ -60,9 +81,12 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
           punchTimeDateOut = data.dateTimeOut;
           outKm = data.outKmsDriven;
         });
-      }
-    });
-    _loadCurrentDateTime();
+      });
+    } catch (e) {
+      setState(() {
+        errorMessage = 'Failed to load data: $e';
+      });
+    }
   }
 
   @override
@@ -80,95 +104,99 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Column(
-                  children: [
-                    Text(
-                      punchTimeDateIn ?? '',
-                      style: const TextStyle(
-                          fontSize: 14, fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      inKm ?? '',
-                      style: const TextStyle(
-                          fontSize: 14, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 5),
-                    if (savedImagePath != null && savedImagePath!.isNotEmpty)
-                      Image.file(
-                        File(savedImagePath!),
-                        height: 130,
-                        width: 120,
+                Expanded(
+                  child: Column(
+                    children: [
+                      Text(
+                        punchTimeDateIn ?? '',
+                        style: const TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.bold),
                       ),
-                    const SizedBox(height: 15),
-                    SizedBox(
-                      height: 70,
-                      width: 100,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          elevation: 5,
-                          backgroundColor: Colors.green,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                      Text(
+                        inKm ?? '',
+                        style: const TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 5),
+                      if (savedImagePath != null && savedImagePath!.isNotEmpty)
+                        Image.file(
+                          File(savedImagePath!),
+                          height: 130,
+                          width: 120,
+                        ),
+                      const SizedBox(height: 15),
+                      SizedBox(
+                        height: 70,
+                        width: 100,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            elevation: 5,
+                            backgroundColor: Colors.green,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          onPressed: _onInButtonPressed,
+                          child: const Text(
+                            'IN',
+                            style: TextStyle(
+                                fontSize: 22,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
                           ),
                         ),
-                        onPressed: _onInButtonPressed,
-                        child: const Text(
-                          'IN',
-                          style: TextStyle(
-                              fontSize: 22,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    )
-                  ],
+                      )
+                    ],
+                  ),
                 ),
-                Column(
-                  children: [
-                    Text(
-                      punchTimeDateOut ?? '',
-                      style: const TextStyle(
-                          fontSize: 14, fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      outKm ?? '',
-                      style: const TextStyle(
-                          fontSize: 14, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 5),
-                    if (savedPunchOutImagePath != null &&
-                        savedPunchOutImagePath!.isNotEmpty)
-                      Image.file(
-                        File(savedPunchOutImagePath!),
-                        height: 130,
-                        width: 120,
+                Expanded(
+                  child: Column(
+                    children: [
+                      Text(
+                        punchTimeDateOut ?? '',
+                        style: const TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.bold),
                       ),
-                    const SizedBox(height: 15),
-                    SizedBox(
-                      height: 70,
-                      width: 100,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          elevation: 5,
-                          backgroundColor: Colors.red,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                      Text(
+                        outKm ?? '',
+                        style: const TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 5),
+                      if (savedPunchOutImagePath != null &&
+                          savedPunchOutImagePath!.isNotEmpty)
+                        Image.file(
+                          File(savedPunchOutImagePath!),
+                          height: 130,
+                          width: 120,
+                        ),
+                      const SizedBox(height: 15),
+                      SizedBox(
+                        height: 70,
+                        width: 100,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            elevation: 5,
+                            backgroundColor: Colors.red,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          onPressed: _onOutButtonPressed,
+                          child: const Text(
+                            'OUT',
+                            style: TextStyle(
+                                fontSize: 22,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
                           ),
                         ),
-                        onPressed: _onOutButtonPressed,
-                        child: const Text(
-                          'OUT',
-                          style: TextStyle(
-                              fontSize: 22,
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold),
-                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
-            ),
+            )
           ],
         ),
       ),
@@ -183,7 +211,8 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
         context: context,
         builder: (context) => CupertinoAlertDialog(
           title: const Text("No Internet Connection"),
-          content: const Text("Please turn on the internet connection to proceed."),
+          content:
+              const Text("Please turn on the internet connection to proceed."),
           actions: [
             CupertinoDialogAction(
               onPressed: () => Navigator.of(context).pop(),
@@ -204,24 +233,19 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
 
     // Proceed with punch-in logic only if connected
     if ((punchTimeDateIn == null &&
-        (punchTimeDateOut == null || punchTimeDateOut == "-")) ||
-        (punchTimeDateIn != null && punchTimeDateOut != null && punchTimeDateOut != "-")) {
+            (punchTimeDateOut == null || punchTimeDateOut == "-")) ||
+        (punchTimeDateIn != null &&
+            punchTimeDateOut != null &&
+            punchTimeDateOut != "-")) {
       setState(() {
         _onMarkIn();
       });
     } else if (punchTimeDateIn != null &&
         (punchTimeDateOut == null || punchTimeDateOut == "-")) {
       QuickAlert.show(
-        context: context,
-        type: QuickAlertType.warning,
-        text: 'Already marked IN!'
-      ); // That's it to display an alert, use other properties to customize.
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   const SnackBar(
-      //     content: Text('Already marked IN!'),
-      //     backgroundColor: Colors.orange,
-      //   ),
-      // );
+          context: context,
+          type: QuickAlertType.warning,
+          text: 'Already marked IN!');
     } else {
       // Add a fallback for other cases, if necessary
       ScaffoldMessenger.of(context).showSnackBar(
@@ -238,7 +262,9 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     bool isConnected = await _checkInternetConnection();
     if (!isConnected) return;
 
-    if (punchTimeDateIn != null && punchTimeDateIn != "-" && (punchTimeDateOut == null || punchTimeDateOut == "-")) {
+    if (punchTimeDateIn != null &&
+        punchTimeDateIn != "-" &&
+        (punchTimeDateOut == null || punchTimeDateOut == "-")) {
       setState(() {
         _onMarkOut();
       });
@@ -250,13 +276,6 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
         type: QuickAlertType.warning,
         text: 'Please mark IN before marking OUT!',
       );
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   const SnackBar(
-      //     content:
-      //     Text('Please mark IN before marking OUT!'),
-      //     backgroundColor: Colors.orange,
-      //   ),
-      // );
     } else {
       QuickAlert.show(
         context: context,
@@ -472,7 +491,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                           AttendanceTable(
                             uniqueId: uniqueIdv4,
                             dateTimeIn: punchTimeDateIn,
-                            inKmsDriven: '$inKm',
+                            inKmsDriven: '$inKm KM',
                             dateTimeOut: "-",
                             outKmsDriven: "-",
                             siteId: "",
@@ -483,6 +502,9 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
 
                       await sessionManager
                           .saveSelfieAttendance(selfieAttendanceModel);
+
+                      print("Selfie attendance data saved to session manager.");
+
                       String? token = await sessionManager.getToken();
                       MarkSelfieAttendance markSelfieAttendance =
                           MarkSelfieAttendance();
@@ -626,6 +648,9 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                 ),
                 ElevatedButton(
                   onPressed: () async {
+
+                    //here logic for outKM should be greater than inKM
+
                     if (outKm != null && outKm!.isNotEmpty) {
                       await _loadCurrentDateTime();
                       if (timeDateDisplay != null) {
@@ -633,8 +658,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                       }
 
                       await _savePunchOutImageToSP(markOutImage.path);
-                      SelfieAttendanceModel selfieAttendanceModel =
-                          SelfieAttendanceModel(
+                      SelfieAttendanceModel selfieAttendanceModel = SelfieAttendanceModel(
                         table: [
                           AttendanceTable(
                             uniqueId: uniqueIdv4,
@@ -648,20 +672,15 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                         ],
                       );
 
-                      await sessionManager
-                          .saveSelfieAttendance(selfieAttendanceModel);
+                      await sessionManager.saveSelfieAttendance(selfieAttendanceModel);
 
                       String? token = await sessionManager.getToken();
-                      MarkSelfieAttendance markSelfieAttendance =
-                          MarkSelfieAttendance();
-                      final String deviceDetails =
-                          await Utils.getDeviceDetails(context);
+                      MarkSelfieAttendance markSelfieAttendance = MarkSelfieAttendance();
+                      final String deviceDetails = await Utils.getDeviceDetails(context);
                       final String appVersion = await Utils.getAppVersion();
                       final String ipAddress = await Utils.getIpAddress();
                       final String uniqueId = await Utils.getUniqueID();
                       final int battery = await Utils.getBatteryLevel();
-
-                      // punchTimeDateOut = DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now());
 
                       // Function to format the date
                       String formatDate(String dateString) {
@@ -730,6 +749,17 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
           },
         );
       }
+    }
+  }
+
+  Future<void> lastSelfieAtt(
+      SelfieAttendanceModel selfieAttendanceModel) async {
+    final SessionManager sessionManager = SessionManager();
+    try {
+      await sessionManager.saveSelfieAttendance(selfieAttendanceModel);
+      debugPrint('Selfie Attendance saved successfully!!!!!!!!!');
+    } catch (error) {
+      debugPrint('Error saving selfie attendance: $error');
     }
   }
 }

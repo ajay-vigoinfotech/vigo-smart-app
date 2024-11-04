@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:vigo_smart_app/core/constants/constants.dart';
 
 class GetCurrentDateViewModel {
@@ -21,14 +22,14 @@ class GetCurrentDateViewModel {
       );
 
       if (response.statusCode == 200) {
-        print(response.data);
+        debugPrint(response.data);
         return response.data.toString();
       } else {
-        print('Error: ${response.statusMessage}');
+        debugPrint('Error: ${response.statusMessage}');
         return null;
       }
     } catch (e) {
-      print('Exception: $e');
+      debugPrint('Exception: $e');
 
       return null;
     }
