@@ -3,6 +3,8 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:vigo_smart_app/features/auth/model/marklogin_model.dart';
 import 'package:vigo_smart_app/features/auth/viewmodel/checksession_view_model.dart';
 import 'package:vigo_smart_app/features/auth/viewmodel/getuserdetails_view_model.dart';
@@ -17,6 +19,7 @@ import '../session_manager/session_manager.dart';
 import '../viewmodel/getlastselfieatt_view_model.dart';
 import '../viewmodel/login_sucess_view_model.dart';
 import '../viewmodel/login_view_model.dart';
+import '../viewmodel/support_contact_view_model.dart';
 import '../widgets/auth_field.dart';
 import '../widgets/privacy_policy.dart';
 
@@ -35,16 +38,42 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   bool isPasswordVisible = false;
 
+
+  String ivr = '';
+  String? whatsAppNum = '';
+  String appName = '';
+
+
+
   final LoginViewModel _viewModel = LoginViewModel();
   final MarkLoginViewModel markLoginViewModel = MarkLoginViewModel();
   final UserViewModel userViewModel = UserViewModel();
-  final GetlastselfieattViewModel getlastselfieattViewModel = GetlastselfieattViewModel();
+  final GetLastSelfieAttViewModel getLastSelfieAttViewModel = GetLastSelfieAttViewModel();
   final CheckSessionViewModel checkSessionViewModel = CheckSessionViewModel();
 
   @override
   void initState() {
     super.initState();
+    _loadAppName();
+    fetchAndPrintSupportContact();
   }
+
+
+// Usage in function
+  Future<void> fetchAndPrintSupportContact() async {
+    final supportContactViewModel = SupportContactViewModel();
+    final supportContact = await supportContactViewModel.getSupportContact();
+    if (supportContact != null) {
+      setState(() {
+        ivr = supportContact.ivr;
+        whatsAppNum = supportContact.whatsapp;
+      });
+      print('IVR: ${supportContact.ivr}, WhatsApp: ${supportContact.whatsapp}');
+    } else {
+      print('Failed to fetch support contact.');
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -63,11 +92,11 @@ class _LoginPageState extends State<LoginPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    const SizedBox(height: 50),
-                    _buildLoginImage(constraints),
+                    const SizedBox(height: 20),
+                    _buildLoginImage(),
                     const SizedBox(height: 10),
-                    _buildLoginTitle(),
-                    const SizedBox(height: 30),
+                    _buildAppTitle(),
+                    const SizedBox(height: 20),
                     AuthField(
                       labelText: Strings.partnerCode,
                       controller: _partnerCodeController,
@@ -79,7 +108,7 @@ class _LoginPageState extends State<LoginPage> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 10),
                     AuthField(
                       labelText: Strings.userID,
                       controller: _userIDController,
@@ -115,11 +144,12 @@ class _LoginPageState extends State<LoginPage> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: 40),
+                    const SizedBox(height: 30),
                     _buildSubmitButton(),
                     const SizedBox(height: 20),
                     const PrivacyPolicy(),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 30),
+                    _buildSupportContact(),
                   ],
                 ),
               ),
@@ -129,6 +159,102 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
+
+  Widget _buildSupportContact() {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: () => _launchDialer(ivr),
+                child: Image.asset(
+                  'assets/images/ic_help_desk.webp',
+                  width: 30,
+                  height: 30,
+                ),
+              ),
+              GestureDetector(
+                onTap: () => _launchDialer(ivr),
+                child: Text(
+                  ivr,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 17,
+                    color: Colors.blue,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 5), // Spacer
+
+        // WhatsApp support
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: () => _launchWhatsApp(whatsAppNum!),
+                child: Image.asset(
+                  'assets/images/ic_whatsapp.webp', // Specify your image path
+                  width: 30, // Set desired width
+                  height: 30, // Set desired height
+                ),
+              ),
+              GestureDetector(
+                onTap: () => _launchWhatsApp(whatsAppNum!),
+                child: Text(
+                  whatsAppNum!,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 17,
+                    color: Colors.blue,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Function to launch the Dialer
+  Future<void> _launchDialer(String number) async {
+    final Uri phoneUri = Uri(scheme: 'tel', path: number);
+    if (await canLaunchUrl(phoneUri)) {
+      await launchUrl(phoneUri);
+    } else {
+      throw 'Could not launch $number';
+    }
+  }
+
+  // Function to launch WhatsApp
+  Future<void> _launchWhatsApp(String number) async {
+    final Uri whatsappUri = Uri(
+      scheme: 'https',
+      host: 'api.whatsapp.com',
+      path: 'send',
+      queryParameters: {
+        'phone': number,
+        'text': 'Hello',
+      },
+    );
+    if (await canLaunchUrl(whatsappUri)) {
+      await launchUrl(whatsappUri);
+    } else {
+      throw 'Could not launch WhatsApp with $number';
+    }
+  }
+
+
 
   Future<dynamic> _onSubmit() async {
     bool isConnected = await checkInternetConnection();
@@ -207,7 +333,7 @@ class _LoginPageState extends State<LoginPage> {
             });
 
             userViewModel.getUserDetails(token);
-            getlastselfieattViewModel.getLastSelfieAttendance(token);
+            getLastSelfieAttViewModel.getLastSelfieAttendance(token);
             checkSessionViewModel.checkSession(token, CheckSessionModel as CheckSessionModel );
           }).catchError((error) {
             print('Error: $error');
@@ -231,25 +357,6 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
           );
-          // AlertDialog(
-          //   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-          //   title: const Row(
-          //     children: [
-          //        Icon(Icons.error, color: Colors.yellowAccent),
-          //        SizedBox(width: 10),
-          //       Text(''),
-          //     ],
-          //   ),
-          //   content: Text(error),
-          //   actions: [
-          //     Center(
-          //       child: TextButton(
-          //         onPressed: () => Navigator.of(context).pop(),
-          //         child:  Text('ok'),
-          //       ),
-          //     ),
-          //   ],
-          // );
         }
       }
       catch (e) {
@@ -272,26 +379,56 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-
-
-
-  Widget _buildLoginImage(BoxConstraints constraints) {
+  Widget _buildLoginImage() {
     return Image.asset(
-      'assets/images/login_image.jpeg',
-      height: constraints.maxHeight * 0.2,
+      'assets/images/app_logo.webp',
+      height: 150
     );
   }
 
-  Widget _buildLoginTitle() {
-    return const Text(
-      Strings.login,
-      textAlign: TextAlign.center,
-      style: TextStyle(
-        fontSize: 30,
-        fontWeight: FontWeight.bold,
-      ),
+  Future<void> _loadAppName() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    setState(() {
+      appName = packageInfo.appName;
+    });
+  }
+
+  Widget _buildAppTitle() {
+    return FutureBuilder<String>(
+      future: getAppVersion(),
+      builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
+        final version = snapshot.data ?? '';
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              appName, // Assuming appName is defined elsewhere
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              'v$version',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 16,
+                color: Colors.black,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
+
+
+  static Future<String> getAppVersion() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    return packageInfo.version;
+  }
+
 
   Widget _buildSubmitButton() {
     return ElevatedButton(
@@ -308,7 +445,8 @@ class _LoginPageState extends State<LoginPage> {
       child: const Text(
         Strings.submit,
         style: TextStyle(
-          fontSize: 18,
+          fontSize: 20,
+          fontWeight: FontWeight.bold
         ),
       ),
     );

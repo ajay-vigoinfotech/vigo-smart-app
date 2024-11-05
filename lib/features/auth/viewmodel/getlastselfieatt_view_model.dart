@@ -4,40 +4,38 @@ import 'package:vigo_smart_app/core/constants/constants.dart';
 import '../model/getlastselfieattendancemodel.dart';
 import '../session_manager/session_manager.dart';
 
-  class GetlastselfieattViewModel {
+class GetLastSelfieAttViewModel {
   final Dio _dio = Dio();
   SelfieAttendanceModel? selfieAttendance;
 
-  Future<GetlastselfieattViewModel?> getLastSelfieAttendance(String token) async {
+  Future<bool> getLastSelfieAttendance(String token) async {
+    const url = '${AppConstants.baseUrl}/API/Kotlin/GetLastSelfieAttendance';
+
     try {
-      const url = '${AppConstants.baseUrl}/API/Kotlin/GetLastSelfieAttendance';
-
-      final headers = {
-        'Authorization': 'Bearer $token',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Connection': 'keep-alive',
-        'User-Agent': 'okhttp/4.9.1',
-      };
-
       Response response = await _dio.get(
         url,
-        options: Options(headers: headers),
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+          },
+          contentType: Headers.formUrlEncodedContentType,
+        ),
       );
 
       if (response.statusCode == 200) {
         final SessionManager sessionManager = SessionManager();
-        debugPrint(response.data);
+        debugPrint('Response data: ${response.data}');
 
         selfieAttendance = SelfieAttendanceModel.fromJson(response.data);
         await sessionManager.saveSelfieAttendance(selfieAttendance!);
+        return true;
       } else {
-        print("Error: ${response.statusCode}");
-        return null;
+        debugPrint("Error: Status code ${response.statusCode}");
+        return false;
       }
     } catch (e) {
-      print("Error occurred: $e");
-      return null;
+      debugPrint("Error occurred: $e");
+      return false;
     }
-    return null;
   }
 }

@@ -10,7 +10,6 @@ import '../../../core/strings/strings.dart';
 import '../../../core/theme/app_pallete.dart';
 import '../../../core/utils.dart';
 import '../../auth/model/checksession_model.dart';
-import '../../auth/model/getlastselfieattendancemodel.dart';
 import '../../auth/model/login_model.dart';
 import '../../auth/model/marklogin_model.dart';
 import '../../auth/session_manager/session_manager.dart';
@@ -42,6 +41,7 @@ class _HomePageState extends State<HomePage> {
   String? helpLineWhatsapp = '';
   String? userProfilePic = '';
   String? newUserProfilePic = '';
+  String appName = '';
 
   final _formKey = GlobalKey<FormState>();
 
@@ -52,8 +52,7 @@ class _HomePageState extends State<HomePage> {
   final LoginViewModel _viewModel = LoginViewModel();
   final MarkLoginViewModel markLoginViewModel = MarkLoginViewModel();
   final UserViewModel userViewModel = UserViewModel();
-  final GetlastselfieattViewModel getlastselfieattViewModel =
-      GetlastselfieattViewModel();
+  final GetLastSelfieAttViewModel getLastSelfieAttViewModel = GetLastSelfieAttViewModel();
   final CheckSessionViewModel checkSessionViewModel = CheckSessionViewModel();
 
   final List<Map<String, dynamic>> allModules = [
@@ -176,6 +175,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    _loadAppName();
     getUserData().then((_) {
       getModules();
       refreshServerData();
@@ -245,33 +245,33 @@ class _HomePageState extends State<HomePage> {
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Text(
-                'Vigo Smart App',
+                '',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 23),
               );
             } else if (snapshot.hasError) {
               return const Text(
-                'Vigo Smart App - Error',
+                '',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 23),
               );
             } else {
-              final version = snapshot.data ?? '1.0';
+              final  version = snapshot.data ?? '1.0';
               return RichText(
                 text: TextSpan(
                   children: [
-                    const TextSpan(
-                      text: 'Vigo Smart App ',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
+                     TextSpan(
+                      text: appName ,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w600,
                         fontSize: 23,
-                        color: Colors.black, // Customize color if needed
+                        color: Colors.black,
                       ),
                     ),
                     TextSpan(
-                      text: 'v$version',
+                      text: ' v$version',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 15, // Slightly smaller font for the version
-                        color: Colors.black, // Customize color if needed
+                        fontSize: 15,
+                        color: Colors.black,
                       ),
                     ),
                   ],
@@ -347,6 +347,29 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+
+  Future<void> _loadAppName() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    setState(() {
+      appName = packageInfo.appName;
+    });
+  }
+
+  Future<void> getLastSelfieAtt() async {
+  final SessionManager sessionManager = SessionManager();
+  sessionManager.getToken().then((token) async {
+    final GetLastSelfieAttViewModel getLastSelfieAttViewModel = GetLastSelfieAttViewModel();
+    getLastSelfieAttViewModel.getLastSelfieAttendance(token!).then( (data1) async {
+      sessionManager.getCheckinData().then((data) async {
+        print(data.uniqueId);
+      });
+    });
+  }
+  ).catchError((error) {
+    print('Error: $error');
+  });
+}
 
   Widget _buildEmployeeInfo(
       String? employeeCode, String? name, String? compName, String? compCode) {
@@ -424,9 +447,9 @@ class _HomePageState extends State<HomePage> {
               GestureDetector(
                 onTap: () => _launchWhatsApp(helpLineWhatsapp!),
                 child: Image.asset(
-                  'assets/images/ic_whatsapp.webp', // Specify your image path
-                  width: 30, // Set desired width
-                  height: 30, // Set desired height
+                  'assets/images/ic_whatsapp.webp',
+                  width: 30,
+                  height: 30,
                 ),
               ),
               GestureDetector(
@@ -469,8 +492,8 @@ class _HomePageState extends State<HomePage> {
                 title: const Text('Refresh Server Data'),
                 onTap: () {
                   Navigator.pop(context);
+                  getLastSelfieAtt();
                   getUserData();
-                  // lastSelfieAtt(SelfieAttendanceModel());
                   getModules();
                   refreshServerData();
                 },
@@ -751,7 +774,7 @@ class _HomePageState extends State<HomePage> {
             });
 
             userViewModel.getUserDetails(token);
-            getlastselfieattViewModel.getLastSelfieAttendance(token);
+            getLastSelfieAttViewModel.getLastSelfieAttendance(token);
           }).catchError((error) {
             print('Error: $error');
           });

@@ -105,9 +105,9 @@ class SessionManager {
   // Logout
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_isLoggedInKey);
-    await prefs.remove(_usernameKey);
-    await prefs.remove(_accessToken);
+    // await prefs.remove(_isLoggedInKey);
+    // await prefs.remove(_usernameKey);
+    await prefs.clear();
   }
 
   // Save module codes
@@ -225,30 +225,31 @@ class SessionManager {
   Future<void> saveSelfieAttendance(SelfieAttendanceModel selfieAttendanceModel) async {
     if (selfieAttendanceModel.table != null && selfieAttendanceModel.table!.isNotEmpty) {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_uniqueId, selfieAttendanceModel.table![0].uniqueId?.toString() ?? "");
-      await prefs.setString(_dateTimeIn, selfieAttendanceModel.table![0].dateTimeIn?.toString() ?? "");
-      await prefs.setString(_dateTimeOut, selfieAttendanceModel.table![0].dateTimeOut?.toString() ?? "");
-      await prefs.setString(_inKmsDriven, selfieAttendanceModel.table![0].inKmsDriven?.toString() ?? "");
-      await prefs.setString(_outKmsDriven, selfieAttendanceModel.table![0].outKmsDriven?.toString() ?? "");
-      await prefs.setString(_siteId, selfieAttendanceModel.table![0].siteId?.toString() ?? "");
-      await prefs.setString(_siteName, selfieAttendanceModel.table![0].siteName?.toString() ?? "");
+      AttendanceTable attendance = selfieAttendanceModel.table![0];
+      await prefs.setString(_uniqueId, attendance.uniqueId);
+      await prefs.setString(_dateTimeIn, attendance.dateTimeIn);
+      await prefs.setString(_dateTimeOut, attendance.dateTimeOut);
+      await prefs.setString(_inKmsDriven, attendance.inKmsDriven);
+      await prefs.setString(_outKmsDriven, attendance.outKmsDriven);
+      await prefs.setString(_siteId, attendance.siteId);
+      await prefs.setString(_siteName, attendance.siteName);
       debugPrint('Selfie Attendance saved successfully!');
     } else {
       debugPrint('Error: SelfieAttendanceModel table is null or empty.');
     }
   }
 
-  //Get SelfieAttendance
+// Get SelfieAttendance
   Future<AttendanceTable> getCheckinData() async {
     final prefs = await SharedPreferences.getInstance();
     return AttendanceTable(
-      uniqueId: prefs.getString(_uniqueId),
-      dateTimeIn: prefs.getString(_dateTimeIn),
-      dateTimeOut: prefs.getString(_dateTimeOut),
-      inKmsDriven: prefs.getString(_inKmsDriven),
-      outKmsDriven: prefs.getString(_outKmsDriven),
-      siteId: prefs.getString(_siteId),
-      siteName: prefs.getString(_siteName),
+      uniqueId: prefs.getString(_uniqueId) ?? "",
+      dateTimeIn: prefs.getString(_dateTimeIn) ?? "",
+      dateTimeOut: prefs.getString(_dateTimeOut) ?? "",
+      inKmsDriven: prefs.getString(_inKmsDriven) ?? "",
+      outKmsDriven: prefs.getString(_outKmsDriven) ?? "",
+      siteId: prefs.getString(_siteId) ?? "",
+      siteName: prefs.getString(_siteName) ?? "",
     );
   }
 

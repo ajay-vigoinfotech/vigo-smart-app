@@ -86,14 +86,28 @@ class _SettingPageState extends State<SettingPage> {
               onTap: () {},
             ),
             ListTile(
-              leading: Icon(Icons.phone),
-              title: Text('Contact us'),
-              onTap: () {},
+              leading: const Icon(Icons.phone),
+              title: const Text('About us'),
+              onTap: () async {
+                Uri url = Uri.parse(AppConstants.contactUs);
+                if (await canLaunchUrl(url)) {
+                  await launchUrl(url);
+                } else {
+                  throw 'Could not launch $url';
+                }
+              },
             ),
             ListTile(
-              leading: Icon(Icons.info_outline),
-              title: Text('About us'),
-              onTap: () {},
+              leading: const Icon(Icons.info_outline),
+              title: const Text('About us'),
+              onTap: () async {
+                Uri url = Uri.parse(AppConstants.aboutUs);
+                if (await canLaunchUrl(url)) {
+                  await launchUrl(url);
+                } else {
+                  throw 'Could not launch $url';
+                }
+              },
             ),
             ListTile(
               leading: const Icon(Icons.security),

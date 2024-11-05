@@ -38,7 +38,6 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   String formattedAccuracyValue = '';
   String uniqueIdv4 = "";
   String? inKm;
-  // double inKm = 0.0;
   String? dutyInRemark;
   String? dutyOutRemark;
   String? outKm;
@@ -47,9 +46,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   final picker = ImagePicker();
   final SessionManager sessionManager = SessionManager();
   final MarkSelfieAttendance markSelfieAttendance = MarkSelfieAttendance();
-  final GetlastselfieattViewModel getlastselfieattViewModel =
-      GetlastselfieattViewModel();
-
+  final GetLastSelfieAttViewModel getLastSelfieAttViewModel = GetLastSelfieAttViewModel();
   @override
   void initState() {
     super.initState();
@@ -57,29 +54,19 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     _loadPunchOutImageFromSP();
     _loadCurrentDateTime();
     _fetchSelfieAttendanceData();
-
-    // sessionManager.getCheckinData().then((data) {
-    //   setState(() {
-    //     uniqueIdv4 = data.uniqueId ?? "";
-    //     punchTimeDateIn = data.dateTimeIn;
-    //     inKm = data.inKmsDriven;
-    //     punchTimeDateOut = data.dateTimeOut;
-    //     outKm = data.outKmsDriven;
-    //   });
-    // });
   }
 
   Future<void> _fetchSelfieAttendanceData() async {
     try {
       String? token = await sessionManager.getToken();
-      await getlastselfieattViewModel.getLastSelfieAttendance(token!);
+      await getLastSelfieAttViewModel.getLastSelfieAttendance(token!);
       sessionManager.getCheckinData().then((data) {
         setState(() {
-          uniqueIdv4 = data.uniqueId ?? "";
+          uniqueIdv4 = data.uniqueId;
           punchTimeDateIn = data.dateTimeIn;
-          inKm = data.inKmsDriven;
           punchTimeDateOut = data.dateTimeOut;
-          outKm = data.outKmsDriven;
+          inKm = _parseToKmString(data.inKmsDriven);
+          outKm = _parseToKmString(data.outKmsDriven);
         });
       });
     } catch (e) {
@@ -88,6 +75,19 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
       });
     }
   }
+
+// Helper function to parse string to integer with "KM" suffix
+  String _parseToKmString(String? kmsDriven) {
+    try {
+      // Attempt to parse to double and convert to integer, then add " KM"
+      return "${double.parse(kmsDriven ?? '').toInt()} Km";
+    } catch (e) {
+      return "";
+    }
+  }
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -163,8 +163,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                             fontSize: 14, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 5),
-                      if (savedPunchOutImagePath != null &&
-                          savedPunchOutImagePath!.isNotEmpty)
+                      if (savedPunchOutImagePath != null && savedPunchOutImagePath!.isNotEmpty)
                         Image.file(
                           File(savedPunchOutImagePath!),
                           height: 130,
@@ -227,27 +226,31 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   }
 
   void _onInButtonPressed() async {
-    // First, check internet connection
     bool isConnected = await _checkInternetConnection();
     if (!isConnected) return;
 
-    // Proceed with punch-in logic only if connected
-    if ((punchTimeDateIn == null &&
-            (punchTimeDateOut == null || punchTimeDateOut == "-")) ||
-        (punchTimeDateIn != null &&
-            punchTimeDateOut != null &&
-            punchTimeDateOut != "-")) {
+    // Check if both dateTimeIn and dateTimeOut are null or empty, or if both have values
+    if ((punchTimeDateIn == null || punchTimeDateIn == "") &&
+        (punchTimeDateOut == null || punchTimeDateOut == "")) {
+      // Allow marking IN if both are null or empty
       setState(() {
         _onMarkIn();
       });
-    } else if (punchTimeDateIn != null &&
-        (punchTimeDateOut == null || punchTimeDateOut == "-")) {
+    } else if ((punchTimeDateIn != null && punchTimeDateIn != "") &&
+        (punchTimeDateOut != null && punchTimeDateOut != "")) {
+      // Allow marking IN if both have data
+      setState(() {
+        _onMarkIn();
+      });
+    } else if ((punchTimeDateIn != null && punchTimeDateIn != "") &&
+        (punchTimeDateOut == null || punchTimeDateOut == "")) {
+      // Only dateTimeIn is present, show warning
       QuickAlert.show(
-          context: context,
-          type: QuickAlertType.warning,
-          text: 'Already marked IN!');
+        context: context,
+        type: QuickAlertType.warning,
+        text: 'Already marked IN!',
+      );
     } else {
-      // Add a fallback for other cases, if necessary
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Invalid punch-in attempt!'),
@@ -258,20 +261,20 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   }
 
   void _onOutButtonPressed() async {
-    // First, check internet connection
     bool isConnected = await _checkInternetConnection();
     if (!isConnected) return;
 
-    if (punchTimeDateIn != null &&
-        punchTimeDateIn != "-" &&
-        (punchTimeDateOut == null || punchTimeDateOut == "-")) {
+    // Check if dateTimeIn has data and dateTimeOut is null or empty
+    if ((punchTimeDateIn != null && punchTimeDateIn != "") &&
+        (punchTimeDateOut == null || punchTimeDateOut == "")) {
+      print('$punchTimeDateIn');
+      print('$punchTimeDateOut');
+      // Allow marking OUT
       setState(() {
         _onMarkOut();
       });
-    } else if (punchTimeDateIn == null || punchTimeDateIn == "-") {
+    } else if (punchTimeDateIn == null || punchTimeDateIn == "") {
       QuickAlert.show(
-        confirmBtnText: 'OK',
-        // animType: QuickAlertAnimType.scale,
         context: context,
         type: QuickAlertType.warning,
         text: 'Please mark IN before marking OUT!',
@@ -485,13 +488,12 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                       await _saveImageToSP(markInImage.path);
                       uniqueIdv4 = const Uuid().v4();
 
-                      SelfieAttendanceModel selfieAttendanceModel =
-                          SelfieAttendanceModel(
+                      SelfieAttendanceModel selfieAttendanceModel = SelfieAttendanceModel(
                         table: [
                           AttendanceTable(
                             uniqueId: uniqueIdv4,
-                            dateTimeIn: punchTimeDateIn,
-                            inKmsDriven: '$inKm KM',
+                            dateTimeIn: punchTimeDateIn ?? '',
+                            inKmsDriven: '$inKm',
                             dateTimeOut: "-",
                             outKmsDriven: "-",
                             siteId: "",
@@ -500,8 +502,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                         ],
                       );
 
-                      await sessionManager
-                          .saveSelfieAttendance(selfieAttendanceModel);
+                      await sessionManager.saveSelfieAttendance(selfieAttendanceModel);
 
                       print("Selfie attendance data saved to session manager.");
 
@@ -648,8 +649,20 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                 ),
                 ElevatedButton(
                   onPressed: () async {
-
                     //here logic for outKM should be greater than inKM
+
+                    final int? inKmValue = int.tryParse(inKm ?? '');
+                    final int? outKmValue = int.tryParse(outKm ?? '');
+
+                    if (outKmValue == null || inKmValue == null || outKmValue < inKmValue) {
+                      setState(() {
+                        errorMessage = 'Out KM must be greater than In KM';
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(errorMessage!)),
+                      );
+                      return;
+                    }
 
                     if (outKm != null && outKm!.isNotEmpty) {
                       await _loadCurrentDateTime();
@@ -662,10 +675,10 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                         table: [
                           AttendanceTable(
                             uniqueId: uniqueIdv4,
-                            dateTimeIn: punchTimeDateIn,
+                            dateTimeIn: punchTimeDateIn ?? '',
                             inKmsDriven: (inKm == null || inKm!.isEmpty) ? '-' : '$inKm',
-                            dateTimeOut: punchTimeDateOut,
-                            outKmsDriven: '$outKm KM',
+                            dateTimeOut: punchTimeDateOut ?? '',
+                            outKmsDriven: '$outKm',
                             siteId: "",
                             siteName: "-",
                           ),
@@ -698,8 +711,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
 
                       final String fullDeviceDetails = deviceDetails;
 
-                      Map<String, dynamic> response =
-                          await markSelfieAttendance.markAttendance(
+                      Map<String, dynamic> response = await markSelfieAttendance.markAttendance(
                         token!,
                         PunchDetails(
                           deviceDetails: fullDeviceDetails,
