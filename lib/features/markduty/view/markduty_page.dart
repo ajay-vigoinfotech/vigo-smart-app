@@ -5,8 +5,10 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:quickalert/models/quickalert_animtype.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -38,15 +40,20 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   String formattedAccuracyValue = '';
   String uniqueIdv4 = "";
   String? inKm;
+  String? inKmText;
+  String? outKmText;
   String? dutyInRemark;
   String? dutyOutRemark;
   String? outKm;
   String? errorMessage;
 
+  bool isLoading = false;
+
   final picker = ImagePicker();
   final SessionManager sessionManager = SessionManager();
   final MarkSelfieAttendance markSelfieAttendance = MarkSelfieAttendance();
-  final GetLastSelfieAttViewModel getLastSelfieAttViewModel = GetLastSelfieAttViewModel();
+  final GetLastSelfieAttViewModel getLastSelfieAttViewModel =
+      GetLastSelfieAttViewModel();
   @override
   void initState() {
     super.initState();
@@ -58,15 +65,15 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
 
   Future<void> _fetchSelfieAttendanceData() async {
     try {
-      String? token = await sessionManager.getToken();
-      await getLastSelfieAttViewModel.getLastSelfieAttendance(token!);
       sessionManager.getCheckinData().then((data) {
         setState(() {
           uniqueIdv4 = data.uniqueId;
           punchTimeDateIn = data.dateTimeIn;
           punchTimeDateOut = data.dateTimeOut;
-          inKm = _parseToKmString(data.inKmsDriven);
-          outKm = _parseToKmString(data.outKmsDriven);
+          inKm = data.inKmsDriven;
+          outKm = data.outKmsDriven;
+          inKmText = _parseToKmString(data.inKmsDriven);
+          outKmText = _parseToKmString(data.outKmsDriven);
         });
       });
     } catch (e) {
@@ -76,18 +83,13 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     }
   }
 
-// Helper function to parse string to integer with "KM" suffix
   String _parseToKmString(String? kmsDriven) {
     try {
-      // Attempt to parse to double and convert to integer, then add " KM"
-      return "${double.parse(kmsDriven ?? '').toInt()} Km";
+      return "${double.parse(kmsDriven ?? '').toInt()} KM";
     } catch (e) {
       return "";
     }
   }
-
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -113,7 +115,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                             fontSize: 14, fontWeight: FontWeight.bold),
                       ),
                       Text(
-                        inKm ?? '',
+                        inKmText ?? '',
                         style: const TextStyle(
                             fontSize: 14, fontWeight: FontWeight.bold),
                       ),
@@ -158,12 +160,13 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                             fontSize: 14, fontWeight: FontWeight.bold),
                       ),
                       Text(
-                        outKm ?? '',
+                        outKmText ?? '',
                         style: const TextStyle(
                             fontSize: 14, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 5),
-                      if (savedPunchOutImagePath != null && savedPunchOutImagePath!.isNotEmpty)
+                      if (savedPunchOutImagePath != null &&
+                          savedPunchOutImagePath!.isNotEmpty)
                         Image.file(
                           File(savedPunchOutImagePath!),
                           height: 130,
@@ -425,6 +428,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
           content: Text('No location found. Please enable location services.'),
         ),
       );
+      return;
     }
 
     final ImagePicker picker = ImagePicker();
@@ -446,141 +450,169 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
       if (compressedBytes != null) {
         final String base64Image = base64Encode(compressedBytes);
         final base64InImage = base64Image;
+
         showDialog(
           barrierDismissible: false,
           context: context,
           builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text("Mark In Details"),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Image.file(image, height: 100, width: 100),
-                  TextField(
-                    decoration: const InputDecoration(labelText: 'Comment'),
-                    onChanged: (value) {
-                      dutyInRemark = value;
-                    },
+            return StatefulBuilder(
+              builder: (context, setState) {
+                return AlertDialog(
+                  title: const Text("Mark In Details"),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Image.file(image, height: 100, width: 100),
+                      TextField(
+                        decoration: const InputDecoration(labelText: 'Comment'),
+                        onChanged: (value) {
+                          dutyInRemark = value;
+                        },
+                      ),
+                      TextField(
+                        decoration: const InputDecoration(labelText: 'KM'),
+                        keyboardType: TextInputType.number,
+                        onChanged: (value) {
+                          inKm = value;
+                          setState(() {
+                            inKmText = "$value KM";
+                            outKmText = "";
+                          });
+                        },
+                      ),
+                    ],
                   ),
-                  TextField(
-                    decoration: const InputDecoration(labelText: 'KM'),
-                    keyboardType: TextInputType.number,
-                    onChanged: (value) {
-                      inKm = value;
-                    },
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text("Cancel"),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    if (inKm != null && inKm!.isNotEmpty) {
-                      await _loadCurrentDateTime();
-                      if (timeDateDisplay != null) {
-                        punchTimeDateIn = timeDateDisplay;
-                      }
-                      await _saveImageToSP(markInImage.path);
-                      uniqueIdv4 = const Uuid().v4();
-
-                      SelfieAttendanceModel selfieAttendanceModel = SelfieAttendanceModel(
-                        table: [
-                          AttendanceTable(
-                            uniqueId: uniqueIdv4,
-                            dateTimeIn: punchTimeDateIn ?? '',
-                            inKmsDriven: '$inKm',
-                            dateTimeOut: "-",
-                            outKmsDriven: "-",
-                            siteId: "",
-                            siteName: "-",
-                          ),
-                        ],
-                      );
-
-                      await sessionManager.saveSelfieAttendance(selfieAttendanceModel);
-
-                      print("Selfie attendance data saved to session manager.");
-
-                      String? token = await sessionManager.getToken();
-                      MarkSelfieAttendance markSelfieAttendance =
-                          MarkSelfieAttendance();
-                      final String deviceDetails =
-                          await Utils.getDeviceDetails(context);
-                      final String appVersion = await Utils.getAppVersion();
-                      final String ipAddress = await Utils.getIpAddress();
-                      final String uniqueId = await Utils.getUniqueID();
-                      final int battery = await Utils.getBatteryLevel();
-
-                      // Function to format the date
-                      String formatDate(String dateString) {
-                        DateFormat inputFormat =
-                            DateFormat("dd/MM/yyyy hh:mm a");
-                        DateTime dateTime = inputFormat.parse(dateString);
-                        DateFormat outputFormat =
-                            DateFormat("yyyy-MM-dd HH:mm");
-                        return outputFormat.format(dateTime);
-                      }
-
-                      String formattedDateTimeIn = formatDate(punchTimeDateIn!);
-
-                      Map<String, dynamic> response =
-                          await markSelfieAttendance.markAttendance(
-                        token!,
-                        PunchDetails(
-                          deviceDetails: deviceDetails,
-                          deviceImei: uniqueId,
-                          deviceIp: ipAddress,
-                          userPhoto: base64InImage,
-                          remark: dutyInRemark ?? '',
-                          isOffline: '',
-                          version: 'v$appVersion',
-                          dataStatus: '',
-                          checkInId: uniqueIdv4,
-                          punchAction: 'IN',
-                          locationAccuracy: formattedAccuracyValue,
-                          locationSpeed: formattedSpeedValue,
-                          batteryStatus: '$battery%',
-                          locationStatus: 'true',
-                          time: formattedDateTimeIn,
-                          latLong: formattedLatLng,
-                          kmsDriven: '$inKm',
-                          siteId: '',
-                          locationId: '',
-                          distance: '',
-                        ),
-                      );
-
-                      await _clearPunchOutData();
-
-                      if (response['code'] == 200) {
+                  actions: [
+                    TextButton(
+                      onPressed: () {
                         Navigator.of(context).pop();
-                        QuickAlert.show(
-                          context: context,
-                          type: QuickAlertType.success,
-                          text: '${response['status']}',
-                        );
-                        _loadPunchInImageFromSP();
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text('Error: ${response['status']}')),
-                        );
-                      }
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                            content: Text('Please fill in all fields.')),
-                      );
-                    }
-                  },
-                  child: const Text("Submit"),
-                ),
-              ],
+                      },
+                      child: const Text("Cancel"),
+                    ),
+                    isLoading
+                        ? const CircularProgressIndicator() // Show progress indicator
+                        : ElevatedButton(
+                            onPressed: () async {
+                              if (inKm != null && inKm!.isNotEmpty) {
+                                setState(() {
+                                  isLoading = true;
+                                });
+
+                                await _loadCurrentDateTime();
+                                if (timeDateDisplay != null) {
+                                  punchTimeDateIn = timeDateDisplay;
+                                }
+                                await _saveImageToSP(markInImage.path);
+                                uniqueIdv4 = const Uuid().v4();
+
+                                SelfieAttendanceModel selfieAttendanceModel =
+                                    SelfieAttendanceModel(
+                                  table: [
+                                    AttendanceTable(
+                                      uniqueId: uniqueIdv4,
+                                      dateTimeIn: punchTimeDateIn ?? '',
+                                      inKmsDriven: '$inKm',
+                                      dateTimeOut: "",
+                                      outKmsDriven: "",
+                                      siteId: "",
+                                      siteName: "-",
+                                    ),
+                                  ],
+                                );
+
+                                await sessionManager.saveSelfieAttendance(
+                                    selfieAttendanceModel);
+
+                                print(
+                                    "Selfie attendance data saved to session manager.");
+
+                                String? token = await sessionManager.getToken();
+                                MarkSelfieAttendance markSelfieAttendance =
+                                    MarkSelfieAttendance();
+                                final String deviceDetails =
+                                    await Utils.getDeviceDetails(context);
+                                final String appVersion =
+                                    await Utils.getAppVersion();
+                                final String ipAddress =
+                                    await Utils.getIpAddress();
+                                final String uniqueId =
+                                    await Utils.getUniqueID();
+                                final int battery =
+                                    await Utils.getBatteryLevel();
+
+                                String formatDate(String dateString) {
+                                  DateFormat inputFormat =
+                                      DateFormat("dd/MM/yyyy hh:mm a");
+                                  DateTime dateTime =
+                                      inputFormat.parse(dateString);
+                                  DateFormat outputFormat =
+                                      DateFormat("yyyy-MM-dd HH:mm");
+                                  return outputFormat.format(dateTime);
+                                }
+
+                                String formattedDateTimeIn =
+                                    formatDate(punchTimeDateIn!);
+
+                                Map<String, dynamic> response =
+                                    await markSelfieAttendance.markAttendance(
+                                  token!,
+                                  PunchDetails(
+                                    deviceDetails: deviceDetails,
+                                    deviceImei: uniqueId,
+                                    deviceIp: ipAddress,
+                                    userPhoto: base64InImage,
+                                    remark: dutyInRemark ?? '',
+                                    isOffline: '',
+                                    version: 'v$appVersion',
+                                    dataStatus: '',
+                                    checkInId: uniqueIdv4,
+                                    punchAction: 'IN',
+                                    locationAccuracy: formattedAccuracyValue,
+                                    locationSpeed: formattedSpeedValue,
+                                    batteryStatus: '$battery%',
+                                    locationStatus: 'true',
+                                    time: formattedDateTimeIn,
+                                    latLong: formattedLatLng,
+                                    kmsDriven: '$inKm',
+                                    siteId: '',
+                                    locationId: '',
+                                    distance: '',
+                                  ),
+                                );
+
+                                await _clearPunchOutData();
+
+                                if (response['code'] == 200) {
+                                  Navigator.of(context).pop();
+                                  QuickAlert.show(
+                                    context: context,
+                                    type: QuickAlertType.success,
+                                    text: '${response['status']}',
+                                  );
+                                  _loadPunchInImageFromSP();
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text(
+                                            'Error: ${response['status']}')),
+                                  );
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                }
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content:
+                                          Text('Please fill in all fields.')),
+                                );
+                              }
+                            },
+                            child: const Text('Submit'),
+                          ),
+                  ],
+                );
+              },
             );
           },
         );
@@ -588,22 +620,24 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     }
   }
 
-// Function called when 'Mark Out' is clicked
   Future<void> _onMarkOut() async {
     if (formattedLatLng.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content:
-                Text('No location found. Please enable location services.')),
+          content: Text('No location found. Please enable location services.'),
+        ),
       );
+      return;
     }
 
     final ImagePicker picker = ImagePicker();
-    final XFile? markOutImage =
-        await picker.pickImage(source: ImageSource.camera, imageQuality: 1);
+    final XFile? markOutImage = await picker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 1,
+    );
 
     if (markOutImage != null) {
-      final image = File(markOutImage.path);
+      final File image = File(markOutImage.path);
       final compressedImageBytes = await FlutterImageCompress.compressWithFile(
         markOutImage.path,
         minWidth: 400,
@@ -615,148 +649,182 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
         final String base64Image = base64Encode(compressedImageBytes);
         final base64OutImage = base64Image;
 
+        bool isLoading = false; // Loading state
+
         showDialog(
           barrierDismissible: false,
           context: context,
           builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text("Mark Out Details"),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Image.file(image, height: 100, width: 100),
-                  TextField(
-                    decoration: const InputDecoration(labelText: 'Out Remark'),
-                    onChanged: (value) {
-                      dutyOutRemark = value;
-                    },
+            return StatefulBuilder(
+              builder: (context, setState) {
+                return AlertDialog(
+                  title: const Text("Mark Out Details"),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Image.file(image, height: 100, width: 100),
+                      TextField(
+                        decoration:
+                            const InputDecoration(labelText: 'Out Remark'),
+                        onChanged: (value) {
+                          dutyOutRemark = value;
+                        },
+                      ),
+                      TextField(
+                        decoration: const InputDecoration(labelText: 'OUT KM'),
+                        keyboardType: TextInputType.number,
+                        onChanged: (value) {
+                          outKm = value;
+                        },
+                      ),
+                    ],
                   ),
-                  TextField(
-                    decoration: const InputDecoration(labelText: 'OUT KM'),
-                    keyboardType: TextInputType.number,
-                    onChanged: (value) {
-                      outKm = value;
-                    },
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Close the dialog
-                  },
-                  child: const Text("Cancel"),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    //here logic for outKM should be greater than inKM
-
-                    final int? inKmValue = int.tryParse(inKm ?? '');
-                    final int? outKmValue = int.tryParse(outKm ?? '');
-
-                    if (outKmValue == null || inKmValue == null || outKmValue < inKmValue) {
-                      setState(() {
-                        errorMessage = 'Out KM must be greater than In KM';
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(errorMessage!)),
-                      );
-                      return;
-                    }
-
-                    if (outKm != null && outKm!.isNotEmpty) {
-                      await _loadCurrentDateTime();
-                      if (timeDateDisplay != null) {
-                        punchTimeDateOut = timeDateDisplay;
-                      }
-
-                      await _savePunchOutImageToSP(markOutImage.path);
-                      SelfieAttendanceModel selfieAttendanceModel = SelfieAttendanceModel(
-                        table: [
-                          AttendanceTable(
-                            uniqueId: uniqueIdv4,
-                            dateTimeIn: punchTimeDateIn ?? '',
-                            inKmsDriven: (inKm == null || inKm!.isEmpty) ? '-' : '$inKm',
-                            dateTimeOut: punchTimeDateOut ?? '',
-                            outKmsDriven: '$outKm',
-                            siteId: "",
-                            siteName: "-",
-                          ),
-                        ],
-                      );
-
-                      await sessionManager.saveSelfieAttendance(selfieAttendanceModel);
-
-                      String? token = await sessionManager.getToken();
-                      MarkSelfieAttendance markSelfieAttendance = MarkSelfieAttendance();
-                      final String deviceDetails = await Utils.getDeviceDetails(context);
-                      final String appVersion = await Utils.getAppVersion();
-                      final String ipAddress = await Utils.getIpAddress();
-                      final String uniqueId = await Utils.getUniqueID();
-                      final int battery = await Utils.getBatteryLevel();
-
-                      // Function to format the date
-                      String formatDate(String dateString) {
-                        DateFormat inputFormat =
-                            DateFormat("dd/MM/yyyy hh:mm a");
-                        DateTime dateTime = inputFormat.parse(dateString);
-                        DateFormat outputFormat =
-                            DateFormat("yyyy-MM-dd HH:mm");
-                        return outputFormat.format(dateTime);
-                      }
-
-                      // Format the date before using it
-                      String formattedDateTimeOut =
-                          formatDate(punchTimeDateOut!);
-
-                      final String fullDeviceDetails = deviceDetails;
-
-                      Map<String, dynamic> response = await markSelfieAttendance.markAttendance(
-                        token!,
-                        PunchDetails(
-                          deviceDetails: fullDeviceDetails,
-                          deviceImei: uniqueId,
-                          deviceIp: ipAddress,
-                          userPhoto: base64OutImage,
-                          remark: '$dutyOutRemark',
-                          isOffline: 'false',
-                          version: appVersion,
-                          dataStatus: '',
-                          checkInId: uniqueIdv4,
-                          punchAction: 'OUT',
-                          locationAccuracy: formattedAccuracyValue,
-                          locationSpeed: formattedSpeedValue,
-                          batteryStatus: '$battery',
-                          locationStatus: '',
-                          time: formattedDateTimeOut,
-                          latLong: formattedLatLng,
-                          kmsDriven: '$outKm',
-                          siteId: '',
-                          locationId: '',
-                          distance: '',
-                        ),
-                      );
-
-                      if (response['code'] == 200) {
+                  actions: [
+                    TextButton(
+                      onPressed: () {
                         Navigator.of(context).pop();
-                        QuickAlert.show(
-                          context: context,
-                          type: QuickAlertType.success,
-                          text: '${response['status']}',
-                        );
-                        _loadPunchInImageFromSP();
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text('Error: ${response['status']}')),
-                        );
-                      }
-                      _loadPunchOutImageFromSP();
-                    }
-                  },
-                  child: const Text("Submit"),
-                ),
-              ],
+                      },
+                      child: const Text("Cancel"),
+                    ),
+                    isLoading
+                        ? const CircularProgressIndicator() // Show progress indicator
+                        : ElevatedButton(
+                            onPressed: () async {
+                              if (isLoading) return;
+
+                              // Verify that Out KM is greater than In KM
+                              final double inKmValue =
+                                  double.parse(inKm ?? '0.0');
+                              final double outKmValue =
+                                  double.parse(outKm ?? '0.0');
+
+                              if (outKmValue < inKmValue) {
+                                setState(() {
+                                  errorMessage =
+                                      'Out KM must be greater than In KM';
+                                });
+                                Fluttertoast.showToast(
+                                  msg: '$errorMessage',
+                                  toastLength: Toast.LENGTH_SHORT,
+                                  gravity: ToastGravity.TOP,
+                                  backgroundColor: Colors.black54,
+                                  textColor: Colors.white,
+                                  fontSize: 16.0,
+                                );
+                                return;
+                              }
+
+                              setState(() {
+                                isLoading = true;
+                                outKmText = "$outKm KM";
+                              });
+
+                              if (outKm != null && outKm!.isNotEmpty) {
+                                await _loadCurrentDateTime();
+                                if (timeDateDisplay != null) {
+                                  punchTimeDateOut = timeDateDisplay;
+                                }
+
+                                await _savePunchOutImageToSP(markOutImage.path);
+                                SelfieAttendanceModel selfieAttendanceModel =
+                                    SelfieAttendanceModel(
+                                  table: [
+                                    AttendanceTable(
+                                      uniqueId: uniqueIdv4,
+                                      dateTimeIn: punchTimeDateIn ?? '',
+                                      inKmsDriven: '$inKm',
+                                      dateTimeOut: punchTimeDateOut ?? '',
+                                      outKmsDriven: '$outKm',
+                                      siteId: "",
+                                      siteName: "-",
+                                    ),
+                                  ],
+                                );
+
+                                await sessionManager.saveSelfieAttendance(
+                                    selfieAttendanceModel);
+
+                                String? token = await sessionManager.getToken();
+                                MarkSelfieAttendance markSelfieAttendance =
+                                    MarkSelfieAttendance();
+                                final String deviceDetails =
+                                    await Utils.getDeviceDetails(context);
+                                final String appVersion =
+                                    await Utils.getAppVersion();
+                                final String ipAddress =
+                                    await Utils.getIpAddress();
+                                final String uniqueId =
+                                    await Utils.getUniqueID();
+                                final int battery =
+                                    await Utils.getBatteryLevel();
+
+                                String formatDate(String dateString) {
+                                  DateFormat inputFormat =
+                                      DateFormat("dd/MM/yyyy hh:mm a");
+                                  DateTime dateTime =
+                                      inputFormat.parse(dateString);
+                                  DateFormat outputFormat =
+                                      DateFormat("yyyy-MM-dd HH:mm");
+                                  return outputFormat.format(dateTime);
+                                }
+
+                                String formattedDateTimeOut =
+                                    formatDate(punchTimeDateOut!);
+
+                                Map<String, dynamic> response =
+                                    await markSelfieAttendance.markAttendance(
+                                  token!,
+                                  PunchDetails(
+                                    deviceDetails: deviceDetails,
+                                    deviceImei: uniqueId,
+                                    deviceIp: ipAddress,
+                                    userPhoto: base64OutImage,
+                                    remark: dutyOutRemark ?? '',
+                                    isOffline: 'false',
+                                    version: appVersion,
+                                    dataStatus: '',
+                                    checkInId: uniqueIdv4,
+                                    punchAction: 'OUT',
+                                    locationAccuracy: formattedAccuracyValue,
+                                    locationSpeed: formattedSpeedValue,
+                                    batteryStatus: '$battery%',
+                                    locationStatus: '',
+                                    time: formattedDateTimeOut,
+                                    latLong: formattedLatLng,
+                                    kmsDriven: '$outKm',
+                                    siteId: '',
+                                    locationId: '',
+                                    distance: '',
+                                  ),
+                                );
+
+                                setState(() {
+                                  isLoading = false;
+                                });
+
+                                if (response['code'] == 200) {
+                                  Navigator.of(context).pop();
+                                  QuickAlert.show(
+                                    context: context,
+                                    type: QuickAlertType.success,
+                                    text: '${response['status']}',
+                                  );
+                                  _loadPunchInImageFromSP();
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text(
+                                            'Error: ${response['status']}')),
+                                  );
+                                }
+                                _loadPunchOutImageFromSP();
+                              }
+                            },
+                            child: const Text('Submit'),
+                          ),
+                  ],
+                );
+              },
             );
           },
         );

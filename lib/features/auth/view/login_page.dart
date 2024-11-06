@@ -1,4 +1,3 @@
-
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -38,17 +37,16 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   bool isPasswordVisible = false;
 
-
   String ivr = '';
   String? whatsAppNum = '';
   String appName = '';
-
-
+  bool isSubmitting = false;
 
   final LoginViewModel _viewModel = LoginViewModel();
   final MarkLoginViewModel markLoginViewModel = MarkLoginViewModel();
   final UserViewModel userViewModel = UserViewModel();
-  final GetLastSelfieAttViewModel getLastSelfieAttViewModel = GetLastSelfieAttViewModel();
+  final GetLastSelfieAttViewModel getLastSelfieAttViewModel =
+      GetLastSelfieAttViewModel();
   final CheckSessionViewModel checkSessionViewModel = CheckSessionViewModel();
 
   @override
@@ -57,7 +55,6 @@ class _LoginPageState extends State<LoginPage> {
     _loadAppName();
     fetchAndPrintSupportContact();
   }
-
 
 // Usage in function
   Future<void> fetchAndPrintSupportContact() async {
@@ -73,7 +70,6 @@ class _LoginPageState extends State<LoginPage> {
       print('Failed to fetch support contact.');
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -254,21 +250,32 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-
-
   Future<dynamic> _onSubmit() async {
+    if (isSubmitting) return;
+
+    setState(() {
+      isSubmitting = true;
+    });
+
     bool isConnected = await checkInternetConnection();
-    if (!isConnected) return;
+    if (!isConnected) {
+      setState(() {
+        isSubmitting = false;
+      });
+      return;
+    }
+
     if (_formKey.currentState?.validate() ?? false) {
       try {
-        final username = "${_partnerCodeController.text}/${_userIDController.text}";
+        final username =
+            "${_partnerCodeController.text}/${_userIDController.text}";
         final loginRequest = LoginRequest(
           grantType: Strings.grantType,
           username: username,
           password: _passwordController.text,
         );
 
-        final String?  error = await _viewModel.makeRequest(loginRequest);
+        final String? error = await _viewModel.makeRequest(loginRequest);
 
         if (error == null) {
           // Login was successful
@@ -301,8 +308,7 @@ class _LoginPageState extends State<LoginPage> {
 
             final markLoginResponse = await markLoginViewModel.markLogin(token!, markLoginModel);
 
-            if (markLoginResponse is String &&
-                markLoginResponse == "Device Logged-In successfully.") {
+            if (markLoginResponse is String && markLoginResponse == "Device Logged-In successfully.") {
               Fluttertoast.showToast(
                 msg: markLoginResponse,
                 toastLength: Toast.LENGTH_SHORT,
@@ -334,7 +340,8 @@ class _LoginPageState extends State<LoginPage> {
 
             userViewModel.getUserDetails(token);
             getLastSelfieAttViewModel.getLastSelfieAttendance(token);
-            checkSessionViewModel.checkSession(token, CheckSessionModel as CheckSessionModel );
+            checkSessionViewModel.checkSession(
+                token, CheckSessionModel as CheckSessionModel);
           }).catchError((error) {
             print('Error: $error');
           });
@@ -358,8 +365,7 @@ class _LoginPageState extends State<LoginPage> {
             ),
           );
         }
-      }
-      catch (e) {
+      } catch (e) {
         // Handle any uncaught exceptions
         print('General exception: $e');
         ScaffoldMessenger.of(context).showSnackBar(
@@ -377,13 +383,13 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
     }
+    setState(() {
+      isSubmitting = false;
+    });
   }
 
   Widget _buildLoginImage() {
-    return Image.asset(
-      'assets/images/app_logo.webp',
-      height: 150
-    );
+    return Image.asset('assets/images/app_logo.webp', height: 150);
   }
 
   Future<void> _loadAppName() async {
@@ -423,16 +429,14 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-
   static Future<String> getAppVersion() async {
     final packageInfo = await PackageInfo.fromPlatform();
     return packageInfo.version;
   }
 
-
   Widget _buildSubmitButton() {
     return ElevatedButton(
-      onPressed: _onSubmit,
+      onPressed: isSubmitting ? null : _onSubmit,
       style: ElevatedButton.styleFrom(
         elevation: 5,
         backgroundColor: Pallete.btn1,
@@ -442,13 +446,22 @@ class _LoginPageState extends State<LoginPage> {
           borderRadius: BorderRadius.circular(8.0),
         ),
       ),
-      child: const Text(
-        Strings.submit,
-        style: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold
-        ),
-      ),
+      child: isSubmitting
+          ? const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.white,
+              ),
+            )
+          : const Text(
+              Strings.submit,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
     );
   }
 
@@ -461,7 +474,7 @@ class _LoginPageState extends State<LoginPage> {
         builder: (context) => CupertinoAlertDialog(
           title: const Text("No Internet Connection"),
           content:
-          const Text("Please turn on the internet connection to proceed."),
+              const Text("Please turn on the internet connection to proceed."),
           actions: [
             CupertinoDialogAction(
               onPressed: () => Navigator.of(context).pop(),
@@ -474,6 +487,4 @@ class _LoginPageState extends State<LoginPage> {
     }
     return true;
   }
-
-
 }

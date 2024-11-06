@@ -62,15 +62,15 @@ class _SettingPageState extends State<SettingPage> {
               ),
             ),
             const SizedBox(height: 16),
-            SwitchListTile(
-              title: const Text('Enable Push Notifications'),
-              value: isPushEnabled,
-              onChanged: (bool value) {
-                setState(() {
-                  isPushEnabled = value;
-                });
-              },
-            ),
+            // SwitchListTile(
+            //   title: const Text('Enable Push Notifications'),
+            //   value: isPushEnabled,
+            //   onChanged: (bool value) {
+            //     setState(() {
+            //       isPushEnabled = value;
+            //     });
+            //   },
+            // ),
             const ListTile(
               leading: Icon(Icons.check_circle_outline),
               title: Text('AutoCheckin Status: ON'),
@@ -83,7 +83,14 @@ class _SettingPageState extends State<SettingPage> {
             ListTile(
               leading: Icon(Icons.star_border),
               title: Text('Rate App'),
-              onTap: () {},
+              onTap: () async {
+                Uri url = Uri.parse(AppConstants.appStoreUrl);
+                if (await canLaunchUrl(url)) {
+                  await launchUrl(url);
+                } else {
+                  throw 'Could not launch $url';
+                }
+              },
             ),
             ListTile(
               leading: const Icon(Icons.phone),
@@ -150,94 +157,4 @@ class _SettingPageState extends State<SettingPage> {
   }
 }
 
-// @override
-// Widget build(BuildContext context) {
-//   return Scaffold(
-//     appBar: AppBar(
-//       title: const Text('Settings'),
-//       centerTitle: false,
-//     ),
-//     body: Padding(
-//       padding: const EdgeInsets.all(16.0),
-//       child: ListView(
-//         children: [
-//           // Employee Info Card
-//           Card(
-//             elevation: 2,
-//             child: Padding(
-//               padding: const EdgeInsets.all(16.0),
-//               child: Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   Text(
-//                     '$employeeCode',
-//                     style: const TextStyle(
-//                         fontSize: 18, fontWeight: FontWeight.bold),
-//                   ),
-//                   const SizedBox(height: 4),
-//                   Text('$name'),
-//                   const SizedBox(height: 4),
-//                   Text('$department'),
-//                   const SizedBox(height: 4),
-//                   Text('$compName'),
-//                 ],
-//               ),
-//             ),
-//           ),
-//
-//           const SizedBox(height: 16),
-//
-//           // Settings Options Card
-//           Card(
-//             elevation: 2,
-//             child: Padding(
-//               padding: const EdgeInsets.all(16.0),
-//               child: Column(
-//                 children: [
-//                   SwitchListTile(
-//                     title: const Text('Enable Push Notifications'),
-//                     value: isPushEnabled,
-//                     onChanged: (bool value) {
-//                       setState(() {
-//                         isPushEnabled = value;
-//                       });
-//                     },
-//                   ),
-//                   const ListTile(
-//                     leading: Icon(Icons.check_circle_outline),
-//                     title: Text('AutoCheckin Status: ON'),
-//                   ),
-//                   ListTile(
-//                     leading: const Icon(Icons.timer),
-//                     title: Text('AutoCheckIn Interval: $autoCheckInterval'),
-//                   ),
-//                   const Divider(),
-//                   ListTile(
-//                     leading: const Icon(Icons.star_border),
-//                     title: const Text('Rate App'),
-//                     onTap: () {},
-//                   ),
-//                   ListTile(
-//                     leading: const Icon(Icons.phone),
-//                     title: const Text('Contact us'),
-//                     onTap: () {},
-//                   ),
-//                   ListTile(
-//                     leading: const Icon(Icons.info_outline),
-//                     title: const Text('About us'),
-//                     onTap: () {},
-//                   ),
-//                   ListTile(
-//                     leading: const Icon(Icons.security),
-//                     title: const Text('Privacy Policy'),
-//                     onTap: () {},
-//                   ),
-//                 ],
-//               ),
-//             ),
-//           ),
-//         ],
-//       ),
-//     ),
-//   );
-// }
+

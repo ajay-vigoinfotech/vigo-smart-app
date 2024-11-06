@@ -6,6 +6,7 @@ class AppConstants {
   static const String privacyPolicyUrl = "http://vigoinfotech.com/PrivacyPolicy.aspx";
   static const String aboutUs= "http://vigoinfotech.com/about.aspx";
   static const String contactUs= "https://www.vigoinfotech.com/Contact.html";
+  static const String appStoreUrl= "https://apps.apple.com/in/app/vigo-smart-erp/id6737513495";
 
   //App Icons
   static const Icon markDutyIcon = Icon(Icons.watch_later_outlined);

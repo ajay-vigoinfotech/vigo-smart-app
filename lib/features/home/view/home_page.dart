@@ -42,6 +42,7 @@ class _HomePageState extends State<HomePage> {
   String? userProfilePic = '';
   String? newUserProfilePic = '';
   String appName = '';
+  bool isRefreshing = false;
 
   final _formKey = GlobalKey<FormState>();
 
@@ -52,7 +53,8 @@ class _HomePageState extends State<HomePage> {
   final LoginViewModel _viewModel = LoginViewModel();
   final MarkLoginViewModel markLoginViewModel = MarkLoginViewModel();
   final UserViewModel userViewModel = UserViewModel();
-  final GetLastSelfieAttViewModel getLastSelfieAttViewModel = GetLastSelfieAttViewModel();
+  final GetLastSelfieAttViewModel getLastSelfieAttViewModel =
+      GetLastSelfieAttViewModel();
   final CheckSessionViewModel checkSessionViewModel = CheckSessionViewModel();
 
   final List<Map<String, dynamic>> allModules = [
@@ -254,12 +256,12 @@ class _HomePageState extends State<HomePage> {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 23),
               );
             } else {
-              final  version = snapshot.data ?? '1.0';
+              final version = snapshot.data ?? '1.0';
               return RichText(
                 text: TextSpan(
                   children: [
-                     TextSpan(
-                      text: appName ,
+                    TextSpan(
+                      text: appName,
                       style: const TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 23,
@@ -299,7 +301,6 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       drawer: buildDrawer(),
-
       body: Column(
         children: [
           const SizedBox(height: 5),
@@ -348,7 +349,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-
   Future<void> _loadAppName() async {
     final packageInfo = await PackageInfo.fromPlatform();
     setState(() {
@@ -357,19 +357,21 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> getLastSelfieAtt() async {
-  final SessionManager sessionManager = SessionManager();
-  sessionManager.getToken().then((token) async {
-    final GetLastSelfieAttViewModel getLastSelfieAttViewModel = GetLastSelfieAttViewModel();
-    getLastSelfieAttViewModel.getLastSelfieAttendance(token!).then( (data1) async {
-      sessionManager.getCheckinData().then((data) async {
-        print(data.uniqueId);
+    final SessionManager sessionManager = SessionManager();
+    sessionManager.getToken().then((token) async {
+      final GetLastSelfieAttViewModel getLastSelfieAttViewModel =
+          GetLastSelfieAttViewModel();
+      getLastSelfieAttViewModel
+          .getLastSelfieAttendance(token!)
+          .then((data1) async {
+        sessionManager.getCheckinData().then((data) async {
+          print(data.uniqueId);
+        });
       });
+    }).catchError((error) {
+      print('Error: $error');
     });
   }
-  ).catchError((error) {
-    print('Error: $error');
-  });
-}
 
   Widget _buildEmployeeInfo(
       String? employeeCode, String? name, String? compName, String? compCode) {
@@ -490,19 +492,60 @@ class _HomePageState extends State<HomePage> {
                   color: Colors.black54,
                 ),
                 title: const Text('Refresh Server Data'),
-                onTap: () {
+                onTap: () async {
+                  Navigator.pop(context); // Close bottom sheet first
+
+                  // Show loading dialog
+                  showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (context) => Center(
+                        child: Container(
+                          padding: const EdgeInsets.all(24.0), // Add padding around the indicator
+                          decoration: BoxDecoration(
+                            color: Colors.white, // Background color
+                            borderRadius: BorderRadius.circular(12), // Rounded corners
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Colors.black26,
+                                blurRadius: 8,
+                                offset: Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: const Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              CircularProgressIndicator(
+                                strokeWidth: 6,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                              ),
+                              SizedBox(height: 16),
+                              Text(
+                                'Please wait',
+                                style: TextStyle(
+                                  color: Colors.black87,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                  );
+                  await getLastSelfieAtt();
+                  await getUserData();
+                  await getModules();
+                  await refreshServerData();
                   Navigator.pop(context);
-                  getLastSelfieAtt();
-                  getUserData();
-                  getModules();
-                  refreshServerData();
                 },
               ),
               ListTile(
                 leading: const Icon(
                   Icons.settings,
                   color: Colors.black54,
-                ), // Corrected syntax
+                ),
                 title: const Text('Settings'),
                 onTap: () {
                   Navigator.push(
@@ -531,6 +574,67 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+
+  // void _showBottomSheet(BuildContext context) {
+  //   showModalBottomSheet(
+  //     context: context,
+  //     shape: const RoundedRectangleBorder(
+  //       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+  //     ),
+  //     builder: (context) => SizedBox(
+  //       height: 200,
+  //       child: Padding(
+  //         padding: const EdgeInsets.all(16.0),
+  //         child: Column(
+  //           mainAxisSize: MainAxisSize.min,
+  //           children: [
+  //             ListTile(
+  //               leading: const Icon(
+  //                 Icons.refresh,
+  //                 color: Colors.black54,
+  //               ),
+  //               title: const Text('Refresh Server Data'),
+  //               onTap: () {
+  //                 Navigator.pop(context);
+  //                 getLastSelfieAtt();
+  //                 getUserData();
+  //                 getModules();
+  //                 refreshServerData();
+  //               },
+  //             ),
+  //             ListTile(
+  //               leading: const Icon(
+  //                 Icons.settings,
+  //                 color: Colors.black54,
+  //               ), // Corrected syntax
+  //               title: const Text('Settings'),
+  //               onTap: () {
+  //                 Navigator.push(
+  //                   context,
+  //                   MaterialPageRoute(
+  //                     builder: (context) => const SettingPage(),
+  //                   ),
+  //                 );
+  //               },
+  //             ),
+  //             ListTile(
+  //               leading: const Icon(
+  //                 Icons.logout,
+  //                 color: Colors.black54,
+  //               ),
+  //               title: const Text('Logout'),
+  //               onTap: () {
+  //                 Navigator.of(context).pop();
+  //                 _logout(context);
+  //               },
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
+
   // Get Filtered Modules
   Future<void> getModules() async {
     ModulesViewModel modulesViewModel = ModulesViewModel();
@@ -553,7 +657,7 @@ class _HomePageState extends State<HomePage> {
   }
 
 // Function to refresh server data
-  void refreshServerData() async {
+  Future<void> refreshServerData() async {
     List<String>? updatedModules = await sessionManager.getModuleCodes();
 
     if (updatedModules != null && updatedModules.isNotEmpty) {
@@ -597,40 +701,118 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  //Function for Logout
   Future<void> _logout(BuildContext context) async {
+    bool isLoggingOut = false;
+
     showDialog(
+      barrierDismissible: false,
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Logout Confirmation"),
-          content: const Text("Are you sure you want to logout?"),
-          actions: [
-            TextButton(
-              child: const Text(
-                "Cancel",
-                style: TextStyle(),
-              ),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            TextButton(
-              child: const Text("Logout"),
-              onPressed: () async {
-                await sessionManager.logout();
-                Navigator.of(context).pop();
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginPage()),
-                );
-              },
-            ),
-          ],
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text("Logout Confirmation"),
+              content: const Text("Are you sure you want to logout?"),
+              actions: [
+                TextButton(
+                  child: const Text("Cancel"),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+                TextButton(
+                  onPressed: isLoggingOut
+                      ? null
+                      : () async {
+                    setState(() {
+                      isLoggingOut = true;
+                    });
+
+                    try {
+                      final token = await sessionManager.getToken();
+                      final formattedDateTime = Utils.getCurrentFormattedDateTime();
+                      final deviceDetails = await Utils.getDeviceDetails(context);
+                      final appVersion = await Utils.getAppVersion();
+                      final ipAddress = await Utils.getIpAddress();
+                      final uniqueId = await Utils.getUniqueID();
+                      final battery = await Utils.getBatteryLevel();
+                      final fcmToken = await Utils.getFCMToken();
+
+                      final fullDeviceDetails = "$deviceDetails/$uniqueId/$ipAddress";
+
+                      final markLoginModel = MarkLoginModel(
+                        deviceDetails: fullDeviceDetails,
+                        punchAction: 'LOGOUT',
+                        locationDetails: '',
+                        batteryStatus: '$battery%',
+                        time: formattedDateTime,
+                        latLong: '',
+                        version: 'v$appVersion',
+                        fcmToken: fcmToken ?? '',
+                        dataStatus: '',
+                      );
+
+                      final markLoginResponse = await markLoginViewModel.markLogin(token!, markLoginModel);
+
+                      if (markLoginResponse is String && markLoginResponse == "Device Logged-In successfully.") {
+                        Fluttertoast.showToast(
+                          msg: "Device Logged-Out successfully.",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.BOTTOM,
+                          backgroundColor: Colors.redAccent,
+                          textColor: Colors.white,
+                          fontSize: 18.0,
+                        );
+                        await sessionManager.logout();
+
+                        // Close the dialog and navigate to the login page
+                        Navigator.of(context).pop();
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => const LoginPage()),
+                        );
+                      } else {
+                        Fluttertoast.showToast(
+                          msg: "Logout failed. Please try again.",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.BOTTOM,
+                          backgroundColor: Colors.red,
+                          textColor: Colors.white,
+                          fontSize: 16.0,
+                        );
+                      }
+                    } catch (e) {
+                      Fluttertoast.showToast(
+                        msg: "An error occurred. Please try again.",
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.BOTTOM,
+                        backgroundColor: Colors.red,
+                        textColor: Colors.white,
+                        fontSize: 16.0,
+                      );
+                    } finally {
+                      setState(() {
+                        isLoggingOut = false;
+                      });
+                    }
+                  },
+                  child: isLoggingOut
+                      ? const CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.black,
+                  )
+                      : const Text("Logout"),
+                ),
+              ],
+            );
+          },
         );
       },
     );
   }
+
+
+
 
 // Function to Get User Details
   Future<void> getUserData() async {
@@ -712,7 +894,8 @@ class _HomePageState extends State<HomePage> {
   Future<void> _onSubmit() async {
     if (_formKey.currentState?.validate() ?? false) {
       try {
-        final username = "${partnerCodeController.text}/${userIDController.text}";
+        final username =
+            "${partnerCodeController.text}/${userIDController.text}";
         final loginRequest = LoginRequest(
           grantType: Strings.grantType,
           username: username,
@@ -726,8 +909,7 @@ class _HomePageState extends State<HomePage> {
           await sessionManager.saveLoginInfo(username);
 
           sessionManager.getToken().then((token) async {
-            final String formattedDateTime =
-                Utils.getCurrentFormattedDateTime();
+            final String formattedDateTime = Utils.getCurrentFormattedDateTime();
             final String deviceDetails = await Utils.getDeviceDetails(context);
             final String appVersion = await Utils.getAppVersion();
             final String ipAddress = await Utils.getIpAddress();
@@ -735,8 +917,7 @@ class _HomePageState extends State<HomePage> {
             final int battery = await Utils.getBatteryLevel();
             final String? fcmToken = await Utils.getFCMToken();
 
-            final String fullDeviceDetails =
-                "$deviceDetails/$uniqueId/$ipAddress";
+            final String fullDeviceDetails = "$deviceDetails/$uniqueId/$ipAddress";
 
             final markLoginModel = MarkLoginModel(
               deviceDetails: fullDeviceDetails,
@@ -752,7 +933,8 @@ class _HomePageState extends State<HomePage> {
 
             final markLoginResponse = await markLoginViewModel.markLogin(token!, markLoginModel);
 
-            if (markLoginResponse is String && markLoginResponse == "Device Logged-In successfully.") {
+            if (markLoginResponse is String &&
+                markLoginResponse == "Device Logged-In successfully.") {
               Fluttertoast.showToast(
                 msg: markLoginResponse,
                 toastLength: Toast.LENGTH_SHORT,
