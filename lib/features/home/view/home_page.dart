@@ -365,11 +365,11 @@ class _HomePageState extends State<HomePage> {
           .getLastSelfieAttendance(token!)
           .then((data1) async {
         sessionManager.getCheckinData().then((data) async {
-          print(data.uniqueId);
+          debugPrint(data.uniqueId);
         });
       });
     }).catchError((error) {
-      print('Error: $error');
+      debugPrint('Error: $error');
     });
   }
 
@@ -493,52 +493,57 @@ class _HomePageState extends State<HomePage> {
                 ),
                 title: const Text('Refresh Server Data'),
                 onTap: () async {
-                  Navigator.pop(context); // Close bottom sheet first
+                  Navigator.pop(context);
 
                   // Show loading dialog
                   showDialog(
                       context: context,
                       barrierDismissible: false,
                       builder: (context) => Center(
-                        child: Container(
-                          padding: const EdgeInsets.all(24.0), // Add padding around the indicator
-                          decoration: BoxDecoration(
-                            color: Colors.white, // Background color
-                            borderRadius: BorderRadius.circular(12), // Rounded corners
-                            boxShadow: const [
-                              BoxShadow(
-                                color: Colors.black26,
-                                blurRadius: 8,
-                                offset: Offset(0, 4),
+                            child: Container(
+                              padding: const EdgeInsets.all(24.0),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Colors.black26,
+                                    blurRadius: 8,
+                                    offset: Offset(0, 4),
+                                  ),
+                                ],
                               ),
-                            ],
-                          ),
-                          child: const Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              CircularProgressIndicator(
-                                strokeWidth: 6,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                              child: const Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  CircularProgressIndicator(
+                                    strokeWidth: 6,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.blue),
+                                  ),
+                                  SizedBox(height: 16),
+                                  Text(
+                                    'Please wait',
+                                    style: TextStyle(
+                                      color: Colors.black87,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              SizedBox(height: 16),
-                              Text(
-                                'Please wait',
-                                style: TextStyle(
-                                  color: Colors.black87,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      )
-                  );
-                  await getLastSelfieAtt();
-                  await getUserData();
-                  await getModules();
-                  await refreshServerData();
-                  Navigator.pop(context);
+                            ),
+                          ));
+                  try {
+                    await getLastSelfieAtt();
+                    await getUserData();
+                    await getModules();
+                    await refreshServerData();
+                  } catch (error) {
+                    debugPrint("Error: $error");
+                  } finally {
+                    Navigator.pop(context);
+                  }
                 },
               ),
               ListTile(
@@ -573,7 +578,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-
 
   // void _showBottomSheet(BuildContext context) {
   //   showModalBottomSheet(
@@ -724,83 +728,90 @@ class _HomePageState extends State<HomePage> {
                   onPressed: isLoggingOut
                       ? null
                       : () async {
-                    setState(() {
-                      isLoggingOut = true;
-                    });
+                          setState(() {
+                            isLoggingOut = true;
+                          });
 
-                    try {
-                      final token = await sessionManager.getToken();
-                      final formattedDateTime = Utils.getCurrentFormattedDateTime();
-                      final deviceDetails = await Utils.getDeviceDetails(context);
-                      final appVersion = await Utils.getAppVersion();
-                      final ipAddress = await Utils.getIpAddress();
-                      final uniqueId = await Utils.getUniqueID();
-                      final battery = await Utils.getBatteryLevel();
-                      final fcmToken = await Utils.getFCMToken();
+                          try {
+                            final token = await sessionManager.getToken();
+                            final formattedDateTime =
+                                Utils.getCurrentFormattedDateTime();
+                            final deviceDetails =
+                                await Utils.getDeviceDetails(context);
+                            final appVersion = await Utils.getAppVersion();
+                            final ipAddress = await Utils.getIpAddress();
+                            final uniqueId = await Utils.getUniqueID();
+                            final battery = await Utils.getBatteryLevel();
+                            final fcmToken = await Utils.getFCMToken();
 
-                      final fullDeviceDetails = "$deviceDetails/$uniqueId/$ipAddress";
+                            final fullDeviceDetails =
+                                "$deviceDetails/$uniqueId/$ipAddress";
 
-                      final markLoginModel = MarkLoginModel(
-                        deviceDetails: fullDeviceDetails,
-                        punchAction: 'LOGOUT',
-                        locationDetails: '',
-                        batteryStatus: '$battery%',
-                        time: formattedDateTime,
-                        latLong: '',
-                        version: 'v$appVersion',
-                        fcmToken: fcmToken ?? '',
-                        dataStatus: '',
-                      );
+                            final markLoginModel = MarkLoginModel(
+                              deviceDetails: fullDeviceDetails,
+                              punchAction: 'LOGOUT',
+                              locationDetails: '',
+                              batteryStatus: '$battery%',
+                              time: formattedDateTime,
+                              latLong: '',
+                              version: 'v$appVersion',
+                              fcmToken: fcmToken ?? '',
+                              dataStatus: '',
+                            );
 
-                      final markLoginResponse = await markLoginViewModel.markLogin(token!, markLoginModel);
+                            final markLoginResponse = await markLoginViewModel
+                                .markLogin(token!, markLoginModel);
 
-                      if (markLoginResponse is String && markLoginResponse == "Device Logged-In successfully.") {
-                        Fluttertoast.showToast(
-                          msg: "Device Logged-Out successfully.",
-                          toastLength: Toast.LENGTH_SHORT,
-                          gravity: ToastGravity.BOTTOM,
-                          backgroundColor: Colors.redAccent,
-                          textColor: Colors.white,
-                          fontSize: 18.0,
-                        );
-                        await sessionManager.logout();
+                            if (markLoginResponse is String &&
+                                markLoginResponse ==
+                                    "Device Logged-In successfully.") {
+                              Fluttertoast.showToast(
+                                msg: "Device Logged-Out successfully.",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.BOTTOM,
+                                backgroundColor: Colors.redAccent,
+                                textColor: Colors.white,
+                                fontSize: 18.0,
+                              );
+                              await sessionManager.logout();
 
-                        // Close the dialog and navigate to the login page
-                        Navigator.of(context).pop();
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => const LoginPage()),
-                        );
-                      } else {
-                        Fluttertoast.showToast(
-                          msg: "Logout failed. Please try again.",
-                          toastLength: Toast.LENGTH_SHORT,
-                          gravity: ToastGravity.BOTTOM,
-                          backgroundColor: Colors.red,
-                          textColor: Colors.white,
-                          fontSize: 16.0,
-                        );
-                      }
-                    } catch (e) {
-                      Fluttertoast.showToast(
-                        msg: "An error occurred. Please try again.",
-                        toastLength: Toast.LENGTH_SHORT,
-                        gravity: ToastGravity.BOTTOM,
-                        backgroundColor: Colors.red,
-                        textColor: Colors.white,
-                        fontSize: 16.0,
-                      );
-                    } finally {
-                      setState(() {
-                        isLoggingOut = false;
-                      });
-                    }
-                  },
+                              // Close the dialog and navigate to the login page
+                              Navigator.of(context).pop();
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const LoginPage()),
+                              );
+                            } else {
+                              Fluttertoast.showToast(
+                                msg: "Logout failed. Please try again.",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.BOTTOM,
+                                backgroundColor: Colors.red,
+                                textColor: Colors.white,
+                                fontSize: 16.0,
+                              );
+                            }
+                          } catch (e) {
+                            Fluttertoast.showToast(
+                              msg: "An error occurred. Please try again.",
+                              toastLength: Toast.LENGTH_SHORT,
+                              gravity: ToastGravity.BOTTOM,
+                              backgroundColor: Colors.red,
+                              textColor: Colors.white,
+                              fontSize: 16.0,
+                            );
+                          } finally {
+                            setState(() {
+                              isLoggingOut = false;
+                            });
+                          }
+                        },
                   child: isLoggingOut
                       ? const CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.black,
-                  )
+                          strokeWidth: 2,
+                          color: Colors.black,
+                        )
                       : const Text("Logout"),
                 ),
               ],
@@ -843,16 +854,6 @@ class _HomePageState extends State<HomePage> {
       debugPrint('Error fetching user data: $error');
     }
   }
-
-  // Future<void> lastSelfieAtt(SelfieAttendanceModel selfieAttendanceModel) async {
-  //   final SessionManager sessionManager = SessionManager();
-  //   try {
-  //     await sessionManager.saveSelfieAttendance(selfieAttendanceModel);
-  //     debugPrint('Selfie Attendance saved successfully!!!!!!!!!');
-  //   } catch (error) {
-  //     debugPrint('Error saving selfie attendance: $error');
-  //   }
-  // }
 
   Future<void> checkUserSession() async {
     final SessionManager sessionManager = SessionManager();
@@ -906,7 +907,8 @@ class _HomePageState extends State<HomePage> {
           await sessionManager.saveLoginInfo(username);
 
           sessionManager.getToken().then((token) async {
-            final String formattedDateTime = Utils.getCurrentFormattedDateTime();
+            final String formattedDateTime =
+                Utils.getCurrentFormattedDateTime();
             final String deviceDetails = await Utils.getDeviceDetails(context);
             final String appVersion = await Utils.getAppVersion();
             final String ipAddress = await Utils.getIpAddress();
@@ -914,7 +916,8 @@ class _HomePageState extends State<HomePage> {
             final int battery = await Utils.getBatteryLevel();
             final String? fcmToken = await Utils.getFCMToken();
 
-            final String fullDeviceDetails = "$deviceDetails/$uniqueId/$ipAddress";
+            final String fullDeviceDetails =
+                "$deviceDetails/$uniqueId/$ipAddress";
 
             final markLoginModel = MarkLoginModel(
               deviceDetails: fullDeviceDetails,
@@ -928,7 +931,8 @@ class _HomePageState extends State<HomePage> {
               dataStatus: '',
             );
 
-            final markLoginResponse = await markLoginViewModel.markLogin(token!, markLoginModel);
+            final markLoginResponse =
+                await markLoginViewModel.markLogin(token!, markLoginModel);
 
             if (markLoginResponse is String &&
                 markLoginResponse == "Device Logged-In successfully.") {
@@ -955,7 +959,7 @@ class _HomePageState extends State<HomePage> {
             userViewModel.getUserDetails(token);
             getLastSelfieAttViewModel.getLastSelfieAttendance(token);
           }).catchError((error) {
-            print('Error: $error');
+            debugPrint('Error: $error');
           });
 
           Navigator.pushReplacement(
