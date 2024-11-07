@@ -5,10 +5,8 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:quickalert/models/quickalert_animtype.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -46,8 +44,15 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   String? dutyOutRemark;
   String? outKm;
   String? errorMessage;
+  String _outKmError = '';
+  String _inKmError = '';
+  // bool _kmError = false;
 
   bool isLoading = false;
+
+  final TextEditingController _inKmController = TextEditingController();
+  final TextEditingController _outKmController = TextEditingController();
+
 
   final picker = ImagePicker();
   final SessionManager sessionManager = SessionManager();
@@ -165,8 +170,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                             fontSize: 14, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 5),
-                      if (savedPunchOutImagePath != null &&
-                          savedPunchOutImagePath!.isNotEmpty)
+                      if (savedPunchOutImagePath != null && savedPunchOutImagePath!.isNotEmpty)
                         Image.file(
                           File(savedPunchOutImagePath!),
                           height: 130,
@@ -267,12 +271,8 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     bool isConnected = await _checkInternetConnection();
     if (!isConnected) return;
 
-    // Check if dateTimeIn has data and dateTimeOut is null or empty
     if ((punchTimeDateIn != null && punchTimeDateIn != "") &&
         (punchTimeDateOut == null || punchTimeDateOut == "")) {
-      print('$punchTimeDateIn');
-      print('$punchTimeDateOut');
-      // Allow marking OUT
       setState(() {
         _onMarkOut();
       });
@@ -451,36 +451,52 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
         final String base64Image = base64Encode(compressedBytes);
         final base64InImage = base64Image;
 
+        var temp = inKm;
+        inKm = null;
+
         showDialog(
           barrierDismissible: false,
           context: context,
           builder: (BuildContext context) {
             return StatefulBuilder(
               builder: (context, setState) {
+                final screenWidth = MediaQuery.of(context).size.width;
                 return AlertDialog(
                   title: const Text("Mark In Details"),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Image.file(image, height: 100, width: 100),
-                      TextField(
-                        decoration: const InputDecoration(labelText: 'Comment'),
-                        onChanged: (value) {
-                          dutyInRemark = value;
-                        },
+                  content: SizedBox(
+                    width: screenWidth < 600 ? screenWidth * 0.9 : 400,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Image.file(image, height: 100, width: 100),
+                          TextField(
+                            decoration: const InputDecoration(labelText: 'Comment'),
+                            onChanged: (value) {
+                              dutyInRemark = value;
+                            },
+                          ),
+                          TextField(
+                            controller: _inKmController,
+                            decoration: InputDecoration(
+                                labelText: 'KM',
+                              labelStyle: const TextStyle(
+                                color: Colors.black,
+                              ),
+                              errorText: _inKmError,
+                            ),
+                            keyboardType: TextInputType.number,
+                            onChanged: (value) {
+                              inKm = value;
+                              setState(() {
+                                inKmText = "$value KM";
+                                outKmText = "";
+                              });
+                            },
+                          ),
+                        ],
                       ),
-                      TextField(
-                        decoration: const InputDecoration(labelText: 'KM'),
-                        keyboardType: TextInputType.number,
-                        onChanged: (value) {
-                          inKm = value;
-                          setState(() {
-                            inKmText = "$value KM";
-                            outKmText = "";
-                          });
-                        },
-                      ),
-                    ],
+                    ),
                   ),
                   actions: [
                     TextButton(
@@ -490,9 +506,17 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                       child: const Text("Cancel"),
                     ),
                     isLoading
-                        ? const CircularProgressIndicator() // Show progress indicator
+                        ? const CircularProgressIndicator()
                         : ElevatedButton(
                             onPressed: () async {
+                              if(inKm == null || inKm!.isEmpty){
+                                setState(() {
+                                  _inKmError =
+                                  'Please enter in km!';
+                                });
+                                return;
+                              }
+
                               if (inKm != null && inKm!.isNotEmpty) {
                                 setState(() {
                                   isLoading = true;
@@ -505,8 +529,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                                 await _saveImageToSP(markInImage.path);
                                 uniqueIdv4 = const Uuid().v4();
 
-                                SelfieAttendanceModel selfieAttendanceModel =
-                                    SelfieAttendanceModel(
+                                SelfieAttendanceModel selfieAttendanceModel = SelfieAttendanceModel(
                                   table: [
                                     AttendanceTable(
                                       uniqueId: uniqueIdv4,
@@ -520,11 +543,9 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                                   ],
                                 );
 
-                                await sessionManager.saveSelfieAttendance(
-                                    selfieAttendanceModel);
+                                await sessionManager.saveSelfieAttendance(selfieAttendanceModel);
 
-                                print(
-                                    "Selfie attendance data saved to session manager.");
+                                print("Selfie attendance data saved to session manager.");
 
                                 String? token = await sessionManager.getToken();
                                 MarkSelfieAttendance markSelfieAttendance =
@@ -657,27 +678,41 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
           builder: (BuildContext context) {
             return StatefulBuilder(
               builder: (context, setState) {
+
+                final screenWidth = MediaQuery.of(context).size.width;
                 return AlertDialog(
                   title: const Text("Mark Out Details"),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Image.file(image, height: 100, width: 100),
-                      TextField(
-                        decoration:
-                            const InputDecoration(labelText: 'Out Remark'),
-                        onChanged: (value) {
-                          dutyOutRemark = value;
-                        },
+                  content: SizedBox(
+                    width: screenWidth < 600 ? screenWidth * 0.9 : 400,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Image.file(image, height: 100, width: 100),
+                          TextField(
+                            decoration:
+                                const InputDecoration(labelText: 'Out Remark'),
+                            onChanged: (value) {
+                              dutyOutRemark = value;
+                            },
+                          ),
+                          TextField(
+                            controller: _outKmController,
+                            decoration: InputDecoration(
+                              labelText: 'OUT KM',
+                              labelStyle: const TextStyle(
+                                color: Colors.black,
+                              ),
+                              errorText: _outKmError,
+                            ),
+                            keyboardType: TextInputType.number,
+                            onChanged: (value) {
+                              outKm = value;
+                            },
+                          ),
+                        ],
                       ),
-                      TextField(
-                        decoration: const InputDecoration(labelText: 'OUT KM'),
-                        keyboardType: TextInputType.number,
-                        onChanged: (value) {
-                          outKm = value;
-                        },
-                      ),
-                    ],
+                    ),
                   ),
                   actions: [
                     TextButton(
@@ -690,6 +725,13 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                         ? const CircularProgressIndicator() // Show progress indicator
                         : ElevatedButton(
                             onPressed: () async {
+                              if(outKm == null || outKm!.isEmpty){
+                                setState(() {
+                                  _outKmError =
+                                  'Please enter out km!';
+                                });
+                                return;
+                              }
                               if (isLoading) return;
 
                               // Verify that Out KM is greater than In KM
@@ -700,17 +742,17 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
 
                               if (outKmValue < inKmValue) {
                                 setState(() {
-                                  errorMessage =
+                                  _outKmError =
                                       'Out KM must be greater than In KM';
                                 });
-                                Fluttertoast.showToast(
-                                  msg: '$errorMessage',
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.TOP,
-                                  backgroundColor: Colors.black54,
-                                  textColor: Colors.white,
-                                  fontSize: 16.0,
-                                );
+                                // Fluttertoast.showToast(
+                                //   msg: '$errorMessage',
+                                //   toastLength: Toast.LENGTH_SHORT,
+                                //   gravity: ToastGravity.TOP,
+                                //   backgroundColor: Colors.black54,
+                                //   textColor: Colors.white,
+                                //   fontSize: 16.0,
+                                // );
                                 return;
                               }
 

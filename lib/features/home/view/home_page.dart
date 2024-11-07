@@ -548,7 +548,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 title: const Text('Settings'),
                 onTap: () {
-                  Navigator.push(
+                  Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
                       builder: (context) => const SettingPage(),
@@ -810,9 +810,6 @@ class _HomePageState extends State<HomePage> {
       },
     );
   }
-
-
-
 
 // Function to Get User Details
   Future<void> getUserData() async {
