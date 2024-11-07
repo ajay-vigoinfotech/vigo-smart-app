@@ -24,12 +24,12 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>MinimumOSVersion</key>
-	<string>14.0</string>
-	<key>ITSAppUsesNonExemptEncryption</key>
-    <false/>
+	<string>15.0</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
@@ -47,10 +47,10 @@
 	</dict>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>This app needs access to the local network to retrieve the device's IP address.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>We need your location to provide better services even when the app is in the background.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>We need access to your location for maps functionality</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-    <string>We need your location to provide better services even when the app is in the background.</string>
 	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
 	<dict>
 		<key>YourPurposeKey</key>
