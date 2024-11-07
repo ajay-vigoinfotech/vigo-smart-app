@@ -49,6 +49,8 @@
 	<string>This app needs access to the local network to retrieve the device's IP address.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>We need access to your location for maps functionality</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>We need your location to provide better services even when the app is in the background.</string>
 	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
 	<dict>
 		<key>YourPurposeKey</key>
