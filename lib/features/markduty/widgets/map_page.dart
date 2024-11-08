@@ -28,7 +28,8 @@ class _MapPageState extends State<MapPage> {
   late GoogleMapController _googleMapController;
   final Set<Marker> _markers = {};
   bool _isMapBeingMoved = false;
-  bool _isLoading = true; // Add a loading state to indicate fetching location
+  bool _isLoading = true;
+  bool _locationDialog = false;
 
   @override
   void initState() {
@@ -43,7 +44,8 @@ class _MapPageState extends State<MapPage> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        _showLocationError("Location permissions are denied.");
+        _showCupertinoLocationServiceDialog();
+        //_showLocationError("Location permissions are denied.");
         return;
       }
     }
@@ -73,7 +75,8 @@ class _MapPageState extends State<MapPage> {
         _isLoading = false;
       });
     } catch (e) {
-      _showLocationError("Failed to get the current location of your device");
+      _showCupertinoAppSettingsDialog();
+      //_showLocationError("Failed to get the current location of your device");
     }
   }
 
@@ -115,10 +118,6 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
-  void _showLocationError(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
-  }
 
   void _checkLocationServiceStatus() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -130,24 +129,22 @@ class _MapPageState extends State<MapPage> {
   }
 
   void _showCupertinoLocationServiceDialog() {
+    if(_locationDialog) {
+      return;
+    }
+    _locationDialog = true;
     showCupertinoDialog(
       context: context,
       builder: (context) => CupertinoAlertDialog(
         title: const Text("Location Service Disabled"),
         content: const Text(
-          "Location services are disabled. Please enable them in your device settings to continue.",
+          "Please enable in your device settings to continue.",
         ),
         actions: [
           CupertinoDialogAction(
-            isDefaultAction: true,
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: const Text("Cancel"),
-          ),
-          CupertinoDialogAction(
             isDestructiveAction: false,
             onPressed: () {
+              _locationDialog = false;
               switch (OpenSettingsPlus.shared) {
                 case OpenSettingsPlusAndroid settings:
                   settings.locationSource();
@@ -160,7 +157,43 @@ class _MapPageState extends State<MapPage> {
               }
               Navigator.of(context).pop();
             },
-            child: const Text("Open Settings"),
+            child: const Text("Open Location Services"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCupertinoAppSettingsDialog() {
+    if(_locationDialog) {
+      return;
+    }
+    _locationDialog = true;
+    showCupertinoDialog(
+      context: context,
+      builder: (context) => CupertinoAlertDialog(
+        title: const Text("Location Permission Disabled"),
+        content: const Text(
+          "Please enable in your app settings to continue.",
+        ),
+        actions: [
+          CupertinoDialogAction(
+            isDestructiveAction: false,
+            onPressed: () {
+              _locationDialog = false;
+              switch (OpenSettingsPlus.shared) {
+                case OpenSettingsPlusAndroid settings:
+                  settings.locationSource();
+                  break;
+                case OpenSettingsPlusIOS settings:
+                  settings.appSettings();
+                  break;
+                default:
+                  throw Exception('Platform not supported');
+              }
+              Navigator.of(context).pop();
+            },
+            child: const Text("Open App Settings"),
           ),
         ],
       ),
