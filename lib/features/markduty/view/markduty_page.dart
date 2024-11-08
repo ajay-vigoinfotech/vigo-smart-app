@@ -743,14 +743,6 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                                   _outKmError =
                                       'Out KM must be greater than In KM';
                                 });
-                                // Fluttertoast.showToast(
-                                //   msg: '$errorMessage',
-                                //   toastLength: Toast.LENGTH_SHORT,
-                                //   gravity: ToastGravity.TOP,
-                                //   backgroundColor: Colors.black54,
-                                //   textColor: Colors.white,
-                                //   fontSize: 16.0,
-                                // );
                                 return;
                               }
 

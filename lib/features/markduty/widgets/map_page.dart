@@ -1,5 +1,4 @@
 import 'dart:core';
-import 'package:app_settings/app_settings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -7,11 +6,9 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:open_settings_plus/core/open_settings_plus.dart';
 
 class MapPage extends StatefulWidget {
-  final Function(String)
-      locationReceived; // Changed to receive a formatted string
-  final Function(String) speedReceived; // Changed to receive a formatted string
-  final Function(String)
-      accuracyReceived; // Changed to receive a formatted string
+  final Function(String)locationReceived;
+  final Function(String) speedReceived;
+  final Function(String)accuracyReceived;
   const MapPage({
     super.key,
     required this.locationReceived,

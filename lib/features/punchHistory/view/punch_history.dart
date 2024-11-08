@@ -136,7 +136,6 @@ class _PunchHistoryState extends State<PunchHistory> {
                                         ),
                                       ),
                                       const SizedBox(height: 10),
-                                      // This ensures that the icon or image takes space
                                       if (outPhotoUrl != null)
                                         Image.network(
                                           outPhotoUrl,
@@ -187,16 +186,15 @@ class _PunchHistoryState extends State<PunchHistory> {
   Future<void> fetchPunchHistory() async {
     final SessionManager sessionManager = SessionManager();
     final token = await sessionManager.getToken();
-
     if (token == null || token.isEmpty) {
       debugPrint('Failed to retrieve token.');
       return;
     }
 
-    final GetSelfieAttendanceViewModel getSelfieAttendanceViewModel =
-        GetSelfieAttendanceViewModel();
-    final GetSelfieAttendanceViewModel? viewModel =
-        await getSelfieAttendanceViewModel.getSelfieAttendance(token);
+    final GetSelfieAttendanceViewModel getSelfieAttendanceViewModel = GetSelfieAttendanceViewModel();
+    final GetSelfieAttendanceViewModel? viewModel = await getSelfieAttendanceViewModel.getSelfieAttendance(token);
+    debugPrint('server data refreshed');
+
 
     if (viewModel != null && viewModel.getSelfieAttendanceModel != null) {
       setState(() {
@@ -206,7 +204,7 @@ class _PunchHistoryState extends State<PunchHistory> {
     } else {
       debugPrint('Failed to fetch attendance data.');
       setState(() {
-        isLoading = false; // Stop loading if there's an error
+        isLoading = false;
       });
     }
   }

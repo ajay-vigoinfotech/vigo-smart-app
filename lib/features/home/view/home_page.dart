@@ -53,8 +53,7 @@ class _HomePageState extends State<HomePage> {
   final LoginViewModel _viewModel = LoginViewModel();
   final MarkLoginViewModel markLoginViewModel = MarkLoginViewModel();
   final UserViewModel userViewModel = UserViewModel();
-  final GetLastSelfieAttViewModel getLastSelfieAttViewModel =
-      GetLastSelfieAttViewModel();
+  final GetLastSelfieAttViewModel getLastSelfieAttViewModel = GetLastSelfieAttViewModel();
   final CheckSessionViewModel checkSessionViewModel = CheckSessionViewModel();
 
   final List<Map<String, dynamic>> allModules = [
@@ -494,8 +493,6 @@ class _HomePageState extends State<HomePage> {
                 title: const Text('Refresh Server Data'),
                 onTap: () async {
                   Navigator.pop(context);
-
-                  // Show loading dialog
                   showDialog(
                       context: context,
                       barrierDismissible: false,
@@ -578,6 +575,13 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+  // Future<void> _refreshData() async {
+  //   await getLastSelfieAtt();
+  //   await getUserData();
+  //   await getModules();
+  //   await refreshServerData();
+  // }
 
   // void _showBottomSheet(BuildContext context) {
   //   showModalBottomSheet(
