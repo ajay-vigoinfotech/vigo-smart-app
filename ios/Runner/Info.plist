@@ -36,7 +36,7 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>This app requires access to the camera.</string>
+	<string>We need access to the camera to capture your selfie for attendance.</string>
 	<key>NSExceptionDomains</key>
 	<dict>
 		<key>localhost</key>
@@ -45,27 +45,20 @@
 			<true/>
 		</dict>
 	</dict>
-	<key>NSLocalNetworkUsageDescription</key>
-	<string>This app needs access to the local network to retrieve the device's IP address.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>We need your location to provide better services even when the app is in the background.</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>We need access to your location for maps functionality</string>
+	<string>We use your location in the background to enhance location-based features, such as providing timely services based on your location.</string>
 	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
 	<dict>
-		<key>YourPurposeKey</key>
-		<string>The example App requires temporary access to the device's precise location.</string>
+		<key>Login</key>
+		<string>We require temporary access to your precise location during the login process to confirm your location accurately.</string>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>We need access to your location for maps functionality</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>This app require access for Photo Library usage</string>
+	<string>We need access to your location for plotting map and marking location based attendance.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>
-		<string>location</string>
 		<string>remote-notification</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
