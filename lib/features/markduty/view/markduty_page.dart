@@ -236,10 +236,8 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     bool isConnected = await _checkInternetConnection();
     if (!isConnected) return;
 
-    // Check if both dateTimeIn and dateTimeOut are null or empty, or if both have values
     if ((punchTimeDateIn == null || punchTimeDateIn == "") &&
         (punchTimeDateOut == null || punchTimeDateOut == "")) {
-      // Allow marking IN if both are null or empty
       setState(() {
         _onMarkIn();
       });
