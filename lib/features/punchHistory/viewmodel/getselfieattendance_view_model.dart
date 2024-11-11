@@ -7,8 +7,7 @@ class GetSelfieAttendanceViewModel {
   final Dio _dio = Dio();
   GetSelfieAttendanceModel? getSelfieAttendanceModel;
 
-  Future<GetSelfieAttendanceViewModel?> getSelfieAttendance(
-      String token) async {
+  Future<GetSelfieAttendanceViewModel?> getSelfieAttendance(String token) async {
     try {
       const url = '${AppConstants.baseUrl}/API/Kotlin/GetSelfieAttendance';
 
@@ -23,8 +22,6 @@ class GetSelfieAttendanceViewModel {
         url,
         options: Options(headers: headers),
       );
-
-      // debugPrint("Response Data: ${response.data}");
 
       if (response.statusCode == 200) {
         getSelfieAttendanceModel = GetSelfieAttendanceModel.fromJson(response.data);

@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:vigo_smart_app/features/home/widgets/setting_page.dart';
 import 'package:vigo_smart_app/features/markduty/view/markduty_page.dart';
 import 'package:vigo_smart_app/features/punchHistory/view/punch_history.dart';
+import 'package:vigo_smart_app/features/team%20view/view/team_view.dart';
 import '../../../core/constants/constants.dart';
 import '../../../core/strings/strings.dart';
 import '../../../core/theme/app_pallete.dart';
@@ -93,6 +94,13 @@ class _HomePageState extends State<HomePage> {
       'page': const PunchHistory(),
     },
     {
+      'code': 'TeamViewApp',
+      'icon': Image.asset('assets/images/team_view.webp'),
+      'name': Strings.teamViewApp,
+      'color': Pallete.backgroundColor,
+      'page': const TeamView(),
+    },
+    {
       'code': 'SyncData',
       'icon': Image.asset('assets/images/settings.webp'),
       'name': Strings.syncData,
@@ -117,13 +125,6 @@ class _HomePageState extends State<HomePage> {
       'code': 'SiteReportingQRApp',
       'icon': AppConstants.markDutyIcon,
       'name': Strings.siteReportingQRApp,
-      'color': Pallete.btn1,
-      'page': const MarkdutyPage(),
-    },
-    {
-      'code': 'TeamViewApp',
-      'icon': AppConstants.markDutyIcon,
-      'name': Strings.teamViewApp,
       'color': Pallete.btn1,
       'page': const MarkdutyPage(),
     },
@@ -653,8 +654,7 @@ class _HomePageState extends State<HomePage> {
 
       if (modules.isNotEmpty) {
         debugPrint('Modules fetched: $modules');
-        await sessionManager
-            .saveModuleCodes(modules); // Save modules to session
+        await sessionManager.saveModuleCodes(modules); // Save modules to session
         refreshServerData(); // Refresh data after saving modules
       } else {
         debugPrint('No Modules Found');

@@ -15,7 +15,7 @@ class Strings {
   static const String fieldReportingQRApp = "FieldReportingQRApp";
   static const String siteReportingApp = "Site Reporting App";
   static const String siteReportingQRApp = "Site ReportingQR App";
-  static const String teamViewApp = "TeamViewApp";
+  static const String teamViewApp = "Team View";
   static const String otherAttendanceApp = "Other Attendance App";
   static const String settingsApp = "Settings";
   static const String syncData = "Sync Data";
