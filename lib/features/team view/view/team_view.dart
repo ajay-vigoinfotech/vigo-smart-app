@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:vigo_smart_app/core/strings/strings.dart';
+import 'package:vigo_smart_app/features/home/widgets/setting_page.dart';
+import 'package:vigo_smart_app/features/team%20view/view%20model/team_dashboard_field_count_view_model.dart';
+import 'package:vigo_smart_app/features/team%20view/view%20model/team_dashboard_site_count_view_model.dart';
 
 import '../view model/team_dashboard_count_view_model.dart';
 
@@ -11,7 +14,9 @@ class TeamView extends StatefulWidget {
 }
 
 class _TeamViewState extends State<TeamView> {
-  final TeamDashboardCountViewModel _viewModel = TeamDashboardCountViewModel();
+  final TeamViewDashBoardSiteCountViewModel teamViewDashBoardSiteCountViewModel = TeamViewDashBoardSiteCountViewModel();
+  final TeamViewDashBoardFieldCountViewModel teamViewDashBoardFieldCountViewModel = TeamViewDashBoardFieldCountViewModel();
+  final TeamDashboardCountViewModel viewModel = TeamDashboardCountViewModel();
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -20,24 +25,93 @@ class _TeamViewState extends State<TeamView> {
   int? absentEmployeeCount;
   int? lateEmployeeCount;
 
+  int? employeeSiteVisitCount;
+  int? employeeSiteNotVisitCount;
+
+  int? employeeFieldVisitCount;
+  int? employeeFieldNotVisitCount;
+
+
   @override
   void initState() {
     super.initState();
     _fetchDashboardData();
+    _fetchSiteDashboardData();
+    _fetchFieldDashboardData();
+  }
+
+
+  Future<void> _refreshTeamViewData() async {
+    await _fetchDashboardData();
+    await _fetchSiteDashboardData();
+    await _fetchFieldDashboardData();
+    debugPrint('Team View Data Refreshed');
+  }
+
+  Future<void> _fetchFieldDashboardData() async {
+    String? token = await viewModel.sessionManager.getToken();
+
+    if (token != null) {
+      await teamViewDashBoardFieldCountViewModel.fetchFieldDashboardCount(token);
+
+      if (teamViewDashBoardFieldCountViewModel.fieldDashBoardCount != null) {
+        setState(() {
+          employeeFieldVisitCount = teamViewDashBoardFieldCountViewModel.fieldDashBoardCount?.employeeFieldVisitCount;
+          employeeFieldNotVisitCount = teamViewDashBoardFieldCountViewModel.fieldDashBoardCount?.employeeFieldNotVisitCount;
+          employeeCount = teamViewDashBoardSiteCountViewModel.siteDashBoardCount?.employeeCount;
+        });
+      } else {
+        setState(() {
+          _errorMessage = 'Failed to load data';
+          _isLoading = false;
+        });
+      }
+    } else {
+      setState(() {
+        _errorMessage = 'Authorization token not found';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _fetchSiteDashboardData() async {
+    String? token = await viewModel.sessionManager.getToken();
+
+    if (token != null) {
+      await teamViewDashBoardSiteCountViewModel.fetchSiteDashboardCount(token);
+
+      if (teamViewDashBoardSiteCountViewModel.siteDashBoardCount != null) {
+        setState(() {
+          employeeSiteVisitCount = teamViewDashBoardSiteCountViewModel.siteDashBoardCount?.employeeSiteVisitCount;
+          employeeSiteNotVisitCount = teamViewDashBoardSiteCountViewModel.siteDashBoardCount?.employeeSiteNotVisitCount;
+          employeeCount = teamViewDashBoardSiteCountViewModel.siteDashBoardCount?.employeeCount;
+        });
+      } else {
+        setState(() {
+          _errorMessage = 'Failed to load data';
+          _isLoading = false;
+        });
+      }
+    } else {
+      setState(() {
+        _errorMessage = 'Authorization token not found';
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _fetchDashboardData() async {
-    String? token = await _viewModel.sessionManager.getToken();
+    String? token = await viewModel.sessionManager.getToken();
 
     if (token != null) {
-      await _viewModel.fetchTeamDashboardCount(token);
+      await viewModel.fetchTeamDashboardCount(token);
 
-      if (_viewModel.teamDashboardCount != null) {
+      if (viewModel.teamDashboardCount != null) {
         setState(() {
-          employeeCount = _viewModel.teamDashboardCount?.employeeCount;
-          presentEmployeeCount = _viewModel.teamDashboardCount?.presentEmployeeCount;
-          absentEmployeeCount = _viewModel.teamDashboardCount?.absentEmployeeCount;
-          lateEmployeeCount = _viewModel.teamDashboardCount?.lateEmployeeCount;
+          employeeCount = viewModel.teamDashboardCount?.employeeCount;
+          presentEmployeeCount = viewModel.teamDashboardCount?.presentEmployeeCount;
+          absentEmployeeCount = viewModel.teamDashboardCount?.absentEmployeeCount;
+          lateEmployeeCount = viewModel.teamDashboardCount?.lateEmployeeCount;
           _isLoading = false;
         });
       } else {
@@ -55,12 +129,12 @@ class _TeamViewState extends State<TeamView> {
   }
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return DefaultTabController(
       length: 2,
       child: Scaffold(
         appBar: AppBar(
-          title:  Text(Strings.teamViewApp),
+          title: const Text(Strings.teamViewApp),
           bottom: const TabBar(
             tabs: [
               Tab(
@@ -72,14 +146,44 @@ class _TeamViewState extends State<TeamView> {
             ],
           ),
         ),
-        body:  TabBarView(
+        body: TabBarView(
           children: [
-            Column(
-              children: [
-            buildCard('Attendance', 'Total EMP', '5', Colors.blue, 'PRESENT', '4', Colors.green),
-              ],
+            RefreshIndicator(
+              onRefresh: _refreshTeamViewData,
+              child: ListView(
+                children: [
+                  buildCard(
+                    'Attendance',
+                    {
+                      'Total Emp': {'count': employeeCount, 'color': Colors.blue},
+                      'PRESENT': {'count': presentEmployeeCount, 'color': Colors.green},
+                      'LATE': {'count': absentEmployeeCount, 'color': Colors.blueGrey},
+                      'ABSENT': {'count': lateEmployeeCount, 'color': Colors.red},
+                    },
+                    {'Check List': const SettingPage()},
+                  ),
+                  buildCard(
+                    'Patrolling',
+                    {
+                      'Total Emp': {'count': employeeCount, 'color': Colors.blue},
+                      'Done': {'count': employeeFieldVisitCount, 'color': Colors.green},
+                      'Not Done': {'count': employeeFieldNotVisitCount, 'color': Colors.red},
+                    },
+                    {'Check List': const SettingPage()},
+                  ),
+                  buildCard(
+                    'Site Reporting',
+                    {
+                      'Total Emp': {'count': employeeCount, 'color': Colors.blue},
+                      'Done': {'count': employeeSiteVisitCount, 'color': Colors.green},
+                      'Not Done': {'count': employeeSiteNotVisitCount, 'color': Colors.red},
+                    },
+                    {'Check List': const SettingPage()},
+                  ),
+                ],
+              ),
             ),
-            Center(
+            const Center(
               child: Text("2nd tab view"),
             ),
           ],
@@ -89,50 +193,12 @@ class _TeamViewState extends State<TeamView> {
   }
 
 
-  // @override
-  // Widget build(BuildContext context) {
-  //   return Scaffold(
-  //     appBar: AppBar(
-  //       title: const Text(Strings.teamViewApp),
-  //     ),
-  //     body: _isLoading
-  //         ? const Center(child: CircularProgressIndicator())
-  //         : _errorMessage != null
-  //         ? Center(child: Text(_errorMessage!))
-  //         : Padding(
-  //       padding: const EdgeInsets.all(16.0),
-  //       child: Column(
-  //         crossAxisAlignment: CrossAxisAlignment.start,
-  //         children: [
-  //           // _buildInfoRow("Employee Count:", employeeCount),
-  //           // _buildInfoRow("Present Employee Count:", presentEmployeeCount),
-  //           // _buildInfoRow("Absent Employee Count:", absentEmployeeCount),
-  //           // _buildInfoRow("Late Employee Count:", lateEmployeeCount),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
 
-  // Widget _buildInfoRow(String title, int? value) {
-  //   return Padding(
-  //     padding: const EdgeInsets.symmetric(vertical: 8.0),
-  //     child: Row(
-  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //       children: [
-  //         Text(title, style: const TextStyle(fontSize: 16)),
-  //         Text(value != null ? value.toString() : '-', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-  //       ],
-  //     ),
-  //   );
-  // }
-
-
-
-  Widget buildCard(String title, String label1, String value1, Color color1, String label2, String value2, Color color2) {
+  Widget buildCard(
+      String title, Map<String, dynamic> fields, Map<String, Widget> pages) {
     return Container(
-      margin: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-      padding: EdgeInsets.all(10),
+      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
@@ -149,84 +215,67 @@ class _TeamViewState extends State<TeamView> {
         children: [
           Text(
             title,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
-          Divider(),
+          const Divider(),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Column(
+            children: fields.entries.map((entry) {
+              final label = entry.key;
+              final value = entry.value['count'];
+              final color = entry.value['color'];
+
+              return Column(
                 children: [
                   Text(
-                    label1,
-                    style: TextStyle(color: Colors.blue),
+                    label,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                    ),
                   ),
                   SizedBox(height: 5),
                   Text(
-                    value1,
-                    style: TextStyle(fontSize: 16, color: color1),
+                    value.toString(),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      color: color,
+                    ),
                   ),
                 ],
-              ),
-              Column(
-                children: [
-                  Text(
-                    label2,
-                    style: TextStyle(color: Colors.green),
-                  ),
-                  SizedBox(height: 5),
-                  Text(
-                    value2,
-                    style: TextStyle(fontSize: 16, color: color2),
-                  ),
-                ],
-              ),
-              Column(
-                children: [
-                  Text(
-                    'LATE',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                  SizedBox(height: 5),
-                  Text(
-                    '4', // Example data
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
-                ],
-              ),
-              Column(
-                children: [
-                  Text(
-                    'ABSENT',
-                    style: TextStyle(color: Colors.red),
-                  ),
-                  SizedBox(height: 5),
-                  Text(
-                    '4', // Example data
-                    style: TextStyle(fontSize: 16, color: Colors.red),
-                  ),
-                ],
-              ),
-            ],
+              );
+            }).toList(),
           ),
-          SizedBox(height: 10),
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.black, backgroundColor: Colors.white,
-              side: BorderSide(color: Colors.black),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Check List'),
-                Icon(Icons.arrow_right_alt),
-              ],
-            ),
+          SizedBox(height: 5),
+          const Divider(),
+          Wrap(
+            spacing: 8.0,
+            children: pages.entries.map((entry) {
+              return ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => entry.value),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.black,
+                  backgroundColor: Colors.white,
+                  side: const BorderSide(color: Colors.black),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(entry.key),
+                    const Icon(Icons.arrow_forward_ios),
+                  ],
+                ),
+              );
+            }).toList(),
           ),
         ],
       ),
     );
   }
-
 }

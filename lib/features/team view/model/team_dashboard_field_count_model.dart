@@ -1,31 +1,27 @@
-class TeamDashboardCountModel {
-  int employeeCount;
-  int? presentEmployeeCount;
-  int? absentEmployeeCount;
-  int? lateEmployeeCount;
+class TeamDashboardFieldCountModel {
+  int? employeeFieldVisitCount;
+  int? employeeCount;
+  int? employeeFieldNotVisitCount;
 
-  TeamDashboardCountModel({
-    required this.employeeCount,
-    this.presentEmployeeCount,
-    this.absentEmployeeCount,
-    this.lateEmployeeCount,
+  TeamDashboardFieldCountModel({
+    required this.employeeFieldVisitCount,
+    this.employeeCount,
+    this.employeeFieldNotVisitCount,
   });
 
-  factory TeamDashboardCountModel.fromJson(Map<String, dynamic> json) {
-    return TeamDashboardCountModel(
+  factory TeamDashboardFieldCountModel.fromJson(Map<String, dynamic> json) {
+    return TeamDashboardFieldCountModel(
+      employeeFieldVisitCount: json['employeefieldvisitcount '] ?? 0,
       employeeCount: json['employeecount'] ?? 0,
-      presentEmployeeCount: json['presentemployeecount'] ?? 0,
-      absentEmployeeCount: json['absentemployeecount'] ?? 0,
-      lateEmployeeCount: json['lateemployeecount'] ?? 0,
+      employeeFieldNotVisitCount: json['employeefieldnotvisitcount'] ?? 0,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      'employeefieldvisitcount': employeeFieldVisitCount,
       'employeecount': employeeCount,
-      'presentemployeecount': presentEmployeeCount,
-      'absentemployeecount': absentEmployeeCount,
-      'lateemployeecount': lateEmployeeCount,
+      'employeefieldnotvisitcount': employeeFieldNotVisitCount,
     };
   }
 }
@@ -58,19 +54,19 @@ class HttpResponseStatus {
   }
 }
 
-class TeamDashboardResponse {
-  List<TeamDashboardCountModel> table;
+class FieldDashboardResponse {
+  List<TeamDashboardFieldCountModel> table;
   List<HttpResponseStatus> httpResponseStatus;
 
-  TeamDashboardResponse({
+  FieldDashboardResponse({
     required this.table,
     required this.httpResponseStatus,
   });
 
-  factory TeamDashboardResponse.fromJson(Map<String, dynamic> json) {
-    return TeamDashboardResponse(
+  factory FieldDashboardResponse.fromJson(Map<String, dynamic> json) {
+    return FieldDashboardResponse(
       table: (json['table'] as List<dynamic>)
-          .map((e) => TeamDashboardCountModel.fromJson(e))
+          .map((e) => TeamDashboardFieldCountModel.fromJson(e))
           .toList(),
       httpResponseStatus: (json['httpResponseStatus'] as List<dynamic>)
           .map((e) => HttpResponseStatus.fromJson(e))

@@ -20,6 +20,7 @@ import '../../auth/viewmodel/getlastselfieatt_view_model.dart';
 import '../../auth/viewmodel/getuserdetails_view_model.dart';
 import '../../auth/viewmodel/login_sucess_view_model.dart';
 import '../../auth/viewmodel/login_view_model.dart';
+import '../../team view/view model/team_dashboard_count_view_model.dart';
 import '../viewmodel/modules_view_model.dart';
 import '../widgets/home_screen_card.dart';
 
@@ -33,6 +34,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final sessionManager = SessionManager();
   String? employeeCode;
+  String? userId;
   String? compCode;
   String? compName;
   String? userName;
@@ -54,7 +56,8 @@ class _HomePageState extends State<HomePage> {
   final LoginViewModel _viewModel = LoginViewModel();
   final MarkLoginViewModel markLoginViewModel = MarkLoginViewModel();
   final UserViewModel userViewModel = UserViewModel();
-  final GetLastSelfieAttViewModel getLastSelfieAttViewModel = GetLastSelfieAttViewModel();
+  final GetLastSelfieAttViewModel getLastSelfieAttViewModel =
+      GetLastSelfieAttViewModel();
   final CheckSessionViewModel checkSessionViewModel = CheckSessionViewModel();
 
   final List<Map<String, dynamic>> allModules = [
@@ -654,7 +657,8 @@ class _HomePageState extends State<HomePage> {
 
       if (modules.isNotEmpty) {
         debugPrint('Modules fetched: $modules');
-        await sessionManager.saveModuleCodes(modules); // Save modules to session
+        await sessionManager
+            .saveModuleCodes(modules); // Save modules to session
         refreshServerData(); // Refresh data after saving modules
       } else {
         debugPrint('No Modules Found');
@@ -839,6 +843,7 @@ class _HomePageState extends State<HomePage> {
         var data = await sessionManager.getUserDetails();
 
         setState(() {
+          userId = data.userId ?? "-";
           employeeCode = data.employeeCode ?? "-";
           name = data.name ?? "-";
           compCode = data.compCode ?? "-";
