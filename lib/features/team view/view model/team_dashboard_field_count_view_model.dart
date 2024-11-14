@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:vigo_smart_app/core/constants/constants.dart';
 import 'package:vigo_smart_app/features/auth/session_manager/session_manager.dart';
 import 'package:vigo_smart_app/features/team%20view/model/team_dashboard_field_count_model.dart';
-import 'package:vigo_smart_app/features/team%20view/model/team_dashboard_site_count_model.dart';
 
 class TeamViewDashBoardFieldCountViewModel {
   final Dio _dio = Dio();

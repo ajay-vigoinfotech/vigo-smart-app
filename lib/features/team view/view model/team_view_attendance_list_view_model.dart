@@ -6,7 +6,7 @@ import '../model/team_view_attendance_list_model.dart';
 
 class TeamViewAttendanceListViewModel {
   final Dio _dio = Dio();
-  TeamViewAttendanceListModel? attendanceList;
+  List<TeamViewAttendanceListModel>? attendanceList;
   SessionManager sessionManager = SessionManager();
 
   Future<void> fetchAttendanceList(String token) async {
@@ -28,7 +28,9 @@ class TeamViewAttendanceListViewModel {
         final responseData = AttendanceListResponse.fromJson(response.data);
 
         if (responseData.table.isNotEmpty) {
-          attendanceList = responseData.table[0];
+          attendanceList = responseData.table;
+          debugPrint('$response');
+          debugPrint('Attendance data fetched successfully');
         } else {
           debugPrint('Table data is empty');
         }

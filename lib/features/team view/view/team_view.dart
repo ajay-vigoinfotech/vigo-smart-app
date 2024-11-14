@@ -4,6 +4,7 @@ import 'package:vigo_smart_app/features/home/widgets/setting_page.dart';
 import 'package:vigo_smart_app/features/team%20view/view%20model/team_dashboard_field_count_view_model.dart';
 import 'package:vigo_smart_app/features/team%20view/view%20model/team_dashboard_site_count_view_model.dart';
 import 'package:vigo_smart_app/features/team%20view/view/team_view_attendance_list.dart';
+import 'package:vigo_smart_app/features/team%20view/view/team_view_patrolling_list.dart';
 
 import '../view model/team_dashboard_count_view_model.dart';
 
@@ -170,7 +171,7 @@ class _TeamViewState extends State<TeamView> {
                       'Done': {'count': employeeFieldVisitCount, 'color': Colors.green},
                       'Not Done': {'count': employeeFieldNotVisitCount, 'color': Colors.red},
                     },
-                    {'Check List': const SettingPage()},
+                    {'Check List': const TeamViewPatrollingList()},
                   ),
                   buildCard(
                     'Site Reporting',

@@ -1,24 +1,18 @@
-class TeamViewAttendanceListModel {
+class TeamViewPatrollingListModel {
   String? fullName;
-  String? userId;
-  String? dateTimeIn;
-  String? dateTimeOut;
+  int? counts;
   String? status;
 
-  TeamViewAttendanceListModel({
+  TeamViewPatrollingListModel({
     required this.fullName,
-    required this.userId,
-    required this.dateTimeIn,
-    required this.dateTimeOut,
+    required this.counts,
     required this.status,
   });
 
-  factory TeamViewAttendanceListModel.fromJson(Map<String, dynamic> json) {
-    return TeamViewAttendanceListModel(
+  factory TeamViewPatrollingListModel.fromJson(Map<String, dynamic> json) {
+    return TeamViewPatrollingListModel(
       fullName: json['fullName'] as String? ?? '',
-      userId: json['userId'] as String? ?? '',
-      dateTimeIn: json['dateTimeIn'] as String? ?? '-',
-      dateTimeOut: json['dateTimeOut'] as String? ?? '-',
+      counts: json['counts'] ?? 0,
       status: json['status'] as String? ?? '',
     );
   }
@@ -26,9 +20,7 @@ class TeamViewAttendanceListModel {
   Map<String, dynamic> toJson() {
     return {
       'fullName': fullName,
-      'userId': userId,
-      'dateTimeIn': dateTimeIn,
-      'dateTimeOut': dateTimeOut,
+      'counts': counts,
       'status': status,
     };
   }
@@ -62,23 +54,27 @@ class HttpResponseStatus {
   }
 }
 
-class AttendanceListResponse {
-  List<TeamViewAttendanceListModel> table;
+class PatrollingListResponse {
+  List<TeamViewPatrollingListModel> table;
   List<HttpResponseStatus> httpResponseStatus;
 
-  AttendanceListResponse({
+  PatrollingListResponse({
     required this.table,
     required this.httpResponseStatus,
   });
 
-  factory AttendanceListResponse.fromJson(Map<String, dynamic> json) {
-    return AttendanceListResponse(
+  factory PatrollingListResponse.fromJson(Map<String, dynamic> json) {
+    return PatrollingListResponse(
       table: (json['table'] as List<dynamic>?)
-          ?.map((e) => TeamViewAttendanceListModel.fromJson(e as Map<String, dynamic>))
-          .toList() ?? [],
+              ?.map((e) => TeamViewPatrollingListModel.fromJson(
+                  e as Map<String, dynamic>))
+              .toList() ??
+          [],
       httpResponseStatus: (json['httpResponseStatus'] as List<dynamic>?)
-          ?.map((e) => HttpResponseStatus.fromJson(e as Map<String, dynamic>))
-          .toList() ?? [],
+              ?.map(
+                  (e) => HttpResponseStatus.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
     );
   }
 

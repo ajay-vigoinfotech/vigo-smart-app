@@ -10,23 +10,18 @@ class TeamViewAttendanceList extends StatefulWidget {
 }
 
 class _TeamViewAttendanceListState extends State<TeamViewAttendanceList> {
-  String? fullName;
-  String? userId;
-  String? dateTimeIn;
-  String? dateTimeOut;
-  String? status;
-
   final TeamViewAttendanceListViewModel teamViewAttendanceListViewModel = TeamViewAttendanceListViewModel();
-
-  // New variables for filters
-  String selectedDate = DateFormat('dd MMM yyyy').format(DateTime.now());
-  String selectedState = "All"; // Default filter state
+  String selectedDate = DateFormat('dd/MM/yyyy').format(DateTime.now());
+  String selectedState = "All";
   final List<String> stateOptions = ["All", "Present", "Absent", "Late"];
+
+  List<Map<String, dynamic>> attendanceData = [];
+  List<Map<String, dynamic>> filteredAttendanceData = [];
 
   @override
   void initState() {
     super.initState();
-    fetchAttendanceListData(); // Fetch initial data when the screen loads
+    fetchAttendanceListData();
   }
 
   @override
@@ -39,22 +34,20 @@ class _TeamViewAttendanceListState extends State<TeamViewAttendanceList> {
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
-            // Row for filters
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Filter by Date
                 Row(
                   children: [
-                    Icon(Icons.calendar_month),
+                    const Icon(Icons.calendar_month),
+                    const SizedBox(width: 5), // Add spacing between icon and text
                     Text(
                       selectedDate,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
-
-                // Filter by State dropdown
                 DropdownButton<String>(
                   value: selectedState,
                   items: stateOptions.map((String state) {
@@ -66,41 +59,131 @@ class _TeamViewAttendanceListState extends State<TeamViewAttendanceList> {
                   onChanged: (newState) {
                     setState(() {
                       selectedState = newState!;
+                      //applyFilter();
                     });
                   },
                 ),
-
-                // Search button
                 TextButton(
-                  onPressed: () {
-                    fetchAttendanceListData();
-                  },
+                  onPressed: fetchAttendanceListData,
                   child: const Text('Search'),
                 ),
               ],
             ),
-            const SizedBox(height: 20),
-
-            // List view to display attendance data
-            Expanded(
-              child: ListView(
+            const SizedBox(height: 2),
+            // Responsive Header Row with Adjusted Flex
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(vertical: 10.0, horizontal: 5.0),
+              decoration: BoxDecoration(
+                color: Colors.blue,
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Display fetched attendance data here
-                  if (fullName != null) ...[
-                    Text("Name: $fullName"),
-                    Text("User ID: $userId"),
-                    Text("In Time: $dateTimeIn"),
-                    Text("Out Time: $dateTimeOut"),
-                    Text("Status: $status"),
-                  ] else
-                    const Center(child: Text("No data available")),
+                  Expanded(
+                      flex: 1,
+                      child: Text("Sr",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white))),
+                  Expanded(
+                      flex: 5,
+                      child: Text("Employee Name",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white))),
+                  Expanded(
+                      flex: 3,
+                      child: Text("In",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white))),
+                  Expanded(
+                      flex: 3,
+                      child: Text("Out",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white))),
+                  Expanded(
+                      flex: 2, // Reduced flex for Status
+                      child: Text("Status",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white))),
                 ],
+              ),
+            ),
+            const Divider(),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: _refreshTeamAttendanceListData,
+                child: ListView.builder(
+                  itemCount: filteredAttendanceData.length,
+                  itemBuilder: (context, index) {
+                    final data = filteredAttendanceData[index];
+                    return SizedBox(
+                      height: 70,
+                      child: Card(
+                        margin: const EdgeInsets.symmetric(vertical: 4.0),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            // crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Expanded(flex: 1, child: Text("${index + 1}")),
+                              Expanded(
+                                flex: 6,
+                                child: Text(
+                                  "${data['fullName'] ?? "N/A"}",
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                  flex: 3,
+                                  child: Text(data['dateTimeIn'] ?? "N/A")),
+                              Expanded(
+                                  flex: 3,
+                                  child: Text(data['dateTimeOut'] ?? "N/A")),
+                              Expanded(
+                                  flex: 1,
+                                  child: Text(
+                                    data['status'] ?? "N/A",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: data['status'] == "Present"
+                                          ? Colors.green
+                                          : Colors.red,
+                                    ),
+                                  )),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _refreshTeamAttendanceListData() async {
+    await fetchAttendanceListData();
+    debugPrint('Team Attendance List Data Refreshed');
   }
 
   Future<void> fetchAttendanceListData() async {
@@ -110,13 +193,31 @@ class _TeamViewAttendanceListState extends State<TeamViewAttendanceList> {
 
       if (teamViewAttendanceListViewModel.attendanceList != null) {
         setState(() {
-          fullName = teamViewAttendanceListViewModel.attendanceList?.fullName;
-          userId = teamViewAttendanceListViewModel.attendanceList?.userId;
-          dateTimeIn = teamViewAttendanceListViewModel.attendanceList?.dateTimeIn;
-          dateTimeOut = teamViewAttendanceListViewModel.attendanceList?.dateTimeOut;
-          status = teamViewAttendanceListViewModel.attendanceList?.status;
+          attendanceData = teamViewAttendanceListViewModel.attendanceList!
+              .map((entry) => {
+                    "fullName": entry.fullName,
+                    "dateTimeIn": entry.dateTimeIn,
+                    "dateTimeOut": entry.dateTimeOut,
+                    "status": entry.status,
+                  })
+              .toList();
+          applyFilter();
         });
       }
     }
+  }
+
+  void applyFilter() {
+    setState(() {
+      if (selectedState == "All") {
+        filteredAttendanceData = attendanceData;
+      } else if (selectedState == "Present") {
+        filteredAttendanceData = attendanceData.where((entry) => entry['status'] == 'P').toList();
+      } else if (selectedState == "Absent") {
+        filteredAttendanceData = attendanceData.where((entry) => entry['status'] == 'A').toList();
+      } else if (selectedState == "Late") {
+        filteredAttendanceData = attendanceData.where((entry) => entry['status'] == 'L').toList();
+      }
+    });
   }
 }
