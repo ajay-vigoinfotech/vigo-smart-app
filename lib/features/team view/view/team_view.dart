@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:vigo_smart_app/core/strings/strings.dart';
-import 'package:vigo_smart_app/features/home/widgets/setting_page.dart';
 import 'package:vigo_smart_app/features/team%20view/view%20model/team_dashboard_field_count_view_model.dart';
 import 'package:vigo_smart_app/features/team%20view/view%20model/team_dashboard_site_count_view_model.dart';
 import 'package:vigo_smart_app/features/team%20view/view/team_view_attendance_list.dart';
 import 'package:vigo_smart_app/features/team%20view/view/team_view_patrolling_list.dart';
+import 'package:vigo_smart_app/features/team%20view/view/team_view_site_list.dart';
 
 import '../view model/team_dashboard_count_view_model.dart';
 
@@ -19,7 +19,6 @@ class _TeamViewState extends State<TeamView> {
   final TeamViewDashBoardSiteCountViewModel teamViewDashBoardSiteCountViewModel = TeamViewDashBoardSiteCountViewModel();
   final TeamViewDashBoardFieldCountViewModel teamViewDashBoardFieldCountViewModel = TeamViewDashBoardFieldCountViewModel();
   final TeamDashboardCountViewModel viewModel = TeamDashboardCountViewModel();
-  bool _isLoading = true;
   String? _errorMessage;
 
   int? employeeCount;
@@ -41,7 +40,6 @@ class _TeamViewState extends State<TeamView> {
     _fetchSiteDashboardData();
     _fetchFieldDashboardData();
   }
-
 
   Future<void> _refreshTeamViewData() async {
     await _fetchDashboardData();
@@ -65,13 +63,11 @@ class _TeamViewState extends State<TeamView> {
       } else {
         setState(() {
           _errorMessage = 'Failed to load data';
-          _isLoading = false;
         });
       }
     } else {
       setState(() {
         _errorMessage = 'Authorization token not found';
-        _isLoading = false;
       });
     }
   }
@@ -91,13 +87,11 @@ class _TeamViewState extends State<TeamView> {
       } else {
         setState(() {
           _errorMessage = 'Failed to load data';
-          _isLoading = false;
         });
       }
     } else {
       setState(() {
         _errorMessage = 'Authorization token not found';
-        _isLoading = false;
       });
     }
   }
@@ -114,18 +108,15 @@ class _TeamViewState extends State<TeamView> {
           presentEmployeeCount = viewModel.teamDashboardCount?.presentEmployeeCount;
           absentEmployeeCount = viewModel.teamDashboardCount?.absentEmployeeCount;
           lateEmployeeCount = viewModel.teamDashboardCount?.lateEmployeeCount;
-          _isLoading = false;
         });
       } else {
         setState(() {
           _errorMessage = 'Failed to load data';
-          _isLoading = false;
         });
       }
     } else {
       setState(() {
         _errorMessage = 'Authorization token not found';
-        _isLoading = false;
       });
     }
   }
@@ -180,7 +171,7 @@ class _TeamViewState extends State<TeamView> {
                       'Done': {'count': employeeSiteVisitCount, 'color': Colors.green},
                       'Not Done': {'count': employeeSiteNotVisitCount, 'color': Colors.red},
                     },
-                    {'Check List': const TeamViewPatrollingList()},
+                    {'Check List': const TeamViewSiteList()},
                   ),
                 ],
               ),
