@@ -27,7 +27,7 @@ class UserViewModel {
         print(response.data);
         user = GetUserDetails.fromJson(response.data);
         await sessionManager.saveUserDetails(user!);
-        print('User details saved in session.');
+        // print('User details saved in session.');
       } else {
         print('Error: ${response.statusCode}');
       }

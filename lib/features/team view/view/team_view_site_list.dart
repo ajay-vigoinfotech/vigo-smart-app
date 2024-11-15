@@ -1,30 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:vigo_smart_app/features/team%20view/view%20model/team_view_patrolling_list_view_model.dart';
+import 'package:vigo_smart_app/features/team%20view/view%20model/team_view_site_list_view_model.dart';
 
-class TeamViewPatrollingList extends StatefulWidget {
-  const TeamViewPatrollingList({super.key});
+class TeamViewSiteList extends StatefulWidget {
+  const TeamViewSiteList({super.key});
 
   @override
-  State<TeamViewPatrollingList> createState() => _TeamViewPatrollingListState();
+  State<TeamViewSiteList> createState() => _TeamViewSiteListState();
 }
 
-class _TeamViewPatrollingListState extends State<TeamViewPatrollingList> {
-  TeamViewPatrollingListViewModel teamViewPatrollingListViewModel = TeamViewPatrollingListViewModel();
-  String selectedDate = DateFormat('dd/MM/yyyy').format(DateTime.now());
-  String selectedState = 'All';
-  final List<String> stateOptions = ["All", "Done", "Not Done"];
+class _TeamViewSiteListState extends State<TeamViewSiteList> {
 
-  List<Map<String, dynamic>> patrollingData = [];
-  List<Map<String, dynamic>> filteredPatrollingData = [];
+  TeamViewSiteListViewModel teamViewSiteListViewModel = TeamViewSiteListViewModel();
+  String selectedDate = DateFormat('dd/MMM/yyyy').format(DateTime.now());
+  String selectedState = "All";
+  final List<String> stateOption = ["All", "Done", "Not Done"];
+
+  List<Map<String, dynamic>> siteData = [];
+  List<Map<String, dynamic>> filteredSiteData = [];
 
   String? fullName;
   String? counts;
   String? status;
 
+
   @override
   void initState() {
-    fetchPatrollingListData();
+    fetchSiteListData();
     super.initState();
   }
 
@@ -32,7 +34,7 @@ class _TeamViewPatrollingListState extends State<TeamViewPatrollingList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Patrolling List'),
+        title: const Text('Site List'),
       ),
       body: Column(
         children: [
@@ -54,7 +56,7 @@ class _TeamViewPatrollingListState extends State<TeamViewPatrollingList> {
                 ),
                 DropdownButton<String>(
                   value: selectedState,
-                  items: stateOptions.map((String state) {
+                  items: stateOption.map((String state) {
                     return DropdownMenuItem<String>(
                       value: state,
                       child: Text(state),
@@ -68,7 +70,7 @@ class _TeamViewPatrollingListState extends State<TeamViewPatrollingList> {
                   },
                 ),
                 TextButton(
-                  onPressed: fetchPatrollingListData,
+                  onPressed: fetchSiteListData,
                   child: const Text('Search'),
                 ),
               ],
@@ -140,11 +142,11 @@ class _TeamViewPatrollingListState extends State<TeamViewPatrollingList> {
           const Divider(height: 1),
           Expanded(
             child: RefreshIndicator(
-              onRefresh: refreshPatrollingListData,
+              onRefresh: refreshSiteListData,
               child: ListView.builder(
-                itemCount: filteredPatrollingData.length,
+                itemCount: filteredSiteData.length,
                 itemBuilder: (context, index) {
-                  final data = filteredPatrollingData[index];
+                  final data = filteredSiteData[index];
                   return Card(
                     elevation: 3,
                     child: Center(
@@ -224,24 +226,26 @@ class _TeamViewPatrollingListState extends State<TeamViewPatrollingList> {
     );
   }
 
-  Future<void> refreshPatrollingListData() async {
-    await fetchPatrollingListData();
-    debugPrint('Team Patrolling List Data Refreshed');
+
+
+
+  Future<void> refreshSiteListData() async {
+    await fetchSiteListData();
+    debugPrint('Site List Data Refreshed');
   }
 
-  Future<void> fetchPatrollingListData() async {
-    String? token =
-        await teamViewPatrollingListViewModel.sessionManager.getToken();
+  Future<void> fetchSiteListData() async {
+    String? token = await teamViewSiteListViewModel.sessionManager.getToken();
     if (token != null) {
-      await teamViewPatrollingListViewModel.fetchPatrollingList(token);
-      if (teamViewPatrollingListViewModel.patrollingList != null) {
+      await teamViewSiteListViewModel.fetchSitList(token);
+      if (teamViewSiteListViewModel.siteList != null) {
         setState(() {
-          patrollingData = teamViewPatrollingListViewModel.patrollingList!
+          siteData = teamViewSiteListViewModel.siteList!
               .map((entry) => {
-                    "fullName": entry.fullName,
-                    "counts": entry.counts,
-                    "status": entry.status,
-                  })
+            "fullName": entry.fullName,
+            "counts": entry.counts,
+            "status": entry.status,
+          })
               .toList();
           applyFilter();
         });
@@ -252,12 +256,11 @@ class _TeamViewPatrollingListState extends State<TeamViewPatrollingList> {
   void applyFilter() {
     setState(() {
       if (selectedState == "All") {
-        filteredPatrollingData = patrollingData;
+        filteredSiteData = siteData;
       } else if (selectedState == "Done") {
-        filteredPatrollingData =
-            patrollingData.where((entry) => entry['status'] == 'Done').toList();
+        filteredSiteData = siteData.where((entry) => entry['status'] == 'Done').toList();
       } else if (selectedState == "Not Done") {
-        filteredPatrollingData = patrollingData
+        filteredSiteData = siteData
             .where((entry) => entry['status'] == 'Not Done')
             .toList();
       }
@@ -265,6 +268,3 @@ class _TeamViewPatrollingListState extends State<TeamViewPatrollingList> {
   }
 }
 
-// fullName = teamViewPatrollingListViewModel.patrollingList![0].fullName;
-// counts = teamViewPatrollingListViewModel.patrollingList![0].counts;
-// status = teamViewPatrollingListViewModel.patrollingList![0].status;

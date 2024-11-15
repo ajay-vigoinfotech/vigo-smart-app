@@ -56,18 +56,10 @@ class _HomePageState extends State<HomePage> {
   final LoginViewModel _viewModel = LoginViewModel();
   final MarkLoginViewModel markLoginViewModel = MarkLoginViewModel();
   final UserViewModel userViewModel = UserViewModel();
-  final GetLastSelfieAttViewModel getLastSelfieAttViewModel =
-      GetLastSelfieAttViewModel();
+  final GetLastSelfieAttViewModel getLastSelfieAttViewModel = GetLastSelfieAttViewModel();
   final CheckSessionViewModel checkSessionViewModel = CheckSessionViewModel();
 
   final List<Map<String, dynamic>> allModules = [
-    {
-      'code': 'FieldReportingApp',
-      'icon': AppConstants.markDutyIcon,
-      'name': Strings.fieldReportingApp,
-      'color': Colors.grey,
-      'page': const MarkdutyPage(),
-    },
     {
       'code': 'FieldReportingQRApp',
       'icon': AppConstants.markDutyIcon,
@@ -95,6 +87,13 @@ class _HomePageState extends State<HomePage> {
       'name': Strings.punchHistory,
       'color': Pallete.backgroundColor,
       'page': const PunchHistory(),
+    },
+    {
+      'code': 'FieldReportingApp',
+      'icon': Image.asset('assets/images/patrolling.webp'),
+      'name': Strings.fieldReportingApp,
+      'color': Pallete.backgroundColor,
+      'page': const SettingPage(),
     },
     {
       'code': 'TeamViewApp',
@@ -368,7 +367,7 @@ class _HomePageState extends State<HomePage> {
           .getLastSelfieAttendance(token!)
           .then((data1) async {
         sessionManager.getCheckinData().then((data) async {
-          debugPrint(data.uniqueId);
+          // debugPrint(data.uniqueId);
         });
       });
     }).catchError((error) {
@@ -476,117 +475,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _showBottomSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) => SizedBox(
-        height: 200,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(
-                  Icons.refresh,
-                  color: Colors.black54,
-                ),
-                title: const Text('Refresh Server Data'),
-                onTap: () async {
-                  Navigator.pop(context);
-                  showDialog(
-                      context: context,
-                      barrierDismissible: false,
-                      builder: (context) => Center(
-                            child: Container(
-                              padding: const EdgeInsets.all(24.0),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Colors.black26,
-                                    blurRadius: 8,
-                                    offset: Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: const Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  CircularProgressIndicator(
-                                    strokeWidth: 6,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.blue),
-                                  ),
-                                  SizedBox(height: 16),
-                                  Text(
-                                    'Please wait',
-                                    style: TextStyle(
-                                      color: Colors.black87,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ));
-                  try {
-                    await getLastSelfieAtt();
-                    await getUserData();
-                    await getModules();
-                    await refreshServerData();
-                  } catch (error) {
-                    debugPrint("Error: $error");
-                  } finally {
-                    Navigator.pop(context);
-                  }
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.settings,
-                  color: Colors.black54,
-                ),
-                title: const Text('Settings'),
-                onTap: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const SettingPage(),
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                leading: const Icon(
-                  Icons.logout,
-                  color: Colors.black54,
-                ),
-                title: const Text('Logout'),
-                onTap: () {
-                  Navigator.of(context).pop();
-                  _logout(context);
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Future<void> _refreshData() async {
-  //   await getLastSelfieAtt();
-  //   await getUserData();
-  //   await getModules();
-  //   await refreshServerData();
-  // }
-
   // void _showBottomSheet(BuildContext context) {
   //   showModalBottomSheet(
   //     context: context,
@@ -606,22 +494,66 @@ class _HomePageState extends State<HomePage> {
   //                 color: Colors.black54,
   //               ),
   //               title: const Text('Refresh Server Data'),
-  //               onTap: () {
+  //               onTap: () async {
   //                 Navigator.pop(context);
-  //                 getLastSelfieAtt();
-  //                 getUserData();
-  //                 getModules();
-  //                 refreshServerData();
+  //                 showDialog(
+  //                     context: context,
+  //                     barrierDismissible: false,
+  //                     builder: (context) => Center(
+  //                           child: Container(
+  //                             padding: const EdgeInsets.all(24.0),
+  //                             decoration: BoxDecoration(
+  //                               color: Colors.white,
+  //                               borderRadius: BorderRadius.circular(12),
+  //                               boxShadow: const [
+  //                                 BoxShadow(
+  //                                   color: Colors.black26,
+  //                                   blurRadius: 8,
+  //                                   offset: Offset(0, 4),
+  //                                 ),
+  //                               ],
+  //                             ),
+  //                             child: const Column(
+  //                               mainAxisSize: MainAxisSize.min,
+  //                               children: [
+  //                                 CircularProgressIndicator(
+  //                                   strokeWidth: 6,
+  //                                   valueColor: AlwaysStoppedAnimation<Color>(
+  //                                       Colors.blue),
+  //                                 ),
+  //                                 SizedBox(height: 16),
+  //                                 Text(
+  //                                   'Please wait',
+  //                                   style: TextStyle(
+  //                                     color: Colors.black87,
+  //                                     fontSize: 16,
+  //                                     fontWeight: FontWeight.w500,
+  //                                   ),
+  //                                 ),
+  //                               ],
+  //                             ),
+  //                           ),
+  //                         ));
+  //                 try {
+  //                   await getLastSelfieAtt();
+  //                   await getUserData();
+  //                   await getModules();
+  //                   await refreshServerData();
+  //                 } catch (error) {
+  //                   debugPrint("Error: $error");
+  //                 } finally {
+  //                   Navigator.pop(context);
+  //                 }
   //               },
   //             ),
   //             ListTile(
   //               leading: const Icon(
   //                 Icons.settings,
   //                 color: Colors.black54,
-  //               ), // Corrected syntax
+  //               ),
   //               title: const Text('Settings'),
   //               onTap: () {
-  //                 Navigator.push(
+  //                 Navigator.pushReplacement(
   //                   context,
   //                   MaterialPageRoute(
   //                     builder: (context) => const SettingPage(),
@@ -646,6 +578,73 @@ class _HomePageState extends State<HomePage> {
   //     ),
   //   );
   // }
+
+  // Future<void> _refreshData() async {
+  //   await getLastSelfieAtt();
+  //   await getUserData();
+  //   await getModules();
+  //   await refreshServerData();
+  // }
+
+  void _showBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => SizedBox(
+        height: 200,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(
+                  Icons.refresh,
+                  color: Colors.black54,
+                ),
+                title: const Text('Refresh Server Data'),
+                onTap: () {
+                  Navigator.pop(context);
+                  getLastSelfieAtt();
+                  getUserData();
+                  getModules();
+                  refreshServerData();
+                },
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.settings,
+                  color: Colors.black54,
+                ), // Corrected syntax
+                title: const Text('Settings'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SettingPage(),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(
+                  Icons.logout,
+                  color: Colors.black54,
+                ),
+                title: const Text('Logout'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _logout(context);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   // Get Filtered Modules
   Future<void> getModules() async {

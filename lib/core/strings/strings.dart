@@ -11,7 +11,7 @@ class Strings {
   static const String supervisorDutyManagementApp = "Attendance";
   static const String supervisorQRDutyManagementApp = "SupervisorQR Duty ManagementApp";
   static const String punchHistory = "Attendance History";
-  static const String fieldReportingApp = "Field Reporting";
+  static const String fieldReportingApp = "Patrolling";
   static const String fieldReportingQRApp = "FieldReportingQRApp";
   static const String siteReportingApp = "Site Reporting App";
   static const String siteReportingQRApp = "Site ReportingQR App";

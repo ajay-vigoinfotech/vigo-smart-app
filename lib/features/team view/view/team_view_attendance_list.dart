@@ -31,141 +31,207 @@ class _TeamViewAttendanceListState extends State<TeamViewAttendanceList> {
         title: const Text('Attendance List'),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(0.0),
         child: Column(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.calendar_month),
-                    const SizedBox(width: 5), // Add spacing between icon and text
-                    Text(
-                      selectedDate,
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                DropdownButton<String>(
-                  value: selectedState,
-                  items: stateOptions.map((String state) {
-                    return DropdownMenuItem<String>(
-                      value: state,
-                      child: Text(state),
-                    );
-                  }).toList(),
-                  onChanged: (newState) {
-                    setState(() {
-                      selectedState = newState!;
-                      //applyFilter();
-                    });
-                  },
-                ),
-                TextButton(
-                  onPressed: fetchAttendanceListData,
-                  child: const Text('Search'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 2),
-            // Responsive Header Row with Adjusted Flex
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 10.0, horizontal: 5.0),
-              decoration: BoxDecoration(
-                color: Colors.blue,
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              child: const Row(
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Expanded(
-                      flex: 1,
-                      child: Text("Sr",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white))),
-                  Expanded(
-                      flex: 5,
-                      child: Text("Employee Name",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white))),
-                  Expanded(
-                      flex: 3,
-                      child: Text("In",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white))),
-                  Expanded(
-                      flex: 3,
-                      child: Text("Out",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white))),
-                  Expanded(
-                      flex: 2, // Reduced flex for Status
-                      child: Text("Status",
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white))),
+                  Row(
+                    children: [
+                      const Icon(Icons.calendar_month),
+                      const SizedBox(width: 5),
+                      Text(
+                        selectedDate,
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  DropdownButton<String>(
+                    value: selectedState,
+                    items: stateOptions.map((String state) {
+                      return DropdownMenuItem<String>(
+                        value: state,
+                        child: Text(state),
+                      );
+                    }).toList(),
+                    onChanged: (newState) {
+                      setState(() {
+                        selectedState = newState!;
+                        // applyFilter();
+                      });
+                    },
+                  ),
+                  TextButton(
+                    onPressed: fetchAttendanceListData,
+                    child: const Text('Search'),
+                  ),
                 ],
               ),
             ),
-            const Divider(),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 10.0),
+              color: Colors.blue,
+              child: Table(
+                columnWidths: const {
+                  0: FlexColumnWidth(0.3),
+                  1: FlexColumnWidth(1.5),
+                  2: FlexColumnWidth(0.5),
+                  3: FlexColumnWidth(0.5),
+                  4: FlexColumnWidth(0.5),
+                },
+                children: const [
+                  TableRow(
+                    children: [
+                      TableCell(
+                        child: Center(
+                          child: Text(
+                            "Sr",
+                            style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white),
+                          ),
+                        ),
+                      ),
+                      TableCell(
+                        child: Center(
+                          child: Text(
+                            "Employee Name",
+                            style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white),
+                          ),
+                        ),
+                      ),
+                      TableCell(
+                        child: Center(
+                          child: Text(
+                            "In",
+                            style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white),
+                          ),
+                        ),
+                      ),
+                      TableCell(
+                        child: Center(
+                          child: Text(
+                            "Out",
+                            style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white),
+                          ),
+                        ),
+                      ),
+                      TableCell(
+                        child: Center(
+                          child: Text(
+                            "Status",
+                            style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ),
+            const Divider(height: 1),
             Expanded(
               child: RefreshIndicator(
-                onRefresh: _refreshTeamAttendanceListData,
+                onRefresh: refreshTeamAttendanceListData,
                 child: ListView.builder(
                   itemCount: filteredAttendanceData.length,
                   itemBuilder: (context, index) {
                     final data = filteredAttendanceData[index];
-                    return SizedBox(
-                      height: 70,
-                      child: Card(
-                        margin: const EdgeInsets.symmetric(vertical: 4.0),
+                    return Card(
+                      elevation: 3,
+                      child: Center(
                         child: Padding(
                           padding: const EdgeInsets.all(8.0),
-                          child: Row(
-                            // crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          child: Table(
+                            columnWidths: const {
+                              0: FlexColumnWidth(0.3),
+                              1: FlexColumnWidth(1.5),
+                              2: FlexColumnWidth(0.5),
+                              3: FlexColumnWidth(0.5),
+                              4: FlexColumnWidth(0.5),
+                            },
                             children: [
-                              Expanded(flex: 1, child: Text("${index + 1}")),
-                              Expanded(
-                                flex: 6,
-                                child: Text(
-                                  "${data['fullName'] ?? "N/A"}",
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                              ),
-                              Expanded(
-                                  flex: 3,
-                                  child: Text(data['dateTimeIn'] ?? "N/A")),
-                              Expanded(
-                                  flex: 3,
-                                  child: Text(data['dateTimeOut'] ?? "N/A")),
-                              Expanded(
-                                  flex: 1,
-                                  child: Text(
-                                    data['status'] ?? "N/A",
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: data['status'] == "Present"
-                                          ? Colors.green
-                                          : Colors.red,
+                              TableRow(
+                                children: [
+                                  TableCell(
+                                    child: Center(
+                                      child: Text(
+                                        "${index + 1}",
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
                                     ),
-                                  )),
+                                  ),
+                                  TableCell(
+                                    child: Center(
+                                      child: Text(
+                                        "${data['fullName'] ?? "N/A"}",
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 16,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  TableCell(
+                                    child: Center(
+                                      child: Text(
+                                        (data['dateTimeIn'] ?? "N/A").toString(),
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.blueAccent,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  TableCell(
+                                    child: Center(
+                                      child: Text(
+                                        (data['dateTimeOut'] ?? "N/A").toString(),
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.blueAccent,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  TableCell(
+                                    child: Center(
+                                      child: Text(
+                                        data['status'] ?? "N/A",
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                          color: data['status'] == "Done"
+                                              ? Colors.green
+                                              : Colors.red,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
                         ),
@@ -181,7 +247,7 @@ class _TeamViewAttendanceListState extends State<TeamViewAttendanceList> {
     );
   }
 
-  Future<void> _refreshTeamAttendanceListData() async {
+  Future<void> refreshTeamAttendanceListData() async {
     await fetchAttendanceListData();
     debugPrint('Team Attendance List Data Refreshed');
   }
@@ -195,11 +261,11 @@ class _TeamViewAttendanceListState extends State<TeamViewAttendanceList> {
         setState(() {
           attendanceData = teamViewAttendanceListViewModel.attendanceList!
               .map((entry) => {
-                    "fullName": entry.fullName,
-                    "dateTimeIn": entry.dateTimeIn,
-                    "dateTimeOut": entry.dateTimeOut,
-                    "status": entry.status,
-                  })
+            "fullName": entry.fullName,
+            "dateTimeIn": entry.dateTimeIn,
+            "dateTimeOut": entry.dateTimeOut,
+            "status": entry.status,
+          })
               .toList();
           applyFilter();
         });
@@ -221,3 +287,6 @@ class _TeamViewAttendanceListState extends State<TeamViewAttendanceList> {
     });
   }
 }
+
+
+

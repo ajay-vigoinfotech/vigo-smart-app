@@ -180,7 +180,7 @@ class _TeamViewState extends State<TeamView> {
                       'Done': {'count': employeeSiteVisitCount, 'color': Colors.green},
                       'Not Done': {'count': employeeSiteNotVisitCount, 'color': Colors.red},
                     },
-                    {'Check List': const SettingPage()},
+                    {'Check List': const TeamViewPatrollingList()},
                   ),
                 ],
               ),
