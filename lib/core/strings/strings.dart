@@ -9,12 +9,14 @@ class Strings {
   static const String login = "Login";
 
   static const String supervisorDutyManagementApp = "Attendance";
-  static const String supervisorQRDutyManagementApp = "SupervisorQR Duty ManagementApp";
+  static const String supervisorQRDutyManagementApp = "Attendance QR";
+  static const String dutyManagementApp = "DutyManagementApp";
+  static const String dutyManagementAppQR = "DutyManagementApp QR";
   static const String punchHistory = "Attendance History";
   static const String fieldReportingApp = "Patrolling";
-  static const String fieldReportingQRApp = "FieldReportingQRApp";
-  static const String siteReportingApp = "Site Reporting App";
-  static const String siteReportingQRApp = "Site ReportingQR App";
+  static const String fieldReportingQRApp = "Patrolling QR";
+  static const String siteReportingApp = "Site Reporting";
+  static const String siteReportingQRApp = "Site Reporting QR";
   static const String teamViewApp = "Team View";
   static const String otherAttendanceApp = "Other Attendance App";
   static const String settingsApp = "Settings";

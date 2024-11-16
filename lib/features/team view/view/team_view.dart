@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:vigo_smart_app/core/strings/strings.dart';
+import 'package:vigo_smart_app/features/auth/session_manager/session_manager.dart';
+import 'package:vigo_smart_app/features/home/widgets/setting_page.dart';
 import 'package:vigo_smart_app/features/team%20view/view%20model/team_dashboard_field_count_view_model.dart';
 import 'package:vigo_smart_app/features/team%20view/view%20model/team_dashboard_site_count_view_model.dart';
+import 'package:vigo_smart_app/features/team%20view/view/team_view_activity_attendance.dart';
 import 'package:vigo_smart_app/features/team%20view/view/team_view_attendance_list.dart';
 import 'package:vigo_smart_app/features/team%20view/view/team_view_patrolling_list.dart';
 import 'package:vigo_smart_app/features/team%20view/view/team_view_site_list.dart';
 
+import '../../../core/theme/app_pallete.dart';
+import '../../home/widgets/home_screen_card.dart';
 import '../view model/team_dashboard_count_view_model.dart';
 
 class TeamView extends StatefulWidget {
@@ -32,6 +37,8 @@ class _TeamViewState extends State<TeamView> {
   int? employeeFieldVisitCount;
   int? employeeFieldNotVisitCount;
 
+  List<String> savedModules = [];
+
 
   @override
   void initState() {
@@ -39,86 +46,39 @@ class _TeamViewState extends State<TeamView> {
     _fetchDashboardData();
     _fetchSiteDashboardData();
     _fetchFieldDashboardData();
+    _loadModules();
   }
 
-  Future<void> _refreshTeamViewData() async {
-    await _fetchDashboardData();
-    await _fetchSiteDashboardData();
-    await _fetchFieldDashboardData();
-    debugPrint('Team View Data Refreshed');
+  Future<void> _loadModules() async {
+    SessionManager sessionManager = SessionManager();
+    savedModules = await sessionManager.getModuleCodes() ?? [];
+    debugPrint('Saved Modules ::$savedModules');
+    setState(() {});
   }
 
-  Future<void> _fetchFieldDashboardData() async {
-    String? token = await viewModel.sessionManager.getToken();
-
-    if (token != null) {
-      await teamViewDashBoardFieldCountViewModel.fetchFieldDashboardCount(token);
-
-      if (teamViewDashBoardFieldCountViewModel.fieldDashBoardCount != null) {
-        setState(() {
-          employeeFieldVisitCount = teamViewDashBoardFieldCountViewModel.fieldDashBoardCount?.employeeFieldVisitCount;
-          employeeFieldNotVisitCount = teamViewDashBoardFieldCountViewModel.fieldDashBoardCount?.employeeFieldNotVisitCount;
-          employeeCount = teamViewDashBoardSiteCountViewModel.siteDashBoardCount?.employeeCount;
-        });
-      } else {
-        setState(() {
-          _errorMessage = 'Failed to load data';
-        });
-      }
-    } else {
-      setState(() {
-        _errorMessage = 'Authorization token not found';
-      });
-    }
+  bool hasAttendanceModule() {
+    const requiredModules = [
+      'SupervisorDutyManagementApp',
+      'SupervisorQRDutyManagementApp',
+      'DutyManagementApp',
+      'DutyManagementAppQR',
+    ];
+    return savedModules.any(requiredModules.contains);
   }
 
-  Future<void> _fetchSiteDashboardData() async {
-    String? token = await viewModel.sessionManager.getToken();
-
-    if (token != null) {
-      await teamViewDashBoardSiteCountViewModel.fetchSiteDashboardCount(token);
-
-      if (teamViewDashBoardSiteCountViewModel.siteDashBoardCount != null) {
-        setState(() {
-          employeeSiteVisitCount = teamViewDashBoardSiteCountViewModel.siteDashBoardCount?.employeeSiteVisitCount;
-          employeeSiteNotVisitCount = teamViewDashBoardSiteCountViewModel.siteDashBoardCount?.employeeSiteNotVisitCount;
-          employeeCount = teamViewDashBoardSiteCountViewModel.siteDashBoardCount?.employeeCount;
-        });
-      } else {
-        setState(() {
-          _errorMessage = 'Failed to load data';
-        });
-      }
-    } else {
-      setState(() {
-        _errorMessage = 'Authorization token not found';
-      });
-    }
+  bool hasFieldModule() {
+    const requiredModules = [
+      'FieldReportingApp',
+      'FieldReportingQRApp'
+    ];
+    return savedModules.any(requiredModules.contains);
   }
-
-  Future<void> _fetchDashboardData() async {
-    String? token = await viewModel.sessionManager.getToken();
-
-    if (token != null) {
-      await viewModel.fetchTeamDashboardCount(token);
-
-      if (viewModel.teamDashboardCount != null) {
-        setState(() {
-          employeeCount = viewModel.teamDashboardCount?.employeeCount;
-          presentEmployeeCount = viewModel.teamDashboardCount?.presentEmployeeCount;
-          absentEmployeeCount = viewModel.teamDashboardCount?.absentEmployeeCount;
-          lateEmployeeCount = viewModel.teamDashboardCount?.lateEmployeeCount;
-        });
-      } else {
-        setState(() {
-          _errorMessage = 'Failed to load data';
-        });
-      }
-    } else {
-      setState(() {
-        _errorMessage = 'Authorization token not found';
-      });
-    }
+  bool hasSiteModule() {
+    const requiredModules = [
+      'SiteReportingApp',
+      'SiteReportingQRApp'
+    ];
+    return savedModules.any(requiredModules.contains);
   }
 
   @override
@@ -176,16 +136,42 @@ class _TeamViewState extends State<TeamView> {
                 ],
               ),
             ),
-            const Center(
-              child: Text("2nd tab view"),
+            ListView(
+              children: [
+                if (hasAttendanceModule())
+                  HomeScreenCard(
+                    icon: Image.asset('assets/images/attendance_new.webp'),
+                    modulename: 'Attendance',
+                    nextPage: const TeamViewActivityAttendance(),
+                    cardColor: Pallete.backgroundColor,
+                  ),
+                if (hasFieldModule())
+                  HomeScreenCard(
+                    icon: Image.asset('assets/images/patrolling.webp'),
+                    modulename: 'Patrolling',
+                    nextPage: const SettingPage(),
+                    cardColor: Pallete.backgroundColor,
+                  ),
+                if (hasSiteModule())
+                  HomeScreenCard(
+                    icon: Image.asset('assets/images/site_reporting.webp'),
+                    modulename: 'Site Report',
+                    nextPage: const SettingPage(),
+                    cardColor: Pallete.backgroundColor,
+                  ),
+                HomeScreenCard(
+                    icon: Image.asset('assets/images/ic_maps.webp'),
+                    modulename: 'Map View',
+                    nextPage: const SettingPage(),
+                    cardColor: Pallete.backgroundColor,
+                )
+              ],
             ),
           ],
         ),
       ),
     );
   }
-
-
 
   Widget buildCard(
       String title, Map<String, dynamic> fields, Map<String, Widget> pages) {
@@ -270,5 +256,86 @@ class _TeamViewState extends State<TeamView> {
         ],
       ),
     );
+  }
+
+
+  Future<void> _refreshTeamViewData() async {
+    await _fetchDashboardData();
+    await _fetchSiteDashboardData();
+    await _fetchFieldDashboardData();
+    debugPrint('Team View Data Refreshed');
+  }
+
+  Future<void> _fetchFieldDashboardData() async {
+    String? token = await viewModel.sessionManager.getToken();
+
+    if (token != null) {
+      await teamViewDashBoardFieldCountViewModel.fetchFieldDashboardCount(token);
+
+      if (teamViewDashBoardFieldCountViewModel.fieldDashBoardCount != null) {
+        setState(() {
+          employeeFieldVisitCount = teamViewDashBoardFieldCountViewModel.fieldDashBoardCount?.employeeFieldVisitCount;
+          employeeFieldNotVisitCount = teamViewDashBoardFieldCountViewModel.fieldDashBoardCount?.employeeFieldNotVisitCount;
+          employeeCount = teamViewDashBoardSiteCountViewModel.siteDashBoardCount?.employeeCount;
+        });
+      } else {
+        setState(() {
+          _errorMessage = 'Failed to load data';
+        });
+      }
+    } else {
+      setState(() {
+        _errorMessage = 'Authorization token not found';
+      });
+    }
+  }
+
+  Future<void> _fetchSiteDashboardData() async {
+    String? token = await viewModel.sessionManager.getToken();
+
+    if (token != null) {
+      await teamViewDashBoardSiteCountViewModel.fetchSiteDashboardCount(token);
+
+      if (teamViewDashBoardSiteCountViewModel.siteDashBoardCount != null) {
+        setState(() {
+          employeeSiteVisitCount = teamViewDashBoardSiteCountViewModel.siteDashBoardCount?.employeeSiteVisitCount;
+          employeeSiteNotVisitCount = teamViewDashBoardSiteCountViewModel.siteDashBoardCount?.employeeSiteNotVisitCount;
+          employeeCount = teamViewDashBoardSiteCountViewModel.siteDashBoardCount?.employeeCount;
+        });
+      } else {
+        setState(() {
+          _errorMessage = 'Failed to load data';
+        });
+      }
+    } else {
+      setState(() {
+        _errorMessage = 'Authorization token not found';
+      });
+    }
+  }
+
+  Future<void> _fetchDashboardData() async {
+    String? token = await viewModel.sessionManager.getToken();
+
+    if (token != null) {
+      await viewModel.fetchTeamDashboardCount(token);
+
+      if (viewModel.teamDashboardCount != null) {
+        setState(() {
+          employeeCount = viewModel.teamDashboardCount?.employeeCount;
+          presentEmployeeCount = viewModel.teamDashboardCount?.presentEmployeeCount;
+          absentEmployeeCount = viewModel.teamDashboardCount?.absentEmployeeCount;
+          lateEmployeeCount = viewModel.teamDashboardCount?.lateEmployeeCount;
+        });
+      } else {
+        setState(() {
+          _errorMessage = 'Failed to load data';
+        });
+      }
+    } else {
+      setState(() {
+        _errorMessage = 'Authorization token not found';
+      });
+    }
   }
 }

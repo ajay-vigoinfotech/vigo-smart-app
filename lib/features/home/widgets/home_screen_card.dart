@@ -39,7 +39,7 @@ class HomeScreenCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               SizedBox(
-                width: 50, // Set image size similar to icon size
+                width: 50,
                 height: 50,
                 child: icon,
               ),
