@@ -68,8 +68,7 @@ class _PunchHistoryState extends State<PunchHistory> {
                                   padding: const EdgeInsets.all(8.0),
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
                                     children: [
                                       const Text(
                                         'Punch In',
@@ -119,13 +118,15 @@ class _PunchHistoryState extends State<PunchHistory> {
                                   width: 250,
                                   height: 250,
                                   decoration: BoxDecoration(
-                                    border: Border.all(color: Colors.red, width: 2),
+                                    border:
+                                        Border.all(color: Colors.red, width: 2),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   padding: const EdgeInsets.all(8.0),
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
                                     children: [
                                       const Text(
                                         'Punch Out',
@@ -143,7 +144,8 @@ class _PunchHistoryState extends State<PunchHistory> {
                                           height: 75,
                                           fit: BoxFit.cover,
                                           errorBuilder:
-                                              (context, error, stackTrace) => Image.asset(
+                                              (context, error, stackTrace) =>
+                                                  Image.asset(
                                             'assets/images/place_holder.webp',
                                             width: 130,
                                           ),
@@ -153,8 +155,7 @@ class _PunchHistoryState extends State<PunchHistory> {
                                             size: 60, color: Colors.grey),
                                       const SizedBox(height: 10),
                                       Text(
-                                        (attendance.dateTimeOut ?? '')
-                                                .isNotEmpty
+                                        (attendance.dateTimeOut ?? '').isNotEmpty
                                             ? attendance.dateTimeOut!
                                             : "Not marked yet",
                                         style: const TextStyle(fontSize: 14),
@@ -191,10 +192,11 @@ class _PunchHistoryState extends State<PunchHistory> {
       return;
     }
 
-    final GetSelfieAttendanceViewModel getSelfieAttendanceViewModel = GetSelfieAttendanceViewModel();
-    final GetSelfieAttendanceViewModel? viewModel = await getSelfieAttendanceViewModel.getSelfieAttendance(token);
+    final GetSelfieAttendanceViewModel getSelfieAttendanceViewModel =
+        GetSelfieAttendanceViewModel();
+    final GetSelfieAttendanceViewModel? viewModel =
+        await getSelfieAttendanceViewModel.getSelfieAttendance(token);
     debugPrint('server data refreshed');
-
 
     if (viewModel != null && viewModel.getSelfieAttendanceModel != null) {
       setState(() {
@@ -212,7 +214,6 @@ class _PunchHistoryState extends State<PunchHistory> {
   Future<bool> checkInternetConnection() async {
     var connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult.contains(ConnectivityResult.none)) {
-      // Show dialog to ask user to turn on internet connection
       showCupertinoDialog(
         context: context,
         builder: (context) => CupertinoAlertDialog(
@@ -232,25 +233,3 @@ class _PunchHistoryState extends State<PunchHistory> {
     return true;
   }
 }
-
-// // Function to refresh data
-// Future<void> refreshData() async {
-//   setState(() {
-//     isLoading = true;
-//   });
-//   await fetchData(); // Call your data fetching method here
-//   setState(() {
-//     isLoading = false;
-//   });
-// }
-
-// // Function to refresh data
-// Future<void> refreshData() async {
-//   setState(() {
-//     isLoading = true;
-//   });
-//   await fetchData(); // Call your data fetching method here
-//   setState(() {
-//     isLoading = false;
-//   });
-// }

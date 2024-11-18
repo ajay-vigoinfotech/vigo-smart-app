@@ -1,3 +1,5 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:vigo_smart_app/features/team%20view/view/team_view_activity_attendance_list.dart';
 import '../view model/team_view_activity_attendance_view_model.dart';
@@ -16,15 +18,53 @@ class _TeamViewActivityAttendanceState extends State<TeamViewActivityAttendance>
   String? fullName;
 
   List<Map<String, dynamic>> teamActivityAttendanceCountData = [];
-  TextEditingController _searchController = TextEditingController();
   List<Map<String, dynamic>> filteredData = [];
+
+  TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    // Initially set filteredData to teamActivityAttendanceCountData
+    checkInternetConnection();
     filteredData = teamActivityAttendanceCountData;
-    fetchTeamActivityAttendanceCountData(); // Automatically fetch data on init
+    fetchTeamActivityAttendanceCountData();
+  }
+
+  Future<bool> checkInternetConnection() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+      showCupertinoDialog(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: const Text("No Internet Connection"),
+          content:
+          const Text("Please turn on the internet connection to proceed."),
+          actions: [
+            CupertinoDialogAction(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+      return false;
+    }
+    return true;
+  }
+
+  void filterSearchResults(String query) {
+    if (query.isEmpty) {
+      setState(() {
+        filteredData = teamActivityAttendanceCountData;
+      });
+    } else {
+      setState(() {
+        filteredData = teamActivityAttendanceCountData
+            .where((entry) =>
+            entry['fullName']!.toLowerCase().contains(query.toLowerCase()))
+            .toList();
+      });
+    }
   }
 
   @override
@@ -32,27 +72,23 @@ class _TeamViewActivityAttendanceState extends State<TeamViewActivityAttendance>
     return Scaffold(
       appBar: AppBar(
         title: const Text('Employee Name'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              showSearch(
-                context: context,
-                delegate: EmployeeSearchDelegate(
-                  teamActivityAttendanceCountData: teamActivityAttendanceCountData,
-                  onSearch: (searchResult) {
-                    setState(() {
-                      filteredData = searchResult;
-                    });
-                  },
-                ),
-              );
-            },
-          ),
-        ],
       ),
       body: Column(
         children: [
+          Padding(
+            padding: const EdgeInsets.all(5.0),
+            child: TextField(
+              controller: searchController,
+              onChanged: filterSearchResults,
+              decoration: InputDecoration(
+                hintText: "Search Employee",
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+            ),
+          ),
           Expanded(
             child: ListView.builder(
               itemCount: filteredData.length,
@@ -62,11 +98,13 @@ class _TeamViewActivityAttendanceState extends State<TeamViewActivityAttendance>
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const TeamViewActivityAttendanceList(
+                        builder: (context) => TeamViewActivityAttendanceList(
+                          userId: filteredData[index]['userId'],
                         ),
                       ),
                     );
                   },
+
                   child: Card(
                     elevation: 5,
                     color: Colors.white,
@@ -117,65 +155,7 @@ class _TeamViewActivityAttendanceState extends State<TeamViewActivityAttendance>
   }
 }
 
-class EmployeeSearchDelegate extends SearchDelegate {
-  final List<Map<String, dynamic>> teamActivityAttendanceCountData;
-  final Function(List<Map<String, dynamic>>) onSearch;
 
-  EmployeeSearchDelegate({
-    required this.teamActivityAttendanceCountData,
-    required this.onSearch,
-  });
 
-  @override
-  List<Widget> buildActions(BuildContext context) {
-    return [
-      IconButton(
-        icon: const Icon(Icons.clear),
-        onPressed: () {
-          query = '';
-        },
-      ),
-    ];
-  }
 
-  @override
-  Widget buildLeading(BuildContext context) {
-    return IconButton(
-      icon: const Icon(Icons.arrow_back),
-      onPressed: () {
-        close(context, null);
-      },
-    );
-  }
 
-  @override
-  Widget buildResults(BuildContext context) {
-    final searchResults = teamActivityAttendanceCountData
-        .where((data) => data['fullName']?.toLowerCase().contains(query.toLowerCase()) ?? false)
-        .toList();
-    onSearch(searchResults);
-    return ListView.builder(
-      itemCount: searchResults.length,
-      itemBuilder: (context, index) {
-        return ListTile(
-          title: Text(searchResults[index]['fullName'] ?? 'No Name'),
-        );
-      },
-    );
-  }
-
-  @override
-  Widget buildSuggestions(BuildContext context) {
-    final searchResults = teamActivityAttendanceCountData
-        .where((data) => data['fullName']?.toLowerCase().contains(query.toLowerCase()) ?? false)
-        .toList();
-    return ListView.builder(
-      itemCount: searchResults.length,
-      itemBuilder: (context, index) {
-        return ListTile(
-          title: Text(searchResults[index]['fullName'] ?? 'No Name'),
-        );
-      },
-    );
-  }
-}
