@@ -20,6 +20,7 @@ import '../../auth/viewmodel/getlastselfieatt_view_model.dart';
 import '../../auth/viewmodel/getuserdetails_view_model.dart';
 import '../../auth/viewmodel/login_sucess_view_model.dart';
 import '../../auth/viewmodel/login_view_model.dart';
+import '../../field reporting/view/field_reporting.dart';
 import '../viewmodel/modules_view_model.dart';
 import '../widgets/home_screen_card.dart';
 
@@ -99,7 +100,7 @@ class _HomePageState extends State<HomePage> {
       'icon': Image.asset('assets/images/patrolling.webp'),
       'name': Strings.fieldReportingApp,
       'color': Pallete.backgroundColor,
-      'page': const SettingPage(),
+      'page': const FieldReporting(),
     },
     {
       'code': 'FieldReportingQRApp',

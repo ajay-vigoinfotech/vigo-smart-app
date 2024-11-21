@@ -5,6 +5,7 @@ import 'package:vigo_smart_app/features/home/widgets/setting_page.dart';
 import 'package:vigo_smart_app/features/team%20view/view%20model/team_dashboard_field_count_view_model.dart';
 import 'package:vigo_smart_app/features/team%20view/view%20model/team_dashboard_site_count_view_model.dart';
 import 'package:vigo_smart_app/features/team%20view/view/team_view_activity_attendance.dart';
+import 'package:vigo_smart_app/features/team%20view/view/team_view_activity_patrolling.dart';
 import 'package:vigo_smart_app/features/team%20view/view/team_view_attendance_list.dart';
 import 'package:vigo_smart_app/features/team%20view/view/team_view_patrolling_list.dart';
 import 'package:vigo_smart_app/features/team%20view/view/team_view_site_list.dart';
@@ -26,16 +27,16 @@ class _TeamViewState extends State<TeamView> {
   final TeamDashboardCountViewModel viewModel = TeamDashboardCountViewModel();
   String? _errorMessage;
 
-  int? employeeCount;
-  int? presentEmployeeCount;
-  int? absentEmployeeCount;
-  int? lateEmployeeCount;
+  int employeeCount = 0;
+  int presentEmployeeCount = 0;
+  int absentEmployeeCount = 0;
+  int lateEmployeeCount = 0;
 
-  int? employeeSiteVisitCount;
-  int? employeeSiteNotVisitCount;
+  int employeeSiteVisitCount = 0;
+  int employeeSiteNotVisitCount = 0;
 
-  int? employeeFieldVisitCount;
-  int? employeeFieldNotVisitCount;
+  int employeeFieldVisitCount = 0;
+  int employeeFieldNotVisitCount = 0;
 
   List<String> savedModules = [];
 
@@ -149,7 +150,7 @@ class _TeamViewState extends State<TeamView> {
                   HomeScreenCard(
                     icon: Image.asset('assets/images/patrolling.webp'),
                     modulename: 'Patrolling',
-                    nextPage: const SettingPage(),
+                    nextPage: const TeamViewActivityPatrolling(),
                     cardColor: Pallete.backgroundColor,
                   ),
                 if (hasSiteModule())
@@ -186,7 +187,7 @@ class _TeamViewState extends State<TeamView> {
             color: Colors.grey.withOpacity(0.5),
             spreadRadius: 2,
             blurRadius: 5,
-            offset: Offset(0, 3),
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -194,7 +195,7 @@ class _TeamViewState extends State<TeamView> {
         children: [
           Text(
             title,
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const Divider(),
           Row(
@@ -213,7 +214,7 @@ class _TeamViewState extends State<TeamView> {
                       color: color,
                     ),
                   ),
-                  SizedBox(height: 5),
+                  const SizedBox(height: 5),
                   Text(
                     value.toString(),
                     style: TextStyle(
@@ -226,7 +227,7 @@ class _TeamViewState extends State<TeamView> {
               );
             }).toList(),
           ),
-          SizedBox(height: 5),
+          const SizedBox(height: 5),
           const Divider(),
           Wrap(
             spacing: 8.0,
@@ -274,9 +275,9 @@ class _TeamViewState extends State<TeamView> {
 
       if (teamViewDashBoardFieldCountViewModel.fieldDashBoardCount != null) {
         setState(() {
-          employeeFieldVisitCount = teamViewDashBoardFieldCountViewModel.fieldDashBoardCount?.employeeFieldVisitCount;
-          employeeFieldNotVisitCount = teamViewDashBoardFieldCountViewModel.fieldDashBoardCount?.employeeFieldNotVisitCount;
-          employeeCount = teamViewDashBoardSiteCountViewModel.siteDashBoardCount?.employeeCount;
+          employeeFieldVisitCount = teamViewDashBoardFieldCountViewModel.fieldDashBoardCount?.employeeFieldVisitCount ?? 0;
+          employeeFieldNotVisitCount = teamViewDashBoardFieldCountViewModel.fieldDashBoardCount?.employeeFieldNotVisitCount ?? 0;
+          employeeCount = teamViewDashBoardSiteCountViewModel.siteDashBoardCount?.employeeCount ?? 0;
         });
       } else {
         setState(() {
@@ -298,9 +299,9 @@ class _TeamViewState extends State<TeamView> {
 
       if (teamViewDashBoardSiteCountViewModel.siteDashBoardCount != null) {
         setState(() {
-          employeeSiteVisitCount = teamViewDashBoardSiteCountViewModel.siteDashBoardCount?.employeeSiteVisitCount;
-          employeeSiteNotVisitCount = teamViewDashBoardSiteCountViewModel.siteDashBoardCount?.employeeSiteNotVisitCount;
-          employeeCount = teamViewDashBoardSiteCountViewModel.siteDashBoardCount?.employeeCount;
+          employeeSiteVisitCount = teamViewDashBoardSiteCountViewModel.siteDashBoardCount?.employeeSiteVisitCount ?? 0;
+          employeeSiteNotVisitCount = teamViewDashBoardSiteCountViewModel.siteDashBoardCount?.employeeSiteNotVisitCount ?? 0;
+          employeeCount = teamViewDashBoardSiteCountViewModel.siteDashBoardCount?.employeeCount ?? 0;
         });
       } else {
         setState(() {
@@ -322,10 +323,10 @@ class _TeamViewState extends State<TeamView> {
 
       if (viewModel.teamDashboardCount != null) {
         setState(() {
-          employeeCount = viewModel.teamDashboardCount?.employeeCount;
-          presentEmployeeCount = viewModel.teamDashboardCount?.presentEmployeeCount;
-          absentEmployeeCount = viewModel.teamDashboardCount?.absentEmployeeCount;
-          lateEmployeeCount = viewModel.teamDashboardCount?.lateEmployeeCount;
+          employeeCount = viewModel.teamDashboardCount?.employeeCount ?? 0;
+          presentEmployeeCount = viewModel.teamDashboardCount?.presentEmployeeCount ?? 0;
+          absentEmployeeCount = viewModel.teamDashboardCount?.absentEmployeeCount ?? 0;
+          lateEmployeeCount = viewModel.teamDashboardCount?.lateEmployeeCount ?? 0;
         });
       } else {
         setState(() {

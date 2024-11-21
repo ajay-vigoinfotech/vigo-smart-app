@@ -1,41 +1,41 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
-import '../../../core/constants/constants.dart';
+import 'package:vigo_smart_app/core/constants/constants.dart';
+import 'package:vigo_smart_app/features/auth/session_manager/session_manager.dart';
 import '../model/getselfieattendance_model.dart';
 
 class GetSelfieAttendanceViewModel {
   final Dio _dio = Dio();
-  GetSelfieAttendanceModel? getSelfieAttendanceModel;
+  SessionManager sessionManager = SessionManager();
+  List<GetSelfieAttendanceModel>? getSelfieAttendanceList;
 
-  Future<GetSelfieAttendanceViewModel?> getSelfieAttendance(String token) async {
+  Future<void> fetchGetSelfieAttendanceList(String token) async{
+    const url = '${AppConstants.baseUrl}/API/Kotlin/GetSelfieAttendance';
     try {
-      const url = '${AppConstants.baseUrl}/API/Kotlin/GetSelfieAttendance';
-
-      final headers = {
-        'Authorization': 'Bearer $token',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Connection': 'keep-alive',
-        'User-Agent': 'okhttp/4.9.1',
-      };
-
-      Response response = await _dio.get(
+      final response = await _dio.get(
         url,
-        options: Options(headers: headers),
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+          contentType: Headers.formUrlEncodedContentType,
+        ),
       );
 
       if (response.statusCode == 200) {
-        getSelfieAttendanceModel = GetSelfieAttendanceModel.fromJson(response.data);
-        return this;
+        final responseData = GetSelfieAttendanceResponse.fromJson(response.data);
+
+        if(responseData.table.isNotEmpty) {
+          getSelfieAttendanceList = responseData.table;
+          //debugPrint('$response');
+        } else {
+          debugPrint('teamActivityAttendanceList is empty');
+        }
       } else {
-        debugPrint('Error: ${response.statusCode} - ${response.statusMessage}');
-        return null;
+        debugPrint('Error :: ${response.statusCode} - ${response.statusMessage}');
       }
     } on DioException catch (e) {
-      debugPrint('DioError: $e.message}');
-      return null;
+      debugPrint('Dio Error ${e.message}');
     } catch (e) {
-      debugPrint('Error::: $e');
-      return null;
+      debugPrint('$e');
     }
   }
 }

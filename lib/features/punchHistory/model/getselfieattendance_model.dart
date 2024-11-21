@@ -1,36 +1,4 @@
 class GetSelfieAttendanceModel {
-  List<SelfieAttendanceTable>? table;
-  List<HttpResponseStatus>? httpResponseStatus;
-
-  GetSelfieAttendanceModel({this.table, this.httpResponseStatus});
-
-  GetSelfieAttendanceModel.fromJson(Map<String, dynamic> json) {
-    if (json['table'] != null && json['table'] is List) {
-      table = <SelfieAttendanceTable>[];
-      json['table'].forEach((v) {
-        if (v is Map<String, dynamic>) {
-          table!.add(SelfieAttendanceTable.fromJson(v));
-        }
-      });
-    } else {
-      print("Unexpected format for 'table' in JSON.");
-    }
-
-    if (json['httpResponseStatus'] != null && json['httpResponseStatus'] is List) {
-      httpResponseStatus = <HttpResponseStatus>[];
-      json['httpResponseStatus'].forEach((v) {
-        if (v is Map<String, dynamic>) {
-          httpResponseStatus!.add(HttpResponseStatus.fromJson(v));
-        }
-      });
-    } else {
-      print("Unexpected format for 'httpResponseStatus' in JSON.");
-    }
-  }
-}
-
-
-class SelfieAttendanceTable {
   String? compId;
   String? dateTimeIn;
   String? dateTimeOut;
@@ -41,76 +9,114 @@ class SelfieAttendanceTable {
   String? inPhoto;
   String? outPhoto;
   String? outRemarks;
-  String? inKmsDriven;
-  String? outKmsDriven;
+  String? inKmsDriven; // Changed to String
+  String? outKmsDriven; // Changed to String
 
-  SelfieAttendanceTable({
-    this.compId,
-    this.dateTimeIn,
-    this.dateTimeOut,
-    this.totalHours,
-    this.location,
-    this.outLocation,
-    this.inRemarks,
-    this.inPhoto,
-    this.outPhoto,
-    this.outRemarks,
-    this.inKmsDriven,
-    this.outKmsDriven,
+  GetSelfieAttendanceModel({
+    required this.compId,
+    required this.dateTimeIn,
+    required this.dateTimeOut,
+    required this.totalHours,
+    required this.location,
+    required this.outLocation,
+    required this.inRemarks,
+    required this.inPhoto,
+    required this.outPhoto,
+    required this.outRemarks,
+    required this.inKmsDriven,
+    required this.outKmsDriven,
   });
 
-  SelfieAttendanceTable.fromJson(Map<String, dynamic> json) {
-    compId = json['compId']?.toString() ?? "Not marked yet";
-    dateTimeIn = json['dateTimeIn']?.toString() ?? "Not marked yet";
-    dateTimeOut = json['dateTimeOut']?.toString() ?? "Not marked yet";
-    totalHours = json['totalHours']?.toString() ?? "Not marked yet";
-    location = json['location']?.toString() ?? "";
-    outLocation = json['outLocation']?.toString() ?? "";
-    inRemarks = json['inRemarks']?.toString() ?? "";
-    inPhoto = json['inPhoto']?.toString() ?? "";
-    outPhoto = json['outPhoto']?.toString() ?? "";
-    outRemarks = json['outRemarks']?.toString() ?? "";
-    inKmsDriven = json['inKmsDriven']?.toString() ?? "";
-    outKmsDriven = json['outKmsDriven']?.toString() ?? "";
+  factory GetSelfieAttendanceModel.fromJson(Map<String, dynamic> json) {
+    return GetSelfieAttendanceModel(
+      compId: json['compId']?.toString() ?? '',
+      dateTimeIn: json['dateTimeIn']?.toString() ?? '',
+      dateTimeOut: json['dateTimeOut']?.toString() ?? '',
+      totalHours: json['totalHours']?.toString() ?? '',
+      location: json['location']?.toString() ?? '',
+      outLocation: json['outLocation']?.toString() ?? '',
+      inRemarks: json['inRemarks']?.toString() ?? '',
+      inPhoto: json['inPhoto']?.toString() ?? '',
+      outPhoto: json['outPhoto']?.toString() ?? '',
+      outRemarks: json['outRemarks']?.toString() ?? '',
+      inKmsDriven: json['inKmsDriven']?.toString() ?? '',
+      outKmsDriven: json['outKmsDriven']?.toString() ?? '',
+    );
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};  // Updated to <String, dynamic>
-    data['compId'] = compId;
-    data['dateTimeIn'] = dateTimeIn;
-    data['dateTimeOut'] = dateTimeOut;
-    data['totalHours'] = totalHours;
-    data['location'] = location;
-    data['outLocation'] = outLocation;
-    data['inRemarks'] = inRemarks;
-    data['inPhoto'] = inPhoto;
-    data['outPhoto'] = outPhoto;
-    data['outRemarks'] = outRemarks;
-    data['inKmsDriven'] = inKmsDriven;
-    data['outKmsDriven'] = outKmsDriven;
-    return data;
+    return {
+      'compId': compId,
+      'dateTimeIn': dateTimeIn,
+      'dateTimeOut': dateTimeOut,
+      'totalHours': totalHours,
+      'location': location,
+      'outLocation': outLocation,
+      'inRemarks': inRemarks,
+      'inPhoto': inPhoto,
+      'outPhoto': outPhoto,
+      'outRemarks': outRemarks,
+      'inKmsDriven': inKmsDriven,
+      'outKmsDriven': outKmsDriven,
+    };
   }
 }
+
 
 
 class HttpResponseStatus {
-  int? code;
-  String? status;
+  int code;
+  String status;
   String? message;
 
-  HttpResponseStatus({this.code, this.status, this.message});
+  HttpResponseStatus({
+    required this.code,
+    required this.status,
+    this.message,
+  });
 
-  HttpResponseStatus.fromJson(Map<String, dynamic> json) {
-    code = json['code'];
-    status = json['status'];
-    message = json['message'];
+  factory HttpResponseStatus.fromJson(Map<String, dynamic> json) {
+    return HttpResponseStatus(
+      code: json['code'] as int? ?? 0,
+      status: json['status'] as String? ?? '',
+      message: json['message'] as String?,
+    );
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['code'] = code;
-    data['status'] = status;
-    data['message'] = message;
-    return data;
+    return {
+      'code': code,
+      'status': status,
+      'message': message,
+    };
   }
 }
+
+class GetSelfieAttendanceResponse{
+  List<GetSelfieAttendanceModel> table;
+  List<HttpResponseStatus> httpResponseStatus;
+
+  GetSelfieAttendanceResponse({
+    required this.table,
+    required this.httpResponseStatus,
+});
+
+  factory GetSelfieAttendanceResponse.fromJson(Map<String, dynamic> json) {
+    return GetSelfieAttendanceResponse(
+      table: (json['table'] as List<dynamic>?)
+          ?.map((e) => GetSelfieAttendanceModel.fromJson(e as Map<String, dynamic>))
+          .toList() ?? [],
+      httpResponseStatus: (json['httpResponseStatus'] as List<dynamic>?)
+          ?.map((e) => HttpResponseStatus.fromJson(e as Map<String, dynamic>))
+          .toList() ?? [],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'table': table.map((e) => e.toJson()).toList(),
+      'httpResponseStatus': httpResponseStatus.map((e) => e.toJson()).toList(),
+    };
+  }
+}
+

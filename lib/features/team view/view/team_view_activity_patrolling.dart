@@ -1,17 +1,17 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:vigo_smart_app/features/team%20view/view/team_view_activity_attendance_list.dart';
+import 'package:vigo_smart_app/features/team%20view/view/team_view_activity_patrolling_list.dart';
 import '../view model/team_view_activity_attendance_view_model.dart';
 
-class TeamViewActivityAttendance extends StatefulWidget {
-  const TeamViewActivityAttendance({super.key});
+class TeamViewActivityPatrolling extends StatefulWidget {
+  const TeamViewActivityPatrolling({super.key});
 
   @override
-  State<TeamViewActivityAttendance> createState() => _TeamViewActivityAttendanceState();
+  State<TeamViewActivityPatrolling> createState() => _TeamViewActivityPatrollingState();
 }
 
-class _TeamViewActivityAttendanceState extends State<TeamViewActivityAttendance> {
+class _TeamViewActivityPatrollingState extends State<TeamViewActivityPatrolling> {
   TeamViewActivityAttendanceViewModel teamViewActivityAttendanceViewModel = TeamViewActivityAttendanceViewModel();
 
   String? userId;
@@ -71,7 +71,7 @@ class _TeamViewActivityAttendanceState extends State<TeamViewActivityAttendance>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Employee Name'),
+        title: const Text('Employee Names'),
       ),
       body: Column(
         children: [
@@ -91,7 +91,7 @@ class _TeamViewActivityAttendanceState extends State<TeamViewActivityAttendance>
           ),
           Expanded(
             child: RefreshIndicator(
-              onRefresh: refreshTeamActivityAttendanceData,
+              onRefresh: refreshTeamActivityPatrollingData ,
               child: ListView.builder(
                 itemCount: filteredData.length,
                 itemBuilder: (context, index) {
@@ -100,13 +100,12 @@ class _TeamViewActivityAttendanceState extends State<TeamViewActivityAttendance>
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => TeamViewActivityAttendanceList(
+                          builder: (context) => TeamViewActivityPatrollingList(
                             userId: filteredData[index]['userId'],
                           ),
                         ),
                       );
                     },
-
                     child: Card(
                       elevation: 5,
                       color: Colors.white,
@@ -137,9 +136,9 @@ class _TeamViewActivityAttendanceState extends State<TeamViewActivityAttendance>
     );
   }
 
-  Future<void> refreshTeamActivityAttendanceData() async {
+  Future<void> refreshTeamActivityPatrollingData() async {
     await fetchTeamActivityAttendanceCountData();
-    debugPrint('Team Activity Attendance List Data Refreshed');
+    debugPrint('Team Activity Patrolling Data Refreshed');
   }
 
   Future<void> fetchTeamActivityAttendanceCountData() async {

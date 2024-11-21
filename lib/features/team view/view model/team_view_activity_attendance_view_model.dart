@@ -22,8 +22,7 @@ class TeamViewActivityAttendanceViewModel {
       );
 
       if (response.statusCode == 200) {
-        final responseData =
-            TeamViewActivityAttendanceResponse.fromJson(response.data);
+        final responseData = TeamViewActivityAttendanceResponse.fromJson(response.data);
 
         if (responseData.table.isNotEmpty) {
           teamActivityAttendanceCount = responseData.table;
@@ -32,8 +31,7 @@ class TeamViewActivityAttendanceViewModel {
           debugPrint('Table is Empty');
         }
       } else {
-        debugPrint(
-            'Error :: ${response.statusCode} - ${response.statusMessage}');
+        debugPrint('Error :: ${response.statusCode} - ${response.statusMessage}');
       }
     } on DioException catch (e) {
       debugPrint('Dio Error:: ${e.message}');

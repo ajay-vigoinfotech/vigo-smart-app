@@ -14,8 +14,7 @@ class TeamViewActivityAttendanceList extends StatefulWidget {
 }
 
 class _TeamViewActivityAttendanceListState extends State<TeamViewActivityAttendanceList> {
-  TeamViewActivityAttendanceListViewModel teamViewActivityAttendanceListViewModel =
-  TeamViewActivityAttendanceListViewModel();
+  TeamViewActivityAttendanceListViewModel teamViewActivityAttendanceListViewModel = TeamViewActivityAttendanceListViewModel();
   List<Map<String, dynamic>> teamActivityAttendanceData = [];
   List<Map<String, dynamic>> filteredData = [];
   TextEditingController searchController = TextEditingController();
@@ -80,7 +79,7 @@ class _TeamViewActivityAttendanceListState extends State<TeamViewActivityAttenda
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Employee Name'),
+        title: const Text('Attendance'),
       ),
       body: Column(
         children: [
@@ -99,54 +98,64 @@ class _TeamViewActivityAttendanceListState extends State<TeamViewActivityAttenda
             ),
           ),
           Expanded(
-            child: filteredData.isNotEmpty
-                ? ListView.builder(
-              itemCount: filteredData.length,
-              itemBuilder: (context, index) {
-                final data = filteredData[index];
-                return Card(
-                  margin: const EdgeInsets.all(8.0),
-                  child: IntrinsicHeight(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _buildColumn(
-                          heading: 'Check In',
-                          imageUrl: '${AppConstants.baseUrl}/${data["inPhoto"]}',
-                          dateTime: data["dateTimeIn"],
-                          borderColor: Colors.green,
-                          location: data["location"],
-                          headingColor: Colors.green,
-                        ),
-                        const VerticalDivider(
-                          color: Colors.grey,
-                          thickness: 1,
-                          width: 10,
-                        ),
-                        _buildColumn(
-                          heading: 'Check Out',
-                          imageUrl: '${AppConstants.baseUrl}/${data["outPhoto"]}',
-                          dateTime: data["dateTimeOut"],
-                          borderColor: Colors.redAccent,
-                          location: data["outLocation"],
-                          headingColor: Colors.redAccent,
-                        ),
-                      ],
+            child: RefreshIndicator(
+              onRefresh: refreshTeamActivityAttendanceListData,
+              child: filteredData.isNotEmpty
+                  ? ListView.builder(
+                itemCount: filteredData.length,
+                itemBuilder: (context, index) {
+                  final data = filteredData[index];
+                  return Card(
+                    margin: const EdgeInsets.all(8.0),
+                    child: IntrinsicHeight(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _buildColumn(
+                            heading: 'Check In',
+                            imageUrl: '${AppConstants.baseUrl}/${data["inPhoto"]}',
+                            dateTime: data["dateTimeIn"],
+                            borderColor: Colors.green,
+                            location: data["location"],
+                            headingColor: Colors.green,
+                            remark: data["inRemarks"]
+                          ),
+                          const VerticalDivider(
+                            color: Colors.grey,
+                            thickness: 1,
+                            width: 10,
+                          ),
+                          _buildColumn(
+                            heading: 'Check Out',
+                            imageUrl: '${AppConstants.baseUrl}/${data["outPhoto"]}',
+                            dateTime: data["dateTimeOut"],
+                            borderColor: Colors.redAccent,
+                            location: data["outLocation"],
+                            headingColor: Colors.redAccent,
+                              remark: data["outRemarks"]
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              },
-            )
-                : const Center(
-              child: Text(
-                'No records found',
-                style: TextStyle(fontSize: 16),
+                  );
+                },
+              )
+                  : const Center(
+                child: Text(
+                  'No records found',
+                  style: TextStyle(fontSize: 16),
+                ),
               ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> refreshTeamActivityAttendanceListData() async {
+    await fetchTeamViewActivityAttendanceListData();
+    debugPrint('Team Activity Attendance List Data Refreshed');
   }
 
   Widget _buildColumn({
@@ -156,6 +165,7 @@ class _TeamViewActivityAttendanceListState extends State<TeamViewActivityAttenda
     required String? location,
     required Color borderColor,
     required Color headingColor,
+    required String? remark,
   }) {
     return Expanded(
       child: Container(
@@ -176,7 +186,7 @@ class _TeamViewActivityAttendanceListState extends State<TeamViewActivityAttenda
                 fontSize: 18,
               ),
             ),
-            const SizedBox(height: 2),
+            const Divider(thickness: 2, color: Colors.black26),
             SizedBox(
               height: 100,
               width: 100,
@@ -203,6 +213,18 @@ class _TeamViewActivityAttendanceListState extends State<TeamViewActivityAttenda
               textAlign: TextAlign.center,
               style: const TextStyle(
                 fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+              maxLines: 4,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              remark!,
+              textAlign: TextAlign.start,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey,
               ),
             ),
           ],

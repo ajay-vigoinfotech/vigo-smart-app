@@ -12,8 +12,6 @@ class TeamViewActivityAttendanceListViewModel {
   Future<void> fetchTeamViewActivityAttendanceList(String token, String userId) async {
     const url = '${AppConstants.baseUrl}/API/Duty/GetSelfieAttendanceMgr';
     try {
-
-
       final response = await _dio.post(
         url,
         options: Options(
@@ -33,8 +31,7 @@ class TeamViewActivityAttendanceListViewModel {
           debugPrint('teamActivityAttendanceList is empty');
         }
       } else {
-        debugPrint(
-            'Error :: ${response.statusCode} - ${response.statusMessage}');
+        debugPrint('Error :: ${response.statusCode} - ${response.statusMessage}');
       }
     } on DioException catch (e) {
       debugPrint('Dio Error ${e.message}');

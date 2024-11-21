@@ -1,8 +1,7 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import '../../auth/session_manager/session_manager.dart';
-import '../model/getselfieattendance_model.dart';
+import '../../../core/constants/constants.dart';
 import '../viewmodel/getselfieattendance_view_model.dart';
 
 class PunchHistory extends StatefulWidget {
@@ -13,202 +12,227 @@ class PunchHistory extends StatefulWidget {
 }
 
 class _PunchHistoryState extends State<PunchHistory> {
-  List<SelfieAttendanceTable> punchData = [];
-  bool isLoading = true;
-  final String baseUrl = 'http://ios.smarterp.live';
+  GetSelfieAttendanceViewModel getSelfieAttendanceViewModel = GetSelfieAttendanceViewModel();
+  List<Map<String, dynamic>> getSelfieAttendanceData = [];
+  List<Map<String, dynamic>> filteredData = [];
+  TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
+    fetchGetSelfieAttendanceData();
     super.initState();
-    fetchPunchHistory();
-    checkInternetConnection();
+  }
+
+  Future<void> fetchGetSelfieAttendanceData() async {
+    String? token = await getSelfieAttendanceViewModel.sessionManager.getToken();
+
+    if (token != null) {
+      await getSelfieAttendanceViewModel.fetchGetSelfieAttendanceList(token);
+
+      if (getSelfieAttendanceViewModel.getSelfieAttendanceList != null) {
+        setState(() {
+          getSelfieAttendanceData =
+              getSelfieAttendanceViewModel.getSelfieAttendanceList!
+                  .map((entry) => {
+                        "compId": entry.compId,
+                        "dateTimeIn": entry.dateTimeIn,
+                        "dateTimeOut": entry.dateTimeOut,
+                        "totalHours": entry.totalHours,
+                        "location": entry.location,
+                        "outLocation": entry.outLocation,
+                        "inRemarks": entry.inRemarks,
+                        "inPhoto": entry.inPhoto,
+                        "outPhoto": entry.outPhoto,
+                        "outRemarks": entry.outRemarks,
+                        "inKmsDriven": entry.inKmsDriven,
+                        "outKmsDriven": entry.outKmsDriven,
+                      })
+                  .toList();
+          filteredData = getSelfieAttendanceData;
+        });
+      }
+    }
+  }
+
+  void filterSearchResults(String query) {
+    if (query.isEmpty) {
+      setState(() {
+        filteredData = getSelfieAttendanceData;
+      });
+    } else {
+      setState(() {
+        filteredData = getSelfieAttendanceData.where((entry) {
+          final dateTimeIn = entry['dateTimeIn']?.toLowerCase() ?? '';
+          final dateTimeOut = entry['dateTimeOut']?.toLowerCase() ?? '';
+          final inRemarks = entry['inRemarks']?.toLowerCase() ?? '';
+          final outRemarks = entry['outRemarks']?.toLowerCase() ?? '';
+
+          return dateTimeIn.contains(query.toLowerCase()) ||
+              dateTimeOut.contains(query.toLowerCase()) ||
+              inRemarks.contains(query.toLowerCase()) ||
+              outRemarks.contains(query.toLowerCase());
+        }).toList();
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Punch History'),
+        title: const Text('Attendance History'),
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : punchData.isEmpty
-              ? const Center(child: Text('No punch data available.'))
-              : RefreshIndicator(
-                  onRefresh: fetchPunchHistory,
-                  child: ListView.builder(
-                    itemCount: punchData.length,
-                    itemBuilder: (context, index) {
-                      final attendance = punchData[index];
-
-                      // Corrected URLs for images
-                      final inPhotoUrl = attendance.inPhoto != null
-                          ? '$baseUrl${attendance.inPhoto!.replaceFirst('../', '/')}'
-                          : null;
-                      final outPhotoUrl = attendance.outPhoto != null
-                          ? '$baseUrl${attendance.outPhoto!.replaceFirst('../', '/')}'
-                          : null;
-
-                      return Card(
-                        margin: const EdgeInsets.all(10),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Row(
-                            children: [
-                              // Punch In Card
-                              Expanded(
-                                child: Container(
-                                  width: 250,
-                                  height: 250,
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
-                                        color: Colors.green, width: 2),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: [
-                                      const Text(
-                                        'Punch In',
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.green,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      if (inPhotoUrl != null)
-                                        Image.network(
-                                          inPhotoUrl,
-                                          width: 75,
-                                          height: 75,
-                                          fit: BoxFit.cover,
-                                          errorBuilder:
-                                              (context, error, stackTrace) =>
-                                                  const Icon(Icons.broken_image,
-                                                      color: Colors.red),
-                                        )
-                                      else
-                                        const Icon(Icons.image_not_supported,
-                                            size: 60, color: Colors.grey),
-                                      const SizedBox(height: 10),
-                                      Text(
-                                        attendance.dateTimeIn ?? "No Data",
-                                        style: const TextStyle(fontSize: 14),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      const SizedBox(height: 5),
-                                      Text(
-                                        attendance.location?.split(',').first ??
-                                            "No Location",
-                                        style: const TextStyle(fontSize: 14),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-
-                              // Punch Out Card with fixed size
-                              Expanded(
-                                child: Container(
-                                  width: 250,
-                                  height: 250,
-                                  decoration: BoxDecoration(
-                                    border:
-                                        Border.all(color: Colors.red, width: 2),
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      const Text(
-                                        'Punch Out',
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.red,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 10),
-                                      if (outPhotoUrl != null)
-                                        Image.network(
-                                          outPhotoUrl,
-                                          width: 75,
-                                          height: 75,
-                                          fit: BoxFit.cover,
-                                          errorBuilder:
-                                              (context, error, stackTrace) =>
-                                                  Image.asset(
-                                            'assets/images/place_holder.webp',
-                                            width: 130,
-                                          ),
-                                        )
-                                      else
-                                        const Icon(Icons.image_not_supported,
-                                            size: 60, color: Colors.grey),
-                                      const SizedBox(height: 10),
-                                      Text(
-                                        (attendance.dateTimeOut ?? '').isNotEmpty
-                                            ? attendance.dateTimeOut!
-                                            : "Not marked yet",
-                                        style: const TextStyle(fontSize: 14),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      const SizedBox(height: 5),
-                                      Text(
-                                        attendance.outLocation
-                                                ?.split(',')
-                                                .first ??
-                                            "No Location",
-                                        style: const TextStyle(fontSize: 14),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(5.0),
+            child: TextField(
+              controller: searchController,
+              onChanged: filterSearchResults,
+              decoration: InputDecoration(
+                hintText: "Search Employee",
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
                 ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: refreshGetSelfieAttendanceData,
+              child: filteredData.isNotEmpty
+                  ? ListView.builder(
+                itemCount: filteredData.length,
+                itemBuilder: (context, index) {
+                  final data = filteredData[index];
+                  return Card(
+                    margin: const EdgeInsets.all(8.0),
+                    child: IntrinsicHeight(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          _buildColumn(
+                              heading: 'Check In',
+                              imageUrl: '${AppConstants.baseUrl}/${data["inPhoto"]}',
+                              dateTime: data["dateTimeIn"],
+                              borderColor: Colors.green,
+                              location: data["location"],
+                              headingColor: Colors.green,
+                              remark: data["inRemarks"]
+                          ),
+                          const VerticalDivider(
+                            color: Colors.grey,
+                            thickness: 1,
+                            width: 10,
+                          ),
+                          _buildColumn(
+                              heading: 'Check Out',
+                              imageUrl: '${AppConstants.baseUrl}/${data["outPhoto"]}',
+                              dateTime: data["dateTimeOut"],
+                              borderColor: Colors.redAccent,
+                              location: data["outLocation"],
+                              headingColor: Colors.redAccent,
+                              remark: data["outRemarks"]
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              )
+                  : const Center(
+                child: Text(
+                  'No records found',
+                  style: TextStyle(fontSize: 16),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Future<void> fetchPunchHistory() async {
-    final SessionManager sessionManager = SessionManager();
-    final token = await sessionManager.getToken();
-    if (token == null || token.isEmpty) {
-      debugPrint('Failed to retrieve token.');
-      return;
-    }
+  Future<void> refreshGetSelfieAttendanceData() async {
+    await fetchGetSelfieAttendanceData();
+    debugPrint('Get SelfieAttendance Data Refreshed');
+  }
 
-    final GetSelfieAttendanceViewModel getSelfieAttendanceViewModel =
-        GetSelfieAttendanceViewModel();
-    final GetSelfieAttendanceViewModel? viewModel =
-        await getSelfieAttendanceViewModel.getSelfieAttendance(token);
-    debugPrint('server data refreshed');
 
-    if (viewModel != null && viewModel.getSelfieAttendanceModel != null) {
-      setState(() {
-        punchData = viewModel.getSelfieAttendanceModel!.table ?? [];
-        isLoading = false;
-      });
-    } else {
-      debugPrint('Failed to fetch attendance data.');
-      setState(() {
-        isLoading = false;
-      });
-    }
+  Widget _buildColumn({
+    required String heading,
+    required String imageUrl,
+    required String? dateTime,
+    required String? location,
+    required Color borderColor,
+    required Color headingColor,
+    required String? remark,
+  }) {
+    return Expanded(
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: borderColor, width: 2.0),
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Text(
+              heading,
+              style: TextStyle(
+                color: headingColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            const Divider(thickness: 2, color: Colors.black26),
+            SizedBox(
+              height: 100,
+              width: 100,
+              child: imageUrl.isNotEmpty
+                  ? Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) =>
+                    Image.asset('assets/images/place_holder.webp'),
+              )
+                  : Image.asset('assets/images/place_holder.webp'),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              (dateTime ?? '').isNotEmpty ? dateTime! : 'Not marked yet',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              location?.split('&').first ?? 'N/A',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
+              maxLines: 4,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              remark!,
+              textAlign: TextAlign.start,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<bool> checkInternetConnection() async {
@@ -219,7 +243,7 @@ class _PunchHistoryState extends State<PunchHistory> {
         builder: (context) => CupertinoAlertDialog(
           title: const Text("No Internet Connection"),
           content:
-              const Text("Please turn on the internet connection to proceed."),
+          const Text("Please turn on the internet connection to proceed."),
           actions: [
             CupertinoDialogAction(
               onPressed: () => Navigator.of(context).pop(),

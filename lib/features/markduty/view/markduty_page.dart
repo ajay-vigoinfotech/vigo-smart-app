@@ -294,9 +294,9 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
       padding: const EdgeInsets.all(15.0),
       child: Center(
         child: timeDateDisplay == null || timeDateDisplay!.isEmpty
-            ? const CircularProgressIndicator() // Show progress indicator when loading
+            ? const CircularProgressIndicator()
             : Text(
-                '$timeDateDisplay', // Show the actual time/date when available
+                '$timeDateDisplay',
                 style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
@@ -560,20 +560,15 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                                     await Utils.getBatteryLevel();
 
                                 String formatDate(String dateString) {
-                                  DateFormat inputFormat =
-                                      DateFormat("dd/MM/yyyy hh:mm a");
-                                  DateTime dateTime =
-                                      inputFormat.parse(dateString);
-                                  DateFormat outputFormat =
-                                      DateFormat("yyyy-MM-dd HH:mm");
+                                  DateFormat inputFormat = DateFormat("dd/MM/yyyy hh:mm a");
+                                  DateTime dateTime = inputFormat.parse(dateString);
+                                  DateFormat outputFormat = DateFormat("yyyy-MM-dd HH:mm");
                                   return outputFormat.format(dateTime);
                                 }
 
-                                String formattedDateTimeIn =
-                                    formatDate(punchTimeDateIn!);
+                                String formattedDateTimeIn = formatDate(punchTimeDateIn!);
 
-                                Map<String, dynamic> response =
-                                    await markSelfieAttendance.markAttendance(
+                                Map<String, dynamic> response = await markSelfieAttendance.markAttendance(
                                   token!,
                                   PunchDetails(
                                     deviceDetails: deviceDetails,
