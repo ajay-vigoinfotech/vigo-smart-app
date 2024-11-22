@@ -269,7 +269,7 @@ class _FieldReportingState extends State<FieldReporting> {
                   Text(
                     punchTimeDateIn ?? '',
                     style: const TextStyle(
-                      fontSize: 16,
+                      fontSize: 17,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
