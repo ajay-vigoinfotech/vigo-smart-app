@@ -197,23 +197,22 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: _isLoading
           ? const Center(
               child: CircularProgressIndicator(),
-            ) // Show loading indicator while fetching location
+            )
           : GoogleMap(
               myLocationButtonEnabled: false,
               markers: _markers,
               onMapCreated: (GoogleMapController controller) {
                 _googleMapController = controller;
-                _moveCameraToLocation(); // Move the camera once the map is created
+                _moveCameraToLocation();
               },
               initialCameraPosition: CameraPosition(
-                target: _googlePlex!, // Use the current location once fetched
+                target: _googlePlex!,
                 zoom: 16,
               ),
               onCameraMove: (CameraPosition position) {
@@ -221,7 +220,7 @@ class _MapPageState extends State<MapPage> {
               },
               onCameraIdle: () {
                 if (_isMapBeingMoved) {
-                  Future.delayed(const Duration(seconds: 2), () {
+                  Future.delayed(const Duration(seconds: 3), () {
                     _moveCameraToLocation();
                     _isMapBeingMoved = false;
                   });

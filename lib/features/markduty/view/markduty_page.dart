@@ -38,7 +38,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   String formattedAccuracyValue = '';
   String uniqueIdv4 = "";
   String? inKm;
-  String? inKmText;
+  String?  inKmText;
   String? outKmText;
   String? dutyInRemark;
   String? dutyOutRemark;
@@ -57,8 +57,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   final picker = ImagePicker();
   final SessionManager sessionManager = SessionManager();
   final MarkSelfieAttendance markSelfieAttendance = MarkSelfieAttendance();
-  final GetLastSelfieAttViewModel getLastSelfieAttViewModel =
-      GetLastSelfieAttViewModel();
+  final GetLastSelfieAttViewModel getLastSelfieAttViewModel = GetLastSelfieAttViewModel();
   @override
   void initState() {
     super.initState();
@@ -149,10 +148,11 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                             style: TextStyle(
                                 fontSize: 22,
                                 color: Colors.white,
-                                fontWeight: FontWeight.bold),
+                                fontWeight: FontWeight.bold
+                            ),
                           ),
                         ),
-                      )
+                      ),
                     ],
                   ),
                 ),
@@ -437,8 +437,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
 
     if (markInImage != null) {
       final File image = File(markInImage.path);
-      final List<int>? compressedBytes =
-          await FlutterImageCompress.compressWithFile(
+      final List<int>? compressedBytes = await FlutterImageCompress.compressWithFile(
         image.absolute.path,
         minWidth: 400,
         minHeight: 400,
@@ -546,18 +545,12 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                                 print("Selfie attendance data saved to session manager.");
 
                                 String? token = await sessionManager.getToken();
-                                MarkSelfieAttendance markSelfieAttendance =
-                                    MarkSelfieAttendance();
-                                final String deviceDetails =
-                                    await Utils.getDeviceDetails(context);
-                                final String appVersion =
-                                    await Utils.getAppVersion();
-                                final String ipAddress =
-                                    await Utils.getIpAddress();
-                                final String uniqueId =
-                                    await Utils.getUniqueID();
-                                final int battery =
-                                    await Utils.getBatteryLevel();
+                                MarkSelfieAttendance markSelfieAttendance = MarkSelfieAttendance();
+                                final String deviceDetails = await Utils.getDeviceDetails(context);
+                                final String appVersion = await Utils.getAppVersion();
+                                final String ipAddress = await Utils.getIpAddress();
+                                final String uniqueId = await Utils.getUniqueID();
+                                final int battery = await Utils.getBatteryLevel();
 
                                 String formatDate(String dateString) {
                                   DateFormat inputFormat = DateFormat("dd/MM/yyyy hh:mm a");
