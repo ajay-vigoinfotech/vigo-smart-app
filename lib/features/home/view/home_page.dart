@@ -56,7 +56,8 @@ class _HomePageState extends State<HomePage> {
   final LoginViewModel _viewModel = LoginViewModel();
   final MarkLoginViewModel markLoginViewModel = MarkLoginViewModel();
   final UserViewModel userViewModel = UserViewModel();
-  final GetLastSelfieAttViewModel getLastSelfieAttViewModel = GetLastSelfieAttViewModel();
+  final GetLastSelfieAttViewModel getLastSelfieAttViewModel =
+      GetLastSelfieAttViewModel();
   final CheckSessionViewModel checkSessionViewModel = CheckSessionViewModel();
 
   final List<Map<String, dynamic>> allModules = [
@@ -194,10 +195,14 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _loadAppName();
-    getUserData().then((_) {
-      getModules();
-      refreshServerData();
-    });
+
+    refreshServerData();
+    getUserData();
+    getModules();
+    // getUserData().then((_) {
+    //   getModules();
+    //   refreshServerData();
+    // });
     checkUserSession();
     sessionManager.getModuleCodes().then((savedModules) {
       if (savedModules != null && savedModules.isNotEmpty) {

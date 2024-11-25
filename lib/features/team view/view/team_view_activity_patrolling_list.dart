@@ -144,7 +144,7 @@ class _TeamViewActivityPatrollingListState extends State<TeamViewActivityPatroll
     required String? location,
     required Color borderColor,
     required Color headingColor,
-    required String remark, // Changed from Color to String for remark content
+    required String remark,
   }) {
     return Expanded(
       child: Container(
