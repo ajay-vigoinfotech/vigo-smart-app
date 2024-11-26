@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
@@ -26,10 +28,10 @@ class FieldReporting extends StatefulWidget {
   State<FieldReporting> createState() => _FieldReportingState();
 }
 
-class _FieldReportingState extends State<FieldReporting> {
+class _FieldReportingState extends State<FieldReporting>
+    with SingleTickerProviderStateMixin {
   SessionManager sessionManager = SessionManager();
-  GetFieldReportingViewModel getFieldReportingViewModel =
-      GetFieldReportingViewModel();
+  GetFieldReportingViewModel getFieldReportingViewModel = GetFieldReportingViewModel();
   List<Map<String, dynamic>> getFieldReportingData = [];
   List<Map<String, dynamic>> filteredData = [];
   TextEditingController searchController = TextEditingController();
@@ -46,6 +48,8 @@ class _FieldReportingState extends State<FieldReporting> {
 
   bool isLoading = false;
 
+  late TabController _tabController;
+
   @override
   void initState() {
     _loadCurrentDateTime();
@@ -53,6 +57,45 @@ class _FieldReportingState extends State<FieldReporting> {
     _getPunchTimeDateInFromSP();
     fetchGetFieldReportingData();
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(_handleTabChange);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleTabChange() async {
+    if (_tabController.index == 1) {
+      bool isConnected = await checkInternetConnection();
+      if (!isConnected) {
+        _tabController.index = 1;
+      }
+    }
+  }
+
+  Future<bool> checkInternetConnection() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+      showCupertinoDialog(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: const Text("No Internet Connection"),
+          content:
+              const Text("Please turn on the internet connection to proceed."),
+          actions: [
+            CupertinoDialogAction(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+      return false;
+    }
+    return true;
   }
 
   @override
@@ -62,7 +105,8 @@ class _FieldReportingState extends State<FieldReporting> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text(Strings.fieldReportingApp),
-          bottom: const TabBar(
+          bottom: TabBar(
+            controller: _tabController,
             tabs: [
               Tab(child: Text('MARK PATROLLING')),
               Tab(child: Text('PUNCH HISTORY')),
@@ -70,6 +114,7 @@ class _FieldReportingState extends State<FieldReporting> {
           ),
         ),
         body: TabBarView(
+          controller: _tabController,
           children: [
             // MARK PATROLLING Tab Content
             SingleChildScrollView(
@@ -191,6 +236,8 @@ class _FieldReportingState extends State<FieldReporting> {
   }
 
   Future<void> onInButtonPressed() async {
+    bool isConnected = await checkInternetConnection();
+    if (!isConnected) return;
     final ImagePicker picker = ImagePicker();
     final XFile? patrollingImage = await picker.pickImage(
       source: ImageSource.camera,
@@ -333,19 +380,16 @@ class _FieldReportingState extends State<FieldReporting> {
                                           type: QuickAlertType.success,
                                           text: '${response['status']}',
                                           onConfirmBtnTap: () {
-                                            if (Navigator.canPop(
-                                                this.context)) {
-                                              Navigator.pop(this.context);
-                                            }
-
-                                            Navigator.pushReplacement(
+                                            Navigator.pushAndRemoveUntil(
                                               this.context,
                                               MaterialPageRoute(
                                                   builder: (context) =>
                                                       HomePage()),
+                                              (route) => false,
                                             );
                                           },
                                         );
+
                                         _loadPunchInImageFromSP();
                                       } else {
                                         ScaffoldMessenger.of(context)

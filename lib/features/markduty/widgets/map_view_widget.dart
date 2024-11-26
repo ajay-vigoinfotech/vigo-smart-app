@@ -7,11 +7,11 @@ class MapViewWidget extends StatefulWidget {
   final Function(String) onAccuracyReceived;
 
   const MapViewWidget({
-    Key? key,
+    super.key,
     required this.onLocationReceived,
     required this.onSpeedReceived,
     required this.onAccuracyReceived,
-  }) : super(key: key);
+  });
 
   @override
   _MapViewWidgetState createState() => _MapViewWidgetState();

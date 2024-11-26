@@ -71,9 +71,9 @@ class Utils {
 
   // Method to get the FCM token
   static Future<String?> getFCMToken() async {
-    final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
+    final FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
     try {
-      final token = await _firebaseMessaging.getToken();
+      final token = await firebaseMessaging.getToken();
       print('FCM Token: $token');
       return token;
     } catch (e) {

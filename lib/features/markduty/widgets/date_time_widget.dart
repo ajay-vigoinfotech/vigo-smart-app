@@ -5,8 +5,7 @@ import '../viewmodel/get_current_date_view_model.dart';
 class DateTimeWidget extends StatefulWidget {
   final GetCurrentDateViewModel getCurrentDateViewModel;
 
-  const DateTimeWidget({Key? key, required this.getCurrentDateViewModel})
-      : super(key: key);
+  const DateTimeWidget({super.key, required this.getCurrentDateViewModel});
 
   @override
   _DateTimeWidgetState createState() => _DateTimeWidgetState();

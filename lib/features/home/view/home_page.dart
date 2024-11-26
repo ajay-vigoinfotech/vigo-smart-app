@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:vigo_smart_app/features/home/widgets/setting_page.dart';
 import 'package:vigo_smart_app/features/markduty/view/markduty_page.dart';
 import 'package:vigo_smart_app/features/punchHistory/view/punch_history.dart';
+import 'package:vigo_smart_app/features/site%20reporting/view/site_reporting.dart';
 import 'package:vigo_smart_app/features/team%20view/view/team_view.dart';
 import '../../../core/constants/constants.dart';
 import '../../../core/strings/strings.dart';
@@ -122,7 +123,7 @@ class _HomePageState extends State<HomePage> {
       'icon': Image.asset('assets/images/site_reporting.webp'),
       'name': Strings.siteReportingApp,
       'color': Pallete.backgroundColor,
-      'page': const SettingPage(),
+      'page': const SiteReporting(searchText: '1',),
     },
     {
       'code': 'SiteReportingQRApp',
