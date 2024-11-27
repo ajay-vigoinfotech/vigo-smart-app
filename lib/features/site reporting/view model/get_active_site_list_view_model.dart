@@ -1,6 +1,3 @@
-
-import 'dart:convert';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:vigo_smart_app/core/constants/constants.dart';
@@ -24,10 +21,10 @@ class GetActiveSiteListViewModel {
         data: {'SearchText': searchText},
       );
 
-      if (response.statusCode == 200) {
-        //debugPrint('$response');
-        //final List<dynamic> responseData = jsonDecode(response.data);
-        //getActiveSiteList = GetActiveSiteListModel.fromJsonList(responseData);
+      if (response.statusCode == 200 && response.data != null) {
+        // Parse response data
+        final List<dynamic> jsonList = response.data;
+        getActiveSiteList = GetActiveSiteListModel.fromJsonList(jsonList);
       } else {
         throw Exception(
             'Failed to load active site list: ${response.statusCode}');

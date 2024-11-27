@@ -123,7 +123,7 @@ class _HomePageState extends State<HomePage> {
       'icon': Image.asset('assets/images/site_reporting.webp'),
       'name': Strings.siteReportingApp,
       'color': Pallete.backgroundColor,
-      'page': const SiteReporting(searchText: '1',),
+      'page': const SiteReporting(searchText: '',),
     },
     {
       'code': 'SiteReportingQRApp',
