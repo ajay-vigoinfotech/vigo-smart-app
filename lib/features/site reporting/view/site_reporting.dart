@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:vigo_smart_app/features/site%20reporting/view/site_reporting_step_2.dart';
+import '../../../helper/database_helper.dart';
 import '../model/get_active_site_list_model.dart';
 import '../view model/get_active_site_list_view_model.dart';
+import '../view model/get_activity_questions_list_app_view_model.dart';
 
 class SiteReporting extends StatefulWidget {
   final String searchText;
@@ -13,22 +15,49 @@ class SiteReporting extends StatefulWidget {
 
 class _SiteReportingState extends State<SiteReporting>
     with SingleTickerProviderStateMixin {
-  GetActiveSiteListViewModel getActiveSiteListViewModel =
-      GetActiveSiteListViewModel();
-  List<Map<String, dynamic>> getActiveSiteListData = [];
-  List<Map<String, dynamic>> filteredData = [];
+  GetActiveSiteListViewModel getActiveSiteListViewModel = GetActiveSiteListViewModel();
+  GetActivityQuestionsListAppViewModel getActivityQuestionsListAppViewModel = GetActivityQuestionsListAppViewModel();
 
+  List<Map<String, dynamic>> getActiveSiteListData = [];
+  List<Map<String, dynamic>> getActivityQuestionsListData = [];
+  List<Map<String, dynamic>> filteredData = [];
   List<GetActiveSiteListModel> getActiveSiteList = [];
 
   TextEditingController searchController = TextEditingController();
-
   late TabController _tabController;
+
   @override
   void initState() {
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_handleTabChange);
     fetchGetActiveSiteListData();
     super.initState();
+  }
+
+  Future<void> fetchGetActivityQuestionsListData() async {
+    String? token =
+        await getActivityQuestionsListAppViewModel.sessionManager.getToken();
+    if (token != null) {
+      await getActivityQuestionsListAppViewModel
+          .fetchGetActivityQuestionsList(token);
+      if (getActivityQuestionsListAppViewModel.getActivityQuestionsListCount !=
+          null) {
+        setState(() {
+          getActivityQuestionsListData = getActivityQuestionsListAppViewModel
+              .getActivityQuestionsListCount!
+              .map((entry) => {
+                    "activityId": entry.activityId,
+                    "activityName": entry.activityName,
+                    "questionId": entry.questionId,
+                    "questionName": entry.questionName,
+                  })
+              .toList();
+        });
+        // Save data to SQLite
+        DatabaseHelper dbHelper = DatabaseHelper();
+        await dbHelper.insertActivityQuestions(getActivityQuestionsListData);
+      }
+    }
   }
 
   void _handleTabChange() {
@@ -63,6 +92,7 @@ class _SiteReportingState extends State<SiteReporting>
                 child: GestureDetector(
                     onTap: () {
                       debugPrint('Refresh Button tapped');
+                      fetchGetActivityQuestionsListData();
                     },
                     child: Icon(Icons.refresh)),
               ),
@@ -75,7 +105,7 @@ class _SiteReportingState extends State<SiteReporting>
           bottom: TabBar(
             controller: _tabController,
             tabs: [
-              Tab(child: Text('ALL SITES',textAlign: TextAlign.center)),
+              Tab(child: Text('ALL SITES', textAlign: TextAlign.center)),
               Tab(child: Text('SEARCH SITES', textAlign: TextAlign.center)),
               Tab(child: Text('SCHEDULE SITES', textAlign: TextAlign.center)),
             ],
@@ -257,13 +287,14 @@ class _SiteReportingState extends State<SiteReporting>
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          const SizedBox(width: 5),
           const Icon(Icons.add_location, color: Colors.green, size: 30),
-          const SizedBox(width: 1),
+          const SizedBox(width: 5),
           Expanded(
             child: Text(
               displayText,
               textAlign: TextAlign.start,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
               softWrap: true,
               maxLines: 5,
             ),
