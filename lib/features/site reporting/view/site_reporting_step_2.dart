@@ -56,7 +56,7 @@ class _SiteReportingStep2State extends State<SiteReportingStep2> {
               padding: EdgeInsets.all(8.0),
               child: Text(
                 'Select Activity - Steps 2/4',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
             Padding(

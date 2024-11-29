@@ -36,12 +36,17 @@ class DatabaseHelper {
 
   Future<void> insertActivityQuestions(List<Map<String, dynamic>> questions) async {
     final db = await database;
-    Batch batch = db.batch();
-    for (var question in questions) {
-      batch.insert('activity_questions', question,
-          conflictAlgorithm: ConflictAlgorithm.replace);
-    }
-    await batch.commit(noResult: true);
+
+    await db.transaction((txn) async {
+      await txn.delete('activity_questions');
+
+      Batch batch = txn.batch();
+      for (var question in questions) {
+        batch.insert('activity_questions', question,
+            conflictAlgorithm: ConflictAlgorithm.replace);
+      }
+      await batch.commit(noResult: true);
+    });
   }
 
   Future<List<Map<String, dynamic>>> fetchAllQuestions() async {

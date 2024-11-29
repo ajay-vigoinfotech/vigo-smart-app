@@ -9,11 +9,14 @@ class MapPage extends StatefulWidget {
   final Function(String)locationReceived;
   final Function(String) speedReceived;
   final Function(String)accuracyReceived;
+  final bool isMapVisible;
+
   const MapPage({
     super.key,
     required this.locationReceived,
     required this.speedReceived,
     required this.accuracyReceived,
+    required this.isMapVisible,
   });
 
   @override

@@ -313,7 +313,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
       child: MapPage(
         locationReceived: _onLocationReceived,
         speedReceived: _onSpeedReceived,
-        accuracyReceived: _onAccuracyReceived,
+        accuracyReceived: _onAccuracyReceived, isMapVisible: true,
       ),
     );
   }

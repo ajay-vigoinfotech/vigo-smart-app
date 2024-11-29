@@ -307,44 +307,28 @@ class _FieldReportingState extends State<FieldReporting>
                                     try {
                                       await _loadCurrentDateTime();
                                       punchTimeDateIn = timeDateDisplay;
-                                      await _savePunchTimeDateInToSP(
-                                          punchTimeDateIn!);
-                                      await _saveImageToSP(
-                                          patrollingImage.path);
+                                      await _savePunchTimeDateInToSP(punchTimeDateIn!);
+                                      await _saveImageToSP(patrollingImage.path);
                                       uniqueIdv4 = const Uuid().v4();
 
-                                      String? token =
-                                          await sessionManager.getToken();
-                                      MarkFieldReportingViewModel
-                                          markFieldReportingViewModel =
-                                          MarkFieldReportingViewModel();
-                                      final String deviceDetails =
-                                          await Utils.getDeviceDetails(context);
-                                      final String appVersion =
-                                          await Utils.getAppVersion();
-                                      final String ipAddress =
-                                          await Utils.getIpAddress();
-                                      final String uniqueId =
-                                          await Utils.getUniqueID();
-                                      final int battery =
-                                          await Utils.getBatteryLevel();
+                                      String? token = await sessionManager.getToken();
+                                      MarkFieldReportingViewModel markFieldReportingViewModel = MarkFieldReportingViewModel();
+                                      final String deviceDetails = await Utils.getDeviceDetails(context);
+                                      final String appVersion = await Utils.getAppVersion();
+                                      final String ipAddress = await Utils.getIpAddress();
+                                      final String uniqueId = await Utils.getUniqueID();
+                                      final int battery = await Utils.getBatteryLevel();
 
                                       String formatDate(String dateString) {
-                                        DateFormat inputFormat =
-                                            DateFormat("dd/MM/yyyy hh:mm a");
-                                        DateTime dateTime =
-                                            inputFormat.parse(dateString);
-                                        DateFormat outputFormat =
-                                            DateFormat("yyyy-MM-dd HH:mm");
+                                        DateFormat inputFormat = DateFormat("dd/MM/yyyy hh:mm a");
+                                        DateTime dateTime = inputFormat.parse(dateString);
+                                        DateFormat outputFormat = DateFormat("yyyy-MM-dd HH:mm");
                                         return outputFormat.format(dateTime);
                                       }
 
-                                      String formattedDateTimeIn =
-                                          formatDate(punchTimeDateIn!);
+                                      String formattedDateTimeIn = formatDate(punchTimeDateIn!);
 
-                                      Map<String, dynamic> response =
-                                          await markFieldReportingViewModel
-                                              .markFieldReporting(
+                                      Map<String, dynamic> response = await markFieldReportingViewModel.markFieldReporting(
                                         token!,
                                         MarkFieldReportingModel(
                                           deviceDetails: deviceDetails,
@@ -357,8 +341,7 @@ class _FieldReportingState extends State<FieldReporting>
                                           dataStatus: '',
                                           checkInId: uniqueIdv4,
                                           punchAction: 'IN',
-                                          locationAccuracy:
-                                              formattedAccuracyValue,
+                                          locationAccuracy: formattedAccuracyValue,
                                           locationSpeed: formattedSpeedValue,
                                           batteryStatus: '$battery',
                                           locationStatus: 'true',
@@ -500,7 +483,7 @@ class _FieldReportingState extends State<FieldReporting>
       child: MapPage(
         locationReceived: _onLocationReceived,
         speedReceived: _onSpeedReceived,
-        accuracyReceived: _onAccuracyReceived,
+        accuracyReceived: _onAccuracyReceived, isMapVisible: true,
       ),
     );
   }

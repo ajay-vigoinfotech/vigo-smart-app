@@ -1,4 +1,8 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:vigo_smart_app/features/site%20reporting/view/site_reporting_step_4.dart';
 
 class SiteReportingStep3 extends StatefulWidget {
   final int activityId;
@@ -19,6 +23,9 @@ class SiteReportingStep3 extends StatefulWidget {
 }
 
 class _SiteReportingStep3State extends State<SiteReportingStep3> {
+  final Map<int, Map<String, dynamic>> userResponses = {};
+  bool showError = false;
+
   @override
   Widget build(BuildContext context) {
     // Filter questions by activityId and ensure unique questionId
@@ -51,7 +58,7 @@ class _SiteReportingStep3State extends State<SiteReportingStep3> {
                     child: Text(
                       'Questions List - Steps 3/4',
                       style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -59,6 +66,7 @@ class _SiteReportingStep3State extends State<SiteReportingStep3> {
                 ...uniqueQuestions.asMap().entries.map((entry) {
                   final index = entry.key;
                   final question = entry.value;
+                  final questionId = question['questionId'];
 
                   return Padding(
                     padding: const EdgeInsets.all(8.0),
@@ -70,14 +78,6 @@ class _SiteReportingStep3State extends State<SiteReportingStep3> {
                           '${index + 1}. ${question['questionName']}',
                           style: const TextStyle(fontSize: 18),
                         ),
-                        // Comment Input
-                        TextField(
-                          decoration:
-                              const InputDecoration(hintText: 'Comment'),
-                          onChanged: (value) {
-                            question['comment'] = value;
-                          },
-                        ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
@@ -85,10 +85,16 @@ class _SiteReportingStep3State extends State<SiteReportingStep3> {
                               children: [
                                 Radio<int>(
                                   value: 1,
-                                  groupValue: question['selectedOption'],
+                                  groupValue: userResponses[questionId]
+                                      ?['selectedOption'],
                                   onChanged: (value) {
                                     setState(() {
-                                      question['selectedOption'] = value;
+                                      userResponses[questionId] =
+                                          userResponses[questionId] ?? {};
+                                      userResponses[questionId]![
+                                          'selectedOption'] = value;
+                                      showError =
+                                          false; // Reset error if corrected
                                     });
                                   },
                                 ),
@@ -100,10 +106,16 @@ class _SiteReportingStep3State extends State<SiteReportingStep3> {
                               children: [
                                 Radio<int>(
                                   value: 2,
-                                  groupValue: question['selectedOption'],
+                                  groupValue: userResponses[questionId]
+                                      ?['selectedOption'],
                                   onChanged: (value) {
                                     setState(() {
-                                      question['selectedOption'] = value;
+                                      userResponses[questionId] =
+                                          userResponses[questionId] ?? {};
+                                      userResponses[questionId]![
+                                          'selectedOption'] = value;
+                                      showError =
+                                          false; // Reset error if corrected
                                     });
                                   },
                                 ),
@@ -112,6 +124,30 @@ class _SiteReportingStep3State extends State<SiteReportingStep3> {
                             ),
                           ],
                         ),
+                        // Validation Error for Unselected Questions
+                        if (showError &&
+                            (userResponses[questionId]?['selectedOption'] ==
+                                null))
+                          const Padding(
+                            padding: EdgeInsets.only(top: 8.0),
+                            child: Text(
+                              'Please select an option.',
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontSize: 14,
+                              ),
+                            ),
+                          ),
+                        // Comment Input
+                        TextField(
+                          decoration:
+                              const InputDecoration(hintText: 'Comment'),
+                          onChanged: (value) {
+                            userResponses[questionId] =
+                                userResponses[questionId] ?? {};
+                            userResponses[questionId]!['comment'] = value;
+                          },
+                        ),
                       ],
                     ),
                   );
@@ -119,22 +155,63 @@ class _SiteReportingStep3State extends State<SiteReportingStep3> {
                 // Submit Button
                 Center(
                   child: Padding(
-                    padding: EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.all(16.0),
                     child: ElevatedButton(
-                      style: ButtonStyle(
-                        backgroundColor: WidgetStateProperty.all(Colors.blue),
-                        padding: WidgetStateProperty.all(
-                          const EdgeInsets.symmetric(
-                              horizontal: 24.0, vertical: 12.0),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 32, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
                         ),
-                        shape: WidgetStateProperty.all(
-                          RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                        ),
+                        elevation: 5,
                       ),
                       onPressed: () {
-                        //debugPrint('Responses: ${uniqueQuestions.toString()}');
+                        final isValid = uniqueQuestions.every((question) {
+                          final questionId = question['questionId'];
+                          return userResponses[questionId]?['selectedOption'] !=
+                              null;
+                        });
+
+                        if (!isValid) {
+                          setState(() {
+                            showError = true;
+                          });
+
+                          Fluttertoast.showToast(
+                            msg: "Please select an option for all questions.",
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.BOTTOM,
+                            backgroundColor: Colors.red,
+                            textColor: Colors.white,
+                            fontSize: 16.0,
+                          );
+                          return;
+                        }
+
+                        // Prepare Responses
+                        final responses = userResponses.entries.map((entry) {
+                          final questionId = entry.key;
+                          final response = entry.value;
+                          final selectedOption =
+                              response['selectedOption'] == 1 ? 'yes' : 'no';
+                          return {
+                            'questionId': questionId,
+                            'selectedOption': selectedOption,
+                            'comment': response['comment'] ?? '',
+                          };
+                        }).toList();
+
+                        print('Responses: $responses');
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => SiteReportingStep4(
+                              value: widget.value,
+                            ),
+                          ),
+                        );
                       },
                       child: const Text(
                         'TAKE PHOTO',
@@ -149,5 +226,27 @@ class _SiteReportingStep3State extends State<SiteReportingStep3> {
               ],
             ),
     );
+  }
+
+  Future<bool> checkInternetConnection() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+      showCupertinoDialog(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: const Text("No Internet Connection"),
+          content:
+              const Text("Please turn on the internet connection to proceed."),
+          actions: [
+            CupertinoDialogAction(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+      return false;
+    }
+    return true;
   }
 }

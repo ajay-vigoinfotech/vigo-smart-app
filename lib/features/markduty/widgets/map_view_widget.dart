@@ -45,7 +45,7 @@ class _MapViewWidgetState extends State<MapViewWidget> {
             formattedAccuracyValue = accuracy;
           });
           widget.onAccuracyReceived(accuracy);
-        },
+        }, isMapVisible: true,
       ),
     );
   }
