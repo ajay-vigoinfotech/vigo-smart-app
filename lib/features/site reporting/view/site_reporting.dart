@@ -123,7 +123,7 @@ class _SiteReportingState extends State<SiteReporting>
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   'Select Location - Steps 1/4',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
               Padding(
