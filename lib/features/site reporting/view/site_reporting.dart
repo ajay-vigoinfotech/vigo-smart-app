@@ -191,6 +191,7 @@ class _SiteReportingState extends State<SiteReporting>
                                     MaterialPageRoute(
                                       builder: (context) => SiteReportingStep2(
                                         value: filteredData[index]['value'],
+                                        text : filteredData[index]['text']
                                       ),
                                     ),
                                   );

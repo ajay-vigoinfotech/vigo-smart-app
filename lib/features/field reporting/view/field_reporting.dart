@@ -241,13 +241,12 @@ class _FieldReportingState extends State<FieldReporting>
     final ImagePicker picker = ImagePicker();
     final XFile? patrollingImage = await picker.pickImage(
       source: ImageSource.camera,
-      imageQuality: 70, // Reduced quality for better compression
+      imageQuality: 70,
     );
 
     if (patrollingImage != null) {
       final File image = File(patrollingImage.path);
-      final List<int>? compressedBytes =
-          await FlutterImageCompress.compressWithFile(
+      final List<int>? compressedBytes = await FlutterImageCompress.compressWithFile(
         image.absolute.path,
         minWidth: 400,
         minHeight: 400,

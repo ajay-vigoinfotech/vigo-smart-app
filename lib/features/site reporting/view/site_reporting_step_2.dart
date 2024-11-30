@@ -3,9 +3,10 @@ import 'package:vigo_smart_app/features/site%20reporting/view/site_reporting_ste
 import '../../../helper/database_helper.dart';
 
 class SiteReportingStep2 extends StatefulWidget {
-  const SiteReportingStep2({super.key, required this.value});
+  const SiteReportingStep2({super.key, required this.value, required this.text});
 
   final dynamic value;
+  final dynamic text;
 
   @override
   State<SiteReportingStep2> createState() => _SiteReportingStep2State();
@@ -90,20 +91,19 @@ class _SiteReportingStep2State extends State<SiteReportingStep2> {
                                     activityName: activity['activityName'],
                                     questions: _questions,
                                     value: widget.value,
+                                    text:widget.text,
                                   ),
                                 ),
                               );
                             },
                             child: Card(
-                              margin:
-                                  const EdgeInsets.symmetric(vertical: 10.0),
+                              margin: const EdgeInsets.symmetric(vertical: 10.0),
                               elevation: 5,
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: SizedBox(
                                   child: Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
+                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                     children: [
                                       _buildCardColumn(
                                         displayText:
