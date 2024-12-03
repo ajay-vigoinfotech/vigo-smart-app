@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vigo_smart_app/features/site%20reporting/view/site_reporting_details.dart';
 import 'package:vigo_smart_app/features/site%20reporting/view/site_reporting_step_2.dart';
 import '../../../helper/database_helper.dart';
 import '../model/get_active_site_list_model.dart';
@@ -15,8 +16,10 @@ class SiteReporting extends StatefulWidget {
 
 class _SiteReportingState extends State<SiteReporting>
     with SingleTickerProviderStateMixin {
-  GetActiveSiteListViewModel getActiveSiteListViewModel = GetActiveSiteListViewModel();
-  GetActivityQuestionsListAppViewModel getActivityQuestionsListAppViewModel = GetActivityQuestionsListAppViewModel();
+  GetActiveSiteListViewModel getActiveSiteListViewModel =
+      GetActiveSiteListViewModel();
+  GetActivityQuestionsListAppViewModel getActivityQuestionsListAppViewModel =
+      GetActivityQuestionsListAppViewModel();
 
   List<Map<String, dynamic>> getActiveSiteListData = [];
   List<Map<String, dynamic>> getActivityQuestionsListData = [];
@@ -99,7 +102,14 @@ class _SiteReportingState extends State<SiteReporting>
             SizedBox(width: 5),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Icon(Icons.article_sharp),
+              child: GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => SiteReportingDetails()));
+                  },
+                  child: Icon(Icons.article_sharp)),
             ),
           ],
           bottom: TabBar(
@@ -190,9 +200,8 @@ class _SiteReportingState extends State<SiteReporting>
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => SiteReportingStep2(
-                                        value: filteredData[index]['value'],
-                                        text : filteredData[index]['text']
-                                      ),
+                                          value: filteredData[index]['value'],
+                                          text: filteredData[index]['text']),
                                     ),
                                   );
                                 },
@@ -260,7 +269,7 @@ class _SiteReportingState extends State<SiteReporting>
   void filterSearchResults(String query) {
     if (query.isEmpty) {
       setState(() {
-        filteredData = []; // Clear filtered data when query is empty
+        filteredData = [];
       });
     } else {
       setState(() {

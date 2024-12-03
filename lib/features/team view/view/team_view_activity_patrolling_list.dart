@@ -50,7 +50,6 @@ class _TeamViewActivityPatrollingListState extends State<TeamViewActivityPatroll
     }
   }
 
-
   void filterSearchResults(String query) {
     if (query.isEmpty) {
       setState(() {

@@ -27,7 +27,7 @@ class TeamViewPatrollingListViewModel {
       if(response.statusCode == 200) {
         final responseData = PatrollingListResponse.fromJson(response.data);
         if(responseData.table.isNotEmpty) {
-          debugPrint('$response');
+          //debugPrint('$response');
           patrollingList = responseData.table;
         } else {
           debugPrint('Table Data is Empty');

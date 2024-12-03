@@ -76,7 +76,7 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
         selectedFile.path,
         minWidth: 100,
         minHeight: 100,
-        quality: 10,
+        quality: 100,
       );
 
       if (compressedImage != null) {
@@ -273,9 +273,6 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
                 ),
               ],
             ),
-            // Text(widget.selectedOptions.join(', ')),
-            // Text(widget.questionIds.join(', ')),
-            // Text(widget.comments.join(', ')),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: TextField(
@@ -401,7 +398,7 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
                       token!,
                       MarkSiteVisitModel(
                           clientSiteId: widget.value,
-                          checkListRes: widget.selectedOptions.join(', '),
+                          checkListRes: widget.selectedOptions.join(','),
                           deviceDetails: deviceDetails,
                           deviceImei: uniqueId,
                           deviceIp: ipAddress,
@@ -414,8 +411,8 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
                           version: appVersion,
                           locationName: '-',
                           assetImg: assetImgString,
-                          checkListComments: widget.comments.join(', '),
-                          checkListQuesId: widget.questionIds.join(', '),
+                          checkListComments: widget.comments.join('*,*'),
+                          checkListQuesId: widget.questionIds.join(','),
                           userImage: _base64UserImage,
                           batteryStatus: '$battery',
                           locationDetails: '$formattedSpeedValue/$formattedAccuracyValue',
@@ -470,6 +467,7 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
                 ),
               ),
             ),
+            SizedBox(height: 30),
           ],
         ),
       ),
