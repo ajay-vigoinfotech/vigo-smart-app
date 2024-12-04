@@ -123,7 +123,6 @@ class _SiteReportingStep3State extends State<SiteReportingStep3> {
                       ),
                     ],
                   ),
-                  // Validation Error for Unselected Questions
                   if (showError &&
                       (userResponses[questionId]?['selectedOption'] == null))
                     const Padding(
@@ -141,9 +140,8 @@ class _SiteReportingStep3State extends State<SiteReportingStep3> {
                     decoration:
                     const InputDecoration(hintText: 'Comment'),
                     onChanged: (value) {
-                      userResponses[questionId] =
-                          userResponses[questionId] ?? {};
-                      userResponses[questionId]!['comment'] = value;
+                      userResponses[questionId] = userResponses[questionId] ?? {};
+                      userResponses[questionId]!['comment'] = value ;
                     },
                   ),
                 ],
@@ -197,7 +195,7 @@ class _SiteReportingStep3State extends State<SiteReportingStep3> {
                     questionIds.add(questionId.toString());
                     selectedOptions
                         .add(response['selectedOption'] == 1 ? 'yes' : 'no');
-                    comments.add(response['comment']?.toString() ?? '');
+                    comments.add((response['comment']?.toString() ?? '').isEmpty ? '-' : response['comment']!);
                   });
 
                   Navigator.push(

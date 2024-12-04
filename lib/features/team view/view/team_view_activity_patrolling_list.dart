@@ -60,7 +60,6 @@ class _TeamViewActivityPatrollingListState extends State<TeamViewActivityPatroll
         filteredData = teamActivityPatrollingData.where((entry) {
           final dateTimeIn = entry['dateTimeIn']?.toLowerCase() ?? '';
           final inRemarks = entry['inRemarks']?.toLowerCase() ?? '';
-
           return dateTimeIn.contains(query.toLowerCase()) ||
               inRemarks.contains(query.toLowerCase());
         }).toList();

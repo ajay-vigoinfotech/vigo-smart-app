@@ -5,6 +5,7 @@ import '../../../helper/database_helper.dart';
 import '../model/get_active_site_list_model.dart';
 import '../view model/get_active_site_list_view_model.dart';
 import '../view model/get_activity_questions_list_app_view_model.dart';
+import '../view model/get_assign_site_list_view_model.dart';
 
 class SiteReporting extends StatefulWidget {
   final String searchText;
@@ -16,10 +17,11 @@ class SiteReporting extends StatefulWidget {
 
 class _SiteReportingState extends State<SiteReporting>
     with SingleTickerProviderStateMixin {
-  GetActiveSiteListViewModel getActiveSiteListViewModel =
-      GetActiveSiteListViewModel();
-  GetActivityQuestionsListAppViewModel getActivityQuestionsListAppViewModel =
-      GetActivityQuestionsListAppViewModel();
+  GetAssignSitesListViewModel getAssignSitesListViewModel = GetAssignSitesListViewModel();
+  List<Map<String, dynamic>> getAssignSitesListData = [];
+
+  GetActiveSiteListViewModel getActiveSiteListViewModel = GetActiveSiteListViewModel();
+  GetActivityQuestionsListAppViewModel getActivityQuestionsListAppViewModel = GetActivityQuestionsListAppViewModel();
 
   List<Map<String, dynamic>> getActiveSiteListData = [];
   List<Map<String, dynamic>> getActivityQuestionsListData = [];
@@ -41,8 +43,7 @@ class _SiteReportingState extends State<SiteReporting>
     String? token =
         await getActivityQuestionsListAppViewModel.sessionManager.getToken();
     if (token != null) {
-      await getActivityQuestionsListAppViewModel
-          .fetchGetActivityQuestionsList(token);
+      await getActivityQuestionsListAppViewModel.fetchGetActivityQuestionsList(token);
       if (getActivityQuestionsListAppViewModel.getActivityQuestionsListCount !=
           null) {
         setState(() {
@@ -59,6 +60,31 @@ class _SiteReportingState extends State<SiteReporting>
         // Save data to SQLite
         DatabaseHelper dbHelper = DatabaseHelper();
         await dbHelper.insertActivityQuestions(getActivityQuestionsListData);
+      }
+    }
+  }
+
+  Future<void> fetchGetAssignSitesListData() async {
+    String? token = await getAssignSitesListViewModel.sessionManager.getToken();
+
+    if (token != null) {
+      await getAssignSitesListViewModel.fetchGetAssignSitesListData(token);
+
+      if (getAssignSitesListViewModel.getAssignSitesList != null) {
+        setState(() {
+          getAssignSitesListData =
+              getAssignSitesListViewModel.getAssignSitesList!
+                  .map((entry) => {
+                        'siteId': entry.siteId,
+                        'compID': entry.compID,
+                        'clientId': entry.clientId,
+                        'siteName': entry.siteName,
+                        'siteCode': entry.siteCode,
+                        'unitName': entry.unitName,
+                        'clientName': entry.clientName,
+                      })
+                  .toList();
+        });
       }
     }
   }
@@ -96,6 +122,7 @@ class _SiteReportingState extends State<SiteReporting>
                     onTap: () {
                       debugPrint('Refresh Button tapped');
                       fetchGetActivityQuestionsListData();
+                      fetchGetAssignSitesListData();
                     },
                     child: Icon(Icons.refresh)),
               ),

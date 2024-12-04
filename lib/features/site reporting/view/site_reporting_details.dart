@@ -53,7 +53,7 @@ class _SiteReportingDetailsState extends State<SiteReportingDetails> {
           Expanded(
             child: isLoading
                 ? const Center(
-                    child: CircularProgressIndicator()) // Show loader
+                    child: CircularProgressIndicator())
                 : RefreshIndicator(
                     onRefresh: refreshGetSiteVisitListData,
                     child: filteredData.isEmpty
