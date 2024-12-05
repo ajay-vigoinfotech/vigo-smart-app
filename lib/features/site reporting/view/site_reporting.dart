@@ -17,11 +17,16 @@ class SiteReporting extends StatefulWidget {
 
 class _SiteReportingState extends State<SiteReporting>
     with SingleTickerProviderStateMixin {
-  GetAssignSitesListViewModel getAssignSitesListViewModel = GetAssignSitesListViewModel();
+  //Get Assign Site List
+  GetAssignSitesListViewModel getAssignSitesListViewModel =
+      GetAssignSitesListViewModel();
   List<Map<String, dynamic>> getAssignSitesListData = [];
+  List<Map<String, dynamic>> uniqueAllSiteData = [];
 
-  GetActiveSiteListViewModel getActiveSiteListViewModel = GetActiveSiteListViewModel();
-  GetActivityQuestionsListAppViewModel getActivityQuestionsListAppViewModel = GetActivityQuestionsListAppViewModel();
+  GetActiveSiteListViewModel getActiveSiteListViewModel =
+      GetActiveSiteListViewModel();
+  GetActivityQuestionsListAppViewModel getActivityQuestionsListAppViewModel =
+      GetActivityQuestionsListAppViewModel();
 
   List<Map<String, dynamic>> getActiveSiteListData = [];
   List<Map<String, dynamic>> getActivityQuestionsListData = [];
@@ -35,6 +40,7 @@ class _SiteReportingState extends State<SiteReporting>
   void initState() {
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_handleTabChange);
+    loadAssignSiteList();
     fetchGetActiveSiteListData();
     super.initState();
   }
@@ -43,7 +49,8 @@ class _SiteReportingState extends State<SiteReporting>
     String? token =
         await getActivityQuestionsListAppViewModel.sessionManager.getToken();
     if (token != null) {
-      await getActivityQuestionsListAppViewModel.fetchGetActivityQuestionsList(token);
+      await getActivityQuestionsListAppViewModel
+          .fetchGetActivityQuestionsList(token);
       if (getActivityQuestionsListAppViewModel.getActivityQuestionsListCount !=
           null) {
         setState(() {
@@ -69,7 +76,6 @@ class _SiteReportingState extends State<SiteReporting>
 
     if (token != null) {
       await getAssignSitesListViewModel.fetchGetAssignSitesListData(token);
-
       if (getAssignSitesListViewModel.getAssignSitesList != null) {
         setState(() {
           getAssignSitesListData =
@@ -85,7 +91,38 @@ class _SiteReportingState extends State<SiteReporting>
                       })
                   .toList();
         });
+        DatabaseHelper dbHelper = DatabaseHelper();
+        await dbHelper.insertAssignSiteList(getAssignSitesListData);
       }
+    }
+  }
+
+  Future<void> loadAssignSiteList() async {
+    DatabaseHelper dbHelper = DatabaseHelper();
+    try {
+      List<Map<String, dynamic>> data = await dbHelper.fetchAllAssignSite();
+
+      if (data.isNotEmpty) {
+        final Set<int> uniqueSiteIds = {};
+        final List<Map<String, dynamic>> uniqueData = [];
+
+        for (var site in data) {
+          if (!uniqueSiteIds.contains(site['siteId'])) {
+            uniqueSiteIds.add(site['siteId']);
+            uniqueData.add(site);
+            // print('Unique Site: $site');
+            // print('siteId : ${site['siteId']}');
+            print('unitName : ${site['unitName']}');
+          }
+        }
+        setState(() {
+          uniqueAllSiteData = uniqueData;
+        });
+      } else {
+        print('No data found in the database.');
+      }
+    } catch (e) {
+      print('Error loading site list: $e');
     }
   }
 
@@ -120,7 +157,6 @@ class _SiteReportingState extends State<SiteReporting>
                 padding: const EdgeInsets.all(8.0),
                 child: GestureDetector(
                     onTap: () {
-                      debugPrint('Refresh Button tapped');
                       fetchGetActivityQuestionsListData();
                       fetchGetAssignSitesListData();
                     },
@@ -149,10 +185,88 @@ class _SiteReportingState extends State<SiteReporting>
           ),
         ),
         body: TabBarView(controller: _tabController, children: [
-          SingleChildScrollView(
-            child: Column(
-              children: [Text('Tab 1')],
-            ),
+          Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  'Select Location - Steps 1/4',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(5.0),
+                child: TextField(
+                  controller: searchController,
+                  onChanged: filterSearchResults,
+                  decoration: InputDecoration(
+                    hintText: "Search here offline",
+                    prefixIcon: const Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  'Total Sites: ${uniqueAllSiteData.length}',
+                  style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+              uniqueAllSiteData.isNotEmpty
+                  ? Expanded(
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: uniqueAllSiteData.length,
+                        itemBuilder: (context, index) {
+                          var site = uniqueAllSiteData[index];
+                          return Padding(
+                            padding: const EdgeInsets.all(5.0),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => SiteReportingStep2(
+                                      siteId: uniqueAllSiteData[index]
+                                          ['siteId'],
+                                      value: '',
+                                      text: '',
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Card(
+                                margin:
+                                    const EdgeInsets.symmetric(vertical: 10.0),
+                                elevation: 5,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: SizedBox(
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        _buildCardColumn(
+                                          displayText: site['unitName'] ?? '',
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  : Center(child: CircularProgressIndicator()),
+            ],
           ),
           Column(
             children: [
@@ -227,8 +341,10 @@ class _SiteReportingState extends State<SiteReporting>
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => SiteReportingStep2(
-                                          value: filteredData[index]['value'],
-                                          text: filteredData[index]['text']),
+                                        value: filteredData[index]['value'],
+                                        text: filteredData[index]['text'],
+                                        siteId: '',
+                                      ),
                                     ),
                                   );
                                 },
@@ -281,12 +397,12 @@ class _SiteReportingState extends State<SiteReporting>
                     'strength': entry.strength,
                   })
               .toList();
-          filteredData = []; // Initially no data to show
+          filteredData = [];
         });
       } catch (error) {
         debugPrint('Error loading active site list: $error');
         setState(() {
-          filteredData = []; // Reset if there is an error
+          filteredData = [];
         });
       }
     }

@@ -8,8 +8,10 @@ class SiteReportingStep3 extends StatefulWidget {
   final dynamic activityId;
   final String activityName;
   final List<Map<String, dynamic>> questions;
+
   final dynamic value;
   final dynamic text;
+  final dynamic siteId;
 
   const SiteReportingStep3({
     super.key,
@@ -18,6 +20,7 @@ class SiteReportingStep3 extends StatefulWidget {
     required this.questions,
     required this.value,
     required this.text,
+    required this.siteId,
   });
 
   @override
@@ -202,6 +205,7 @@ class _SiteReportingStep3State extends State<SiteReportingStep3> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => SiteReportingStep4(
+                        siteId : widget.siteId,
                         value: widget.value,
                         text: widget.text,
                         activityId: widget.activityId.toString(),

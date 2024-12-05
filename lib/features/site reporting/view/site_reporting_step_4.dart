@@ -18,6 +18,7 @@ import '../view model/mark_site_visit_view_model.dart';
 class SiteReportingStep4 extends StatefulWidget {
   final dynamic value;
   final dynamic text;
+  final dynamic siteId;
   final String activityId;
   final List<String> questionIds;
   final List<String> selectedOptions;
@@ -31,6 +32,7 @@ class SiteReportingStep4 extends StatefulWidget {
     required this.questionIds,
     required this.selectedOptions,
     required this.comments,
+    required this.siteId,
   });
 
   @override
@@ -52,7 +54,7 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
   File? _assetImage1;
   File? _assetImage2;
   File? _assetImage3;
-  File? _assetImage4 ;
+  File? _assetImage4;
 
   String _base64UserImage = '';
   String _base64AssetImage1 = '';
@@ -291,7 +293,7 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
             ElevatedButton(
               onPressed: () async {
                 try {
-                  if(_base64UserImage.isEmpty) {
+                  if (_base64UserImage.isEmpty) {
                     Fluttertoast.showToast(
                       msg: "Please take Selfie!",
                       toastLength: Toast.LENGTH_SHORT,
@@ -302,7 +304,7 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
                     );
                     return;
                   }
-                  if(_base64AssetImage1.isEmpty) {
+                  if (_base64AssetImage1.isEmpty) {
                     Fluttertoast.showToast(
                       msg: "Please add minimum 1 equipment photo!",
                       toastLength: Toast.LENGTH_SHORT,
@@ -313,9 +315,10 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
                     );
                     return;
                   }
-                  if(formattedLatLng.isEmpty) {
+                  if (formattedLatLng.isEmpty) {
                     Fluttertoast.showToast(
-                      msg: "Unable to fetch location, Please check and try again!",
+                      msg:
+                          "Unable to fetch location, Please check and try again!",
                       toastLength: Toast.LENGTH_SHORT,
                       gravity: ToastGravity.BOTTOM,
                       backgroundColor: Colors.black,
@@ -324,6 +327,7 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
                     );
                     return;
                   }
+                  String combinedValue = '${widget.value}${widget.siteId}';
 
                   showDialog(
                     context: context,
@@ -342,7 +346,8 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.red),
                                 strokeWidth: 3.0,
                               ),
                               SizedBox(height: 20),
@@ -363,8 +368,10 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
                   await _loadCurrentDateTime();
                   punchTimeDateIn = timeDateDisplay;
                   String? token = await sessionManager.getToken();
-                  MarkSiteVisitViewModel markSiteVisitViewModel = MarkSiteVisitViewModel();
-                  final String deviceDetails = await Utils.getDeviceDetails(context);
+                  MarkSiteVisitViewModel markSiteVisitViewModel =
+                      MarkSiteVisitViewModel();
+                  final String deviceDetails =
+                      await Utils.getDeviceDetails(context);
                   final String appVersion = await Utils.getAppVersion();
                   final String ipAddress = await Utils.getIpAddress();
                   final String uniqueId = await Utils.getUniqueID();
@@ -375,13 +382,19 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
                     assetImgString = _base64AssetImage1;
                   }
                   if (_base64AssetImage2.isNotEmpty) {
-                    assetImgString += (assetImgString.isEmpty ? '' : '*assetImg*') + _base64AssetImage2;
+                    assetImgString +=
+                        (assetImgString.isEmpty ? '' : '*assetImg*') +
+                            _base64AssetImage2;
                   }
                   if (_base64AssetImage3.isNotEmpty) {
-                    assetImgString += (assetImgString.isEmpty ? '' : '*assetImg*') + _base64AssetImage3;
+                    assetImgString +=
+                        (assetImgString.isEmpty ? '' : '*assetImg*') +
+                            _base64AssetImage3;
                   }
                   if (_base64AssetImage4.isNotEmpty) {
-                    assetImgString += (assetImgString.isEmpty ? '' : '*assetImg*') + _base64AssetImage4;
+                    assetImgString +=
+                        (assetImgString.isEmpty ? '' : '*assetImg*') +
+                            _base64AssetImage4;
                   }
 
                   String formatDate(String dateString) {
@@ -394,33 +407,34 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
                   String formattedDateTimeIn = formatDate(punchTimeDateIn);
 
                   Map<String, dynamic> response =
-                  await markSiteVisitViewModel.markMarkSiteVisit(
-                      token!,
-                      MarkSiteVisitModel(
-                          clientSiteId: widget.value,
-                          checkListRes: widget.selectedOptions.join(','),
-                          deviceDetails: deviceDetails,
-                          deviceImei: uniqueId,
-                          deviceIp: ipAddress,
-                          siteName: widget.text,
-                          checkInTypeid: '8',
-                          locationID: '-',
-                          equipment: '-',
-                          scheduleDate: '-',
-                          isOffline: 'false',
-                          version: appVersion,
-                          locationName: '-',
-                          assetImg: assetImgString,
-                          checkListComments: widget.comments.join('*,*'),
-                          checkListQuesId: widget.questionIds.join(','),
-                          userImage: _base64UserImage,
-                          batteryStatus: '$battery',
-                          locationDetails: '$formattedSpeedValue/$formattedAccuracyValue',
-                          time: formattedDateTimeIn,
-                          activityId: widget.activityId,
-                          latLong: formattedLatLng,
-                          remarks: dutyInRemark,
-                          dataUsage: '-'));
+                      await markSiteVisitViewModel.markMarkSiteVisit(
+                          token!,
+                          MarkSiteVisitModel(
+                              clientSiteId: combinedValue,
+                              checkListRes: widget.selectedOptions.join(','),
+                              deviceDetails: deviceDetails,
+                              deviceImei: uniqueId,
+                              deviceIp: ipAddress,
+                              siteName: widget.text,
+                              checkInTypeid: '8',
+                              locationID: '-',
+                              equipment: '-',
+                              scheduleDate: '-',
+                              isOffline: 'false',
+                              version: appVersion,
+                              locationName: '-',
+                              assetImg: assetImgString,
+                              checkListComments: widget.comments.join('*,*'),
+                              checkListQuesId: widget.questionIds.join(','),
+                              userImage: _base64UserImage,
+                              batteryStatus: '$battery',
+                              locationDetails:
+                                  '$formattedSpeedValue/$formattedAccuracyValue',
+                              time: formattedDateTimeIn,
+                              activityId: widget.activityId,
+                              latLong: formattedLatLng,
+                              remarks: dutyInRemark,
+                              dataUsage: '-'));
 
                   if (response['code'] == 200) {
                     Navigator.of(context).pop();
@@ -434,7 +448,7 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
                         Navigator.pushAndRemoveUntil(
                           this.context,
                           MaterialPageRoute(builder: (context) => HomePage()),
-                              (route) => false,
+                          (route) => false,
                         );
                       },
                     );
@@ -449,7 +463,6 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
                   );
                 }
               },
-
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 foregroundColor: Colors.white,
@@ -499,7 +512,7 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
 
   String _setDeviceDateTime() {
     String currentDateTime =
-    DateFormat('dd/MM/yyyy hh:mm').format(DateTime.now());
+        DateFormat('dd/MM/yyyy hh:mm').format(DateTime.now());
     setState(() {
       timeDateDisplay = currentDateTime;
     });
@@ -532,7 +545,8 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
     Geolocator.getPositionStream().listen((Position position) {
       if (mounted) {
         setState(() {
-          formattedLatLng = "${position.latitude.toStringAsFixed(7)}, ${position.longitude.toStringAsFixed(7)}";
+          formattedLatLng =
+              "${position.latitude.toStringAsFixed(7)}, ${position.longitude.toStringAsFixed(7)}";
           formattedSpeedValue = position.speed.toStringAsFixed(2);
           formattedAccuracyValue = position.accuracy.toStringAsFixed(2);
         });
@@ -547,4 +561,3 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
         .showSnackBar(SnackBar(content: Text(message)));
   }
 }
-

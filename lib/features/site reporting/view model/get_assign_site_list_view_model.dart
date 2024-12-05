@@ -26,7 +26,7 @@ class GetAssignSitesListViewModel {
 
         if (responseData.table.isNotEmpty) {
           getAssignSitesList = responseData.table;
-          debugPrint('$response');
+          //debugPrint('$response');
         } else {
           debugPrint('teamActivityAttendanceList is empty');
         }

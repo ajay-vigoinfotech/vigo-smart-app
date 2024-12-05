@@ -3,10 +3,15 @@ import 'package:vigo_smart_app/features/site%20reporting/view/site_reporting_ste
 import '../../../helper/database_helper.dart';
 
 class SiteReportingStep2 extends StatefulWidget {
-  const SiteReportingStep2({super.key, required this.value, required this.text});
+  const SiteReportingStep2(
+      {super.key,
+      required this.value,
+      required this.text,
+      required this.siteId});
 
   final dynamic value;
   final dynamic text;
+  final dynamic siteId;
 
   @override
   State<SiteReportingStep2> createState() => _SiteReportingStep2State();
@@ -87,23 +92,25 @@ class _SiteReportingStep2State extends State<SiteReportingStep2> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => SiteReportingStep3(
-                                    activityId: activity['activityId'],
-                                    activityName: activity['activityName'],
-                                    questions: _questions,
-                                    value: widget.value,
-                                    text:widget.text,
-                                  ),
+                                      activityId: activity['activityId'],
+                                      activityName: activity['activityName'],
+                                      questions: _questions,
+                                      value: widget.value,
+                                      text: widget.text,
+                                      siteId: widget.siteId),
                                 ),
                               );
                             },
                             child: Card(
-                              margin: const EdgeInsets.symmetric(vertical: 10.0),
+                              margin:
+                                  const EdgeInsets.symmetric(vertical: 10.0),
                               elevation: 5,
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: SizedBox(
                                   child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceEvenly,
                                     children: [
                                       _buildCardColumn(
                                         displayText:

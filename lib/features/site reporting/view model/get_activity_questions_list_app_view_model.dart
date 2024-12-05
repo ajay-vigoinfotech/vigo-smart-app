@@ -26,7 +26,7 @@ class GetActivityQuestionsListAppViewModel{
 
         if(responseData.table.isNotEmpty) {
           getActivityQuestionsListCount = responseData.table;
-          debugPrint('$response');
+          //debugPrint('$response');
         } else {
           debugPrint('Table is Empty');
         }
