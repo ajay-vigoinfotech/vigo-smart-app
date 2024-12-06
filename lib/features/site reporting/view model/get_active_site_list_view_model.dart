@@ -9,7 +9,7 @@ class GetActiveSiteListViewModel {
   SessionManager sessionManager = SessionManager();
   List<GetActiveSiteListModel>? getActiveSiteList;
 
-  Future<void> fetchGetActiveSiteList(String token, String searchText) async {
+  Future<void> fetchGetActiveSiteList(String token, String formattedSelectedDate) async {
     const url = "${AppConstants.baseUrl}/API/Duty/GetActiveSiteList";
     try {
       final response = await _dio.post(
@@ -18,7 +18,7 @@ class GetActiveSiteListViewModel {
           headers: {'Authorization': 'Bearer $token'},
           contentType: Headers.formUrlEncodedContentType,
         ),
-        data: {'SearchText': searchText},
+        data: {'SearchText': formattedSelectedDate},
       );
 
       if (response.statusCode == 200 && response.data != null) {

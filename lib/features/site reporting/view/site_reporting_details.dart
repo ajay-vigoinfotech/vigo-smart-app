@@ -83,8 +83,7 @@ class _SiteReportingDetailsState extends State<SiteReportingDetails> {
                                           time: data['dateTimeIn'].split(' ')[0],
                                           date: data['dateTimeIn'].split(' ')[3],
                                           unitName: data['unitName'],
-                                          checkinTypeName:
-                                              data['checkinTypeName'],
+                                          checkinTypeName: data['checkinTypeName'],
                                           inRemarks: data['inRemarks'],
                                         ),
                                       ],

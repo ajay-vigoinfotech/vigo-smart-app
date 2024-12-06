@@ -1,4 +1,7 @@
+import 'package:easy_date_timeline/easy_date_timeline.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:vigo_smart_app/features/site%20reporting/view%20model/get_schedule_site_list_view_model.dart';
 import 'package:vigo_smart_app/features/site%20reporting/view/site_reporting_details.dart';
 import 'package:vigo_smart_app/features/site%20reporting/view/site_reporting_step_2.dart';
 import '../../../helper/database_helper.dart';
@@ -36,13 +39,29 @@ class _SiteReportingState extends State<SiteReporting>
   TextEditingController searchController = TextEditingController();
   late TabController _tabController;
 
+  //Get Schedule Site
+  DateTime selectedDate = DateTime.now();
+
+  // String formattedSelectedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
+  GetScheduleSiteListViewModel getScheduleSiteListViewModel =
+      GetScheduleSiteListViewModel();
+  List<Map<String, dynamic>> getScheduleSiteListData = [];
+
   @override
   void initState() {
+    super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_handleTabChange);
     loadAssignSiteList();
     fetchGetActiveSiteListData();
-    super.initState();
+    fetchScheduleSIteByUserID();
+  }
+
+  @override
+  void dispose() {
+    _tabController.removeListener(_handleTabChange);
+    _tabController.dispose();
+    super.dispose();
   }
 
   Future<void> fetchGetActivityQuestionsListData() async {
@@ -112,17 +131,17 @@ class _SiteReportingState extends State<SiteReporting>
             uniqueData.add(site);
             // print('Unique Site: $site');
             // print('siteId : ${site['siteId']}');
-            print('unitName : ${site['unitName']}');
+            // print('unitName : ${site['unitName']}');
           }
         }
         setState(() {
           uniqueAllSiteData = uniqueData;
         });
       } else {
-        print('No data found in the database.');
+        debugPrint('No data found in the database.');
       }
     } catch (e) {
-      print('Error loading site list: $e');
+      debugPrint('Error loading site list: $e');
     }
   }
 
@@ -133,11 +152,36 @@ class _SiteReportingState extends State<SiteReporting>
     }
   }
 
-  @override
-  void dispose() {
-    _tabController.removeListener(_handleTabChange);
-    _tabController.dispose();
-    super.dispose();
+  void filterAllSiteSearchResults(String query) {
+    if (query.isEmpty) {
+      setState(() {
+        // Reset to the full list of unique sites loaded from the database
+        uniqueAllSiteData = List<Map<String, dynamic>>.from(uniqueAllSiteData);
+      });
+    } else {
+      setState(() {
+        uniqueAllSiteData = uniqueAllSiteData.where((site) {
+          // Extracting each field from the site data for comparison
+          final siteId = (site['siteId'] ?? '').toString().toLowerCase();
+          final compID = (site['compID'] ?? '').toString().toLowerCase();
+          final clientId = (site['clientId'] ?? '').toString().toLowerCase();
+          final siteName = (site['siteName'] ?? '').toString().toLowerCase();
+          final siteCode = (site['siteCode'] ?? '').toString().toLowerCase();
+          final unitName = (site['unitName'] ?? '').toString().toLowerCase();
+          final clientName =
+              (site['clientName'] ?? '').toString().toLowerCase();
+
+          // Match the query against each field
+          return siteId.contains(query.toLowerCase()) ||
+              compID.contains(query.toLowerCase()) ||
+              clientId.contains(query.toLowerCase()) ||
+              siteName.contains(query.toLowerCase()) ||
+              unitName.contains(query.toLowerCase()) ||
+              clientName.contains(query.toLowerCase()) ||
+              siteCode.contains(query.toLowerCase());
+        }).toList();
+      });
+    }
   }
 
   @override
@@ -198,7 +242,7 @@ class _SiteReportingState extends State<SiteReporting>
                 padding: const EdgeInsets.all(5.0),
                 child: TextField(
                   controller: searchController,
-                  onChanged: filterSearchResults,
+                  onChanged: filterAllSiteSearchResults,
                   decoration: InputDecoration(
                     hintText: "Search here offline",
                     prefixIcon: const Icon(Icons.search),
@@ -224,7 +268,7 @@ class _SiteReportingState extends State<SiteReporting>
                         shrinkWrap: true,
                         itemCount: uniqueAllSiteData.length,
                         itemBuilder: (context, index) {
-                          var site = uniqueAllSiteData[index];
+                          var allSite = uniqueAllSiteData[index];
                           return Padding(
                             padding: const EdgeInsets.all(5.0),
                             child: GestureDetector(
@@ -253,7 +297,8 @@ class _SiteReportingState extends State<SiteReporting>
                                           MainAxisAlignment.spaceEvenly,
                                       children: [
                                         _buildCardColumn(
-                                          displayText: site['unitName'] ?? '',
+                                          displayText:
+                                              allSite['unitName'] ?? '',
                                         ),
                                       ],
                                     ),
@@ -265,9 +310,11 @@ class _SiteReportingState extends State<SiteReporting>
                         },
                       ),
                     )
-                  : Center(child: CircularProgressIndicator()),
+                  : Center(child: Text('No Data')),
             ],
           ),
+
+          //Tab 2 starts here
           Column(
             children: [
               Padding(
@@ -372,12 +419,260 @@ class _SiteReportingState extends State<SiteReporting>
               ),
             ],
           ),
+
+          //Tab 3 starts here
           Column(
-            children: [Text('Tab2')],
+            children: [
+              Theme(
+                data: Theme.of(context).copyWith(
+                  colorScheme:
+                      ColorScheme.fromSwatch(primarySwatch: Colors.green),
+                ),
+                child: EasyDateTimeLinePicker(
+                  selectionMode: SelectionMode.none(),
+                  headerOptions: HeaderOptions(
+                    headerType: HeaderType.viewOnly, // default
+                  ),
+                  timelineOptions: TimelineOptions(
+                    height: 100,
+                  ),
+                  firstDate: DateTime.now().subtract(const Duration(days: 183)),
+                  lastDate: DateTime.now().add(const Duration(days: 183)),
+                  focusedDate: selectedDate,
+                  onDateChange: (DateTime date) {
+                    setState(() {
+                      selectedDate = date;
+                    });
+                    fetchScheduleSIteByUserID();
+                  },
+                ),
+              ),
+              getScheduleSiteListData.isNotEmpty
+                  ? Expanded(
+                      child: ListView.builder(
+                        itemCount: getScheduleSiteListData.length,
+                        itemBuilder: (context, index) {
+                          var schedule = getScheduleSiteListData[index];
+                          bool isActive = schedule['isActive'] == "1";
+
+                          if (schedule['scheduleDate'] !=
+                              DateFormat('yyyy-MM-dd').format(selectedDate)) {
+                            return SizedBox.shrink();
+                          }
+
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12.0, vertical: 8.0),
+                            child: GestureDetector(
+                              onTap: isActive
+                                  ? () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              SiteReportingStep2(
+                                            siteId: schedule['siteId'],
+                                            value: '',
+                                            text: '',
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  : null,
+                              child: Stack(
+                                children: [
+                                  Card(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10.0),
+                                    ),
+                                    elevation: 5,
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(12.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                'Date: ${schedule['scheduleDate']}',
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                              Text(
+                                                'Status: ${schedule['statusText']}',
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: isActive
+                                                      ? Colors.green
+                                                      : Colors.red,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Expanded(
+                                                flex: 1,
+                                                child: Text(
+                                                  'Site Name',
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    color: Colors.black,
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.visible,
+                                                ),
+                                              ),
+                                              Expanded(
+                                                flex: 2,
+                                                child: Text(
+                                                  '${schedule['unitName']}',
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    color: Colors.black,
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.visible,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Expanded(
+                                                flex: 1,
+                                                child: Text(
+                                                  'Created By',
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    color: Colors.black,
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.visible,
+                                                ),
+                                              ),
+                                              Expanded(
+                                                flex: 2,
+                                                child: Text(
+                                                  '${schedule['createdBy']}',
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    color: Colors.black,
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.visible,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Expanded(
+                                                flex: 1,
+                                                child: Text(
+                                                  'Remark',
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    color: Colors.black,
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.visible,
+                                                ),
+                                              ),
+                                              Expanded(
+                                                flex: 2,
+                                                child: Text(
+                                                  '${schedule['remarks']}',
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    color: Colors.black,
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.visible,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  if (isActive)
+                                    Positioned(
+                                      left: 0,
+                                      top: 0,
+                                      bottom: 0,
+                                      child: Container(
+                                        width: 4,
+                                        color: Colors.green,
+                                      ),
+                                    ),
+                                  if (!isActive)
+                                    Positioned(
+                                      left: 0,
+                                      top: 0,
+                                      bottom: 0,
+                                      child: Container(
+                                        width: 4,
+                                        color: Colors.red,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  : Expanded(
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    ),
+            ],
           ),
         ]),
       ),
     );
+  }
+
+  Future<void> fetchScheduleSIteByUserID() async {
+    String? token =
+        await getScheduleSiteListViewModel.sessionManager.getToken();
+    if (token != null) {
+      String formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
+
+      await getScheduleSiteListViewModel.fetchGetScheduleSiteListData(
+          token, formattedDate);
+
+      setState(() {
+        getScheduleSiteListData =
+            getScheduleSiteListViewModel.getScheduleSiteList!
+                .map((entry) => {
+                      'siteId': entry.siteId,
+                      'remarks': entry.remarks,
+                      'scheduleDate': entry.scheduleDate,
+                      'scheduleDate1': entry.scheduleDate1,
+                      'statusText': entry.statusText,
+                      'unitName': entry.unitName,
+                      'createdBy': entry.createdBy,
+                      'isActive': entry.isActive,
+                    })
+                .toList();
+      });
+    }
   }
 
   // Function to fetch data from API
