@@ -226,9 +226,6 @@ class _TeamViewSiteListState extends State<TeamViewSiteList> {
     );
   }
 
-
-
-
   Future<void> refreshSiteListData() async {
     await fetchSiteListData();
     debugPrint('Site List Data Refreshed');

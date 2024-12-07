@@ -39,7 +39,8 @@ class _PreviousSiteReportingListState extends State<PreviousSiteReportingList> {
       appBar: AppBar(
         title: const Text('Previous Site Reporting List'),
       ),
-      body: ListView.builder(
+      body:
+      ListView.builder(
         itemCount: previousSiteReportingListData.length,
         itemBuilder: (context, index) {
           final entry = previousSiteReportingListData[index];
@@ -222,15 +223,11 @@ class _PreviousSiteReportingListState extends State<PreviousSiteReportingList> {
                         scrollDirection: Axis.horizontal,
                         child: Row(
                           children: siteReportingImageAssetData.map((data) {
-                            String? imageUrl =
-                                data["userImage"] ?? data["assetImage"];
-                            String label = data["userImage"] != null
-                                ? "Selfie"
-                                : "Asset Image";
+                            String? imageUrl = data["userImage"] ?? data["assetImage"];
+                            String label = data["userImage"] != null ? "Selfie" : "Asset Image";
 
                             return Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8.0),
+                              padding: const EdgeInsets.symmetric(horizontal: 8.0),
                               child: Column(
                                 children: [
                                   Text(
@@ -242,8 +239,23 @@ class _PreviousSiteReportingListState extends State<PreviousSiteReportingList> {
                                     ),
                                   ),
                                   SizedBox(height: 4),
-                                  Image.network(
+                                  imageUrl != null
+                                      ? Image.network(
                                     '${AppConstants.baseUrl}/$imageUrl',
+                                    width: 100,
+                                    height: 100,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Image.asset(
+                                        'assets/images/place_holder.webp',
+                                        width: 100,
+                                        height: 100,
+                                        fit: BoxFit.cover,
+                                      );
+                                    },
+                                  )
+                                      : Image.asset(
+                                    'assets/images/place_holder.webp',
                                     width: 100,
                                     height: 100,
                                     fit: BoxFit.cover,

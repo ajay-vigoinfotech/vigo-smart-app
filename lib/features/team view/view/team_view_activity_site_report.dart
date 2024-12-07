@@ -1,88 +1,44 @@
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:vigo_smart_app/features/team%20view/view/team_view_activity_attendance_list.dart';
+import 'package:vigo_smart_app/features/team%20view/view/team_view_activity_site_report_list.dart';
+
 import '../view model/team_view_activity_attendance_view_model.dart';
 
-class TeamViewActivityAttendance extends StatefulWidget {
-  const TeamViewActivityAttendance({super.key});
+class TeamViewActivitySiteReport extends StatefulWidget {
+  const TeamViewActivitySiteReport({super.key});
 
   @override
-  State<TeamViewActivityAttendance> createState() =>
-      _TeamViewActivityAttendanceState();
+  State<TeamViewActivitySiteReport> createState() =>
+      _TeamViewActivitySiteReportState();
 }
 
-class _TeamViewActivityAttendanceState
-    extends State<TeamViewActivityAttendance> {
+class _TeamViewActivitySiteReportState
+    extends State<TeamViewActivitySiteReport> {
   TeamViewActivityAttendanceViewModel teamViewActivityAttendanceViewModel =
       TeamViewActivityAttendanceViewModel();
 
-  String? userId;
-  String? fullName;
-
-  List<Map<String, dynamic>> teamActivityAttendanceCountData = [];
-  List<Map<String, dynamic>> filteredData = [];
-
   TextEditingController searchController = TextEditingController();
+  List<Map<String, dynamic>> teamViewActivitySiteReportCountData = [];
+  List<Map<String, dynamic>> filteredData = [];
   bool isLoading = true;
 
   @override
   void initState() {
-    super.initState();
-    checkInternetConnection();
-    filteredData = teamActivityAttendanceCountData;
     fetchTeamActivityAttendanceCountData();
-  }
-
-  Future<bool> checkInternetConnection() async {
-    var connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult.contains(ConnectivityResult.none)) {
-      showCupertinoDialog(
-        context: context,
-        builder: (context) => CupertinoAlertDialog(
-          title: const Text("No Internet Connection"),
-          content:
-              const Text("Please turn on the internet connection to proceed."),
-          actions: [
-            CupertinoDialogAction(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text("OK"),
-            ),
-          ],
-        ),
-      );
-      return false;
-    }
-    return true;
-  }
-
-  void filterSearchResults(String query) {
-    if (query.isEmpty) {
-      setState(() {
-        filteredData = teamActivityAttendanceCountData;
-      });
-    } else {
-      setState(() {
-        filteredData = teamActivityAttendanceCountData
-            .where((entry) =>
-                entry['fullName']!.toLowerCase().contains(query.toLowerCase()))
-            .toList();
-      });
-    }
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Employee Name'),
+        title: Text('Employee Names'),
       ),
       body: Column(children: [
         Padding(
           padding: const EdgeInsets.all(5.0),
           child: TextField(
             controller: searchController,
-            onChanged: filterSearchResults,
+            onChanged: filterSearchResult,
             decoration: InputDecoration(
               hintText: "Search Employee",
               prefixIcon: const Icon(Icons.search),
@@ -96,11 +52,9 @@ class _TeamViewActivityAttendanceState
           child: isLoading
               ? Center(child: CircularProgressIndicator())
               : RefreshIndicator(
-                  onRefresh: refreshTeamActivityAttendanceData,
+                  onRefresh: refreshTeamActivitySiteReportData,
                   child: filteredData.isEmpty
-                      ? Center(
-                          child: Text('No Data Available'),
-                        )
+                      ? Center(child: Text('No Data Available'))
                       : ListView.builder(
                           itemCount: filteredData.length,
                           itemBuilder: (context, index) {
@@ -110,7 +64,7 @@ class _TeamViewActivityAttendanceState
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) =>
-                                        TeamViewActivityAttendanceList(
+                                        TeamViewActivitySiteReportList(
                                       userId: filteredData[index]['userId'],
                                     ),
                                   ),
@@ -147,9 +101,9 @@ class _TeamViewActivityAttendanceState
     );
   }
 
-  Future<void> refreshTeamActivityAttendanceData() async {
+  Future<void> refreshTeamActivitySiteReportData() async {
     await fetchTeamActivityAttendanceCountData();
-    debugPrint('Team Activity Attendance List Data Refreshed');
+    // debugPrint('Team Activity Attendance List Data Refreshed');
   }
 
   Future<void> fetchTeamActivityAttendanceCountData() async {
@@ -163,19 +117,37 @@ class _TeamViewActivityAttendanceState
       if (teamViewActivityAttendanceViewModel.teamActivityAttendanceCount !=
           null) {
         setState(() {
-          teamActivityAttendanceCountData =
+          teamViewActivitySiteReportCountData =
               teamViewActivityAttendanceViewModel.teamActivityAttendanceCount!
                   .map((entry) => {
                         "userId": entry.userId,
                         "fullName": entry.fullName,
                       })
                   .toList();
-          filteredData = teamActivityAttendanceCountData;
+          filteredData = teamViewActivitySiteReportCountData;
         });
       }
     }
     setState(() {
       isLoading = false;
     });
+  }
+
+  void filterSearchResult(String query) async {
+    if (query.isEmpty) {
+      setState(() {
+        filteredData = teamViewActivitySiteReportCountData;
+      });
+    } else {
+      setState(() {
+        filteredData = teamViewActivitySiteReportCountData.where((entry) {
+          final userId = entry['userId']?.toLowerCase() ?? '';
+          final fullName = entry['fullName']?.toLowerCase() ?? '';
+
+          return userId.contains(query.toLowerCase()) ||
+              fullName.contains(query.toLowerCase());
+        }).toList();
+      });
+    }
   }
 }

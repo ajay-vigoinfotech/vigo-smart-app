@@ -20,11 +20,14 @@ class SiteReportingStep2 extends StatefulWidget {
 class _SiteReportingStep2State extends State<SiteReportingStep2> {
   List<Map<String, dynamic>> _questions = [];
   List<Map<String, dynamic>> _activities = [];
+  TextEditingController searchController = TextEditingController();
+
 
   @override
   void initState() {
     super.initState();
     _loadDataFromDatabase();
+
   }
 
   Future<void> _loadDataFromDatabase() async {
@@ -49,6 +52,26 @@ class _SiteReportingStep2State extends State<SiteReportingStep2> {
     debugPrint('Unique activities: $_activities');
   }
 
+
+  void filterActivity(String query) {
+    if (query.isEmpty) {
+      setState(() {
+        _loadDataFromDatabase(); // Reload original data
+      });
+    } else {
+      setState(() {
+        _activities = _activities.where((activity) {
+          final activityName = activity['activityName']?.toLowerCase() ?? '';
+          final queryLower = query.toLowerCase();
+          return activityName.contains(queryLower);
+        }).toList();
+      });
+    }
+  }
+
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -68,6 +91,8 @@ class _SiteReportingStep2State extends State<SiteReportingStep2> {
             Padding(
               padding: const EdgeInsets.all(5.0),
               child: TextField(
+                controller: searchController,
+                onChanged: filterActivity,
                 decoration: InputDecoration(
                   hintText: "Search Employee",
                   prefixIcon: const Icon(Icons.search),
@@ -79,7 +104,8 @@ class _SiteReportingStep2State extends State<SiteReportingStep2> {
             ),
             Expanded(
               child: _activities.isEmpty
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const Center(
+                  child: Text('No data Found'))
                   : ListView.builder(
                       itemCount: _activities.length,
                       itemBuilder: (context, index) {

@@ -94,7 +94,7 @@ class _SettingPageState extends State<SettingPage> {
             ),
             ListTile(
               leading: const Icon(Icons.phone),
-              title: const Text('About us'),
+              title: const Text('Contact us'),
               onTap: () async {
                 Uri url = Uri.parse(AppConstants.contactUs);
                 if (await canLaunchUrl(url)) {

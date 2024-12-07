@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:vigo_smart_app/core/strings/strings.dart';
 import 'package:vigo_smart_app/features/auth/session_manager/session_manager.dart';
-import 'package:vigo_smart_app/features/home/widgets/setting_page.dart';
 import 'package:vigo_smart_app/features/team%20view/view%20model/team_dashboard_field_count_view_model.dart';
 import 'package:vigo_smart_app/features/team%20view/view%20model/team_dashboard_site_count_view_model.dart';
 import 'package:vigo_smart_app/features/team%20view/view/team_view_activity_attendance.dart';
 import 'package:vigo_smart_app/features/team%20view/view/team_view_activity_patrolling.dart';
+import 'package:vigo_smart_app/features/team%20view/view/team_view_activity_site_report.dart';
 import 'package:vigo_smart_app/features/team%20view/view/team_view_attendance_list.dart';
 import 'package:vigo_smart_app/features/team%20view/view/team_view_patrolling_list.dart';
 import 'package:vigo_smart_app/features/team%20view/view/team_view_site_list.dart';
@@ -157,15 +157,15 @@ class _TeamViewState extends State<TeamView> {
                   HomeScreenCard(
                     icon: Image.asset('assets/images/site_reporting.webp'),
                     modulename: 'Site Report',
-                    nextPage: const SettingPage(),
+                    nextPage: const TeamViewActivitySiteReport(),
                     cardColor: Pallete.backgroundColor,
                   ),
-                HomeScreenCard(
-                    icon: Image.asset('assets/images/ic_maps.webp'),
-                    modulename: 'Map View',
-                    nextPage: const SettingPage(),
-                    cardColor: Pallete.backgroundColor,
-                )
+                // HomeScreenCard(
+                //     icon: Image.asset('assets/images/ic_maps.webp'),
+                //     modulename: 'Map View',
+                //     nextPage: const SettingPage(),
+                //     cardColor: Pallete.backgroundColor,
+                // ),
               ],
             ),
           ],

@@ -1,5 +1,6 @@
 import 'package:easy_date_timeline/easy_date_timeline.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:vigo_smart_app/features/site%20reporting/view%20model/get_schedule_site_list_view_model.dart';
 import 'package:vigo_smart_app/features/site%20reporting/view/site_reporting_details.dart';
@@ -36,6 +37,7 @@ class _SiteReportingState extends State<SiteReporting>
   List<Map<String, dynamic>> filteredData = [];
   List<GetActiveSiteListModel> getActiveSiteList = [];
 
+  TextEditingController allSiteSearchController = TextEditingController();
   TextEditingController searchController = TextEditingController();
   late TabController _tabController;
 
@@ -55,6 +57,7 @@ class _SiteReportingState extends State<SiteReporting>
     loadAssignSiteList();
     fetchGetActiveSiteListData();
     fetchScheduleSIteByUserID();
+    fetchGetAssignSitesListData();
   }
 
   @override
@@ -155,23 +158,19 @@ class _SiteReportingState extends State<SiteReporting>
   void filterAllSiteSearchResults(String query) {
     if (query.isEmpty) {
       setState(() {
-        // Reset to the full list of unique sites loaded from the database
         uniqueAllSiteData = List<Map<String, dynamic>>.from(uniqueAllSiteData);
       });
     } else {
       setState(() {
-        uniqueAllSiteData = uniqueAllSiteData.where((site) {
-          // Extracting each field from the site data for comparison
-          final siteId = (site['siteId'] ?? '').toString().toLowerCase();
-          final compID = (site['compID'] ?? '').toString().toLowerCase();
-          final clientId = (site['clientId'] ?? '').toString().toLowerCase();
-          final siteName = (site['siteName'] ?? '').toString().toLowerCase();
-          final siteCode = (site['siteCode'] ?? '').toString().toLowerCase();
-          final unitName = (site['unitName'] ?? '').toString().toLowerCase();
-          final clientName =
-              (site['clientName'] ?? '').toString().toLowerCase();
+        uniqueAllSiteData = getAssignSitesListData.where((site) {
+          final siteId = site['siteId']?.toLowerCase() ?? '';
+          final compID = site['compID']?.toLowerCase() ?? '';
+          final clientId = site['clientId']?.toLowerCase() ?? '';
+          final siteName = site['siteName']?.toLowerCase() ?? '';
+          final siteCode = site['siteCode']?.toLowerCase() ?? '';
+          final unitName = site['unitName']?.toLowerCase() ?? '';
+          final clientName = site['clientName']?.toLowerCase() ?? '';
 
-          // Match the query against each field
           return siteId.contains(query.toLowerCase()) ||
               compID.contains(query.toLowerCase()) ||
               clientId.contains(query.toLowerCase()) ||
@@ -197,26 +196,33 @@ class _SiteReportingState extends State<SiteReporting>
           centerTitle: true,
           actions: [
             if (_tabController.index == 0)
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: GestureDetector(
-                    onTap: () {
-                      fetchGetActivityQuestionsListData();
-                      fetchGetAssignSitesListData();
-                    },
-                    child: Icon(Icons.refresh)),
+              IconButton(
+                icon: Icon(Icons.refresh),
+                tooltip: 'Refresh',
+                onPressed: () {
+                  CircularProgressIndicator();
+                  // debugPrint('refresh!!');
+                  Fluttertoast.showToast(
+                    msg: "Data Refresh SuccessFully.",
+                    toastLength: Toast.LENGTH_SHORT,
+                    gravity: ToastGravity.BOTTOM,
+                    backgroundColor: Colors.green,
+                    textColor: Colors.white,
+                    fontSize: 16.0,
+                  );
+                  fetchGetActivityQuestionsListData();
+                  fetchGetAssignSitesListData();
+                },
               ),
-            SizedBox(width: 5),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => SiteReportingDetails()));
-                  },
-                  child: Icon(Icons.article_sharp)),
+            IconButton(
+              icon: Icon(Icons.article_sharp),
+              tooltip: 'View Details',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => SiteReportingDetails()),
+                );
+              },
             ),
           ],
           bottom: TabBar(
@@ -228,6 +234,7 @@ class _SiteReportingState extends State<SiteReporting>
             ],
           ),
         ),
+
         body: TabBarView(controller: _tabController, children: [
           Column(
             children: [
@@ -241,7 +248,7 @@ class _SiteReportingState extends State<SiteReporting>
               Padding(
                 padding: const EdgeInsets.all(5.0),
                 child: TextField(
-                  controller: searchController,
+                  controller: allSiteSearchController,
                   onChanged: filterAllSiteSearchResults,
                   decoration: InputDecoration(
                     hintText: "Search here offline",

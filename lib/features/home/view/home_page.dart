@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:vigo_smart_app/features/calender%20view/view/calendar_view.dart';
 import 'package:vigo_smart_app/features/home/widgets/setting_page.dart';
 import 'package:vigo_smart_app/features/markduty/view/markduty_page.dart';
 import 'package:vigo_smart_app/features/punchHistory/view/punch_history.dart';
@@ -98,6 +99,13 @@ class _HomePageState extends State<HomePage> {
       'page': const PunchHistory(),
     },
     {
+      'code': 'CalendarViewApp',
+      'icon':  Image.asset('assets/images/ic_calender_attendance.webp'),
+      'name': Strings.calendarViewApp,
+      'color': Pallete.backgroundColor,
+      'page': const CalendarView(),
+    },
+    {
       'code': 'FieldReportingApp',
       'icon': Image.asset('assets/images/patrolling.webp'),
       'name': Strings.fieldReportingApp,
@@ -171,13 +179,6 @@ class _HomePageState extends State<HomePage> {
       'code': 'RecruitmentApp',
       'icon': AppConstants.markDutyIcon,
       'name': Strings.recruitmentApp,
-      'color': Pallete.btn1,
-      'page': const MarkdutyPage(),
-    },
-    {
-      'code': 'CalendarViewApp',
-      'icon': AppConstants.markDutyIcon,
-      'name': Strings.calendarViewApp,
       'color': Pallete.btn1,
       'page': const MarkdutyPage(),
     },
