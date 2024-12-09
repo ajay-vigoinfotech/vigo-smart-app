@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:calendar_view/calendar_view.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
@@ -22,7 +23,8 @@ Future<void> main() async {
 
   final sessionManager = SessionManager();
   final isLoggedIn = await sessionManager.isLoggedIn();
-  runApp(MyApp(isLoggedIn: isLoggedIn));
+  runApp(CalendarControllerProvider(
+      controller: EventController(), child: MyApp(isLoggedIn: isLoggedIn)));
 }
 
 class MyApp extends StatelessWidget {
@@ -41,7 +43,6 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
 
 // import 'package:flutter/material.dart';
 //
