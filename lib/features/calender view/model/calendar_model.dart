@@ -34,7 +34,8 @@ class CalendarModelResponse {
         table: (json['table'] as List<dynamic>?)
                 ?.map((e) => CalendarModel.fromJson(e as Map<String, dynamic>))
                 .toList() ??
-            []);
+            []
+    );
   }
   Map<String, dynamic> toJson() {
     return {

@@ -4,6 +4,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vigo_smart_app/features/calender%20view/view/calendar_view.dart';
 import 'package:vigo_smart_app/features/home/widgets/setting_page.dart';
+import 'package:vigo_smart_app/features/leave%20managment/view/leave_management.dart';
 import 'package:vigo_smart_app/features/markduty/view/markduty_page.dart';
 import 'package:vigo_smart_app/features/punchHistory/view/punch_history.dart';
 import 'package:vigo_smart_app/features/site%20reporting/view/site_reporting.dart';
@@ -148,6 +149,13 @@ class _HomePageState extends State<HomePage> {
       'page': const TeamView(),
     },
     {
+      'code': 'LeaveMgmtApp',
+      'icon': Image.asset('assets/images/ic_leave.webp'),
+      'name': Strings.leaveMgmtApp,
+      'color': Pallete.backgroundColor,
+      'page': const LeaveManagement(),
+    },
+    {
       'code': 'SettingsApp',
       'icon': Image.asset('assets/images/settings.webp'),
       'name': Strings.settingsApp,
@@ -179,13 +187,6 @@ class _HomePageState extends State<HomePage> {
       'code': 'RecruitmentApp',
       'icon': AppConstants.markDutyIcon,
       'name': Strings.recruitmentApp,
-      'color': Pallete.btn1,
-      'page': const MarkdutyPage(),
-    },
-    {
-      'code': 'LeaveMgmtApp',
-      'icon': AppConstants.markDutyIcon,
-      'name': Strings.leaveMgmtApp,
       'color': Pallete.btn1,
       'page': const MarkdutyPage(),
     },

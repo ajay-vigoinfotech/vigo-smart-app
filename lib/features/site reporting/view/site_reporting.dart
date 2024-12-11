@@ -645,7 +645,7 @@ class _SiteReportingState extends State<SiteReporting>
                     )
                   : Expanded(
                       child: Center(
-                        child: CircularProgressIndicator(),
+                        // child: CircularProgressIndicator(),
                       ),
                     ),
             ],
@@ -657,30 +657,66 @@ class _SiteReportingState extends State<SiteReporting>
 
   Future<void> fetchScheduleSIteByUserID() async {
     String? token =
-        await getScheduleSiteListViewModel.sessionManager.getToken();
+    await getScheduleSiteListViewModel.sessionManager.getToken();
     if (token != null) {
       String formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
 
       await getScheduleSiteListViewModel.fetchGetScheduleSiteListData(
           token, formattedDate);
 
-      setState(() {
-        getScheduleSiteListData =
-            getScheduleSiteListViewModel.getScheduleSiteList!
-                .map((entry) => {
-                      'siteId': entry.siteId,
-                      'remarks': entry.remarks,
-                      'scheduleDate': entry.scheduleDate,
-                      'scheduleDate1': entry.scheduleDate1,
-                      'statusText': entry.statusText,
-                      'unitName': entry.unitName,
-                      'createdBy': entry.createdBy,
-                      'isActive': entry.isActive,
-                    })
-                .toList();
-      });
+      if (getScheduleSiteListViewModel.getScheduleSiteList != null) {
+        setState(() {
+          getScheduleSiteListData =
+              getScheduleSiteListViewModel.getScheduleSiteList!
+                  .map((entry) => {
+                'siteId': entry.siteId,
+                'remarks': entry.remarks,
+                'scheduleDate': entry.scheduleDate,
+                'scheduleDate1': entry.scheduleDate1,
+                'statusText': entry.statusText,
+                'unitName': entry.unitName,
+                'createdBy': entry.createdBy,
+                'isActive': entry.isActive,
+              })
+                  .toList();
+        });
+      } else {
+        // Handle case where getScheduleSiteList is null
+        print('getScheduleSiteList is null');
+      }
+    } else {
+      // Handle case where token is null
+      print('Token is null');
     }
   }
+
+
+  // Future<void> fetchScheduleSIteByUserID() async {
+  //   String? token =
+  //       await getScheduleSiteListViewModel.sessionManager.getToken();
+  //   if (token != null) {
+  //     String formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
+  //
+  //     await getScheduleSiteListViewModel.fetchGetScheduleSiteListData(
+  //         token, formattedDate);
+  //
+  //     setState(() {
+  //       getScheduleSiteListData =
+  //           getScheduleSiteListViewModel.getScheduleSiteList!
+  //               .map((entry) => {
+  //                     'siteId': entry.siteId,
+  //                     'remarks': entry.remarks,
+  //                     'scheduleDate': entry.scheduleDate,
+  //                     'scheduleDate1': entry.scheduleDate1,
+  //                     'statusText': entry.statusText,
+  //                     'unitName': entry.unitName,
+  //                     'createdBy': entry.createdBy,
+  //                     'isActive': entry.isActive,
+  //                   })
+  //               .toList();
+  //     });
+  //   }
+  // }
 
   // Function to fetch data from API
   Future<void> fetchGetActiveSiteListData() async {

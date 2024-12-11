@@ -25,5 +25,5 @@ class Strings {
   static const String paySlipApp = "PaySlip App";
   static const String recruitmentApp = "Recruitment App";
   static const String calendarViewApp = "Calendar View";
-  static const String leaveMgmtApp = "LeaveMgmtApp";
+  static const String leaveMgmtApp = "Leave Management";
 }

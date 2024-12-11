@@ -21,14 +21,14 @@ class GetScheduleSiteListModel {
 
   factory GetScheduleSiteListModel.fromJson(Map<String, dynamic> json) {
     return GetScheduleSiteListModel(
-      siteId: json['siteId']?.toString() ?? '',
-      remarks: json['remarks']?.toString() ?? '',
-      scheduleDate: json['scheduleDate']?.toString() ?? '',
-      scheduleDate1: json['scheduleDate1']?.toString() ?? '',
-      statusText: json['statusText']?.toString() ?? '',
-      unitName: json['unitName']?.toString() ?? '',
-      createdBy: json['createdBy']?.toString() ?? '',
-      isActive: json['isActive']?.toString() ?? '',
+      siteId: json['siteId']?.toString(),
+      remarks: json['remarks']?.toString(),
+      scheduleDate: json['scheduleDate']?.toString(),
+      scheduleDate1: json['scheduleDate1']?.toString(),
+      statusText: json['statusText']?.toString(),
+      unitName: json['unitName']?.toString(),
+      createdBy: json['createdBy']?.toString(),
+      isActive: json['isActive']?.toString(),
     );
   }
 
