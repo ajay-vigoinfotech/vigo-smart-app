@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:vigo_smart_app/core/strings/strings.dart';
 
 import '../view model/leave_balance_view_model.dart';
+import '../view model/leave_history_view_model.dart';
 
 class LeaveManagement extends StatefulWidget {
   const LeaveManagement({super.key});
@@ -15,9 +16,13 @@ class _LeaveManagementState extends State<LeaveManagement> {
   List<Map<String, dynamic>> leavesBalanceListData = [];
   List<Map<String, dynamic>> leavesNameListData = [];
 
+  LeaveHistoryViewModel leaveHistoryViewModel = LeaveHistoryViewModel();
+  List<Map<String, dynamic>> leaveHistoryListData = [];
+
   @override
   void initState() {
     fetchEmployeeLeavesData();
+    fetchLeaveHistoryData();
     super.initState();
   }
 
@@ -31,13 +36,12 @@ class _LeaveManagementState extends State<LeaveManagement> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(10.0),
             child: Text(
               'Leave Balance',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
             ),
           ),
-          // const SizedBox(height: 10),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -49,48 +53,57 @@ class _LeaveManagementState extends State<LeaveManagement> {
                         (leaveName) => leaveName['leaveId'] == leave['leaveId'],
                         orElse: () => <String, String?>{},
                       );
-
                       return Padding(
                         padding: const EdgeInsets.all(5.0),
                         child: Card(
+                          // color: Colors.white,
                           elevation: 5,
                           child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                            ),
-                            width: 200,
-                            height: 200,
+                            decoration: const BoxDecoration(),
+                            width: 170,
+                            height: 170,
                             padding: const EdgeInsets.all(16),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
-                              // crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Text(
                                   '${leave['totalLeaves']}',
                                   style: const TextStyle(
-                                    fontSize: 24,
+                                    fontSize: 25,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                if (matchingLeaveName.isNotEmpty)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 8.0),
-                                    child: Text(
-                                      '${matchingLeaveName['leaveName'] ?? ''}',
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.grey,
-                                      ),
+                                const SizedBox(height: 10),
+                                SizedBox(
+                                  height: 75,
+                                  child: Text(
+                                    matchingLeaveName.isNotEmpty
+                                        ? '${matchingLeaveName['leaveName'] ?? ''}'
+                                        : '',
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.black,
                                     ),
+                                    maxLines: 3,
+                                    overflow: TextOverflow.ellipsis,
+                                    softWrap: true,
                                   ),
+                                ),
                               ],
                             ),
                           ),
                         ),
                       );
                     }).toList(),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Text(
+              'Leave History',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
             ),
           ),
         ],
@@ -120,7 +133,46 @@ class _LeaveManagementState extends State<LeaveManagement> {
                     "leaveId": entry.leaveId,
                     "shortCode": entry.shortCode,
                     "leaveName": entry.leaveName,
+                    "leaveId1": entry.leaveId1,
+                    "yearIdFrom": entry.yearIdFrom,
+                    "monthIdFrom": entry.monthIdFrom,
+                    "yearTo": entry.yearTo,
+                    "monthIdTo": entry.monthIdTo,
                     "yearlyLeave": entry.yearlyLeave,
+                    "monthlyLeave": entry.monthlyLeave,
+                    "totalYearlyLeave": entry.totalYearlyLeave,
+                    "totalMonthlyLeave": entry.totalMonthlyLeave,
+                    "carryForword": entry.carryForword,
+                  })
+              .toList();
+        }
+      });
+    }
+  }
+
+  Future<void> fetchLeaveHistoryData() async {
+    String? token = await leaveHistoryViewModel.sessionManager.getToken();
+    if (token != null) {
+      await leaveHistoryViewModel.fetchLeaveHistory(token);
+
+      setState(() {
+        if (leaveHistoryViewModel.leaveHistoryList != null) {
+          leaveHistoryListData = leaveHistoryViewModel.leaveHistoryList!
+              .map((entry) => {
+                    "employeesLeaveId": entry.employeesLeaveId,
+                    "userId": entry.userId,
+                    "employeeCode": entry.employeeCode,
+                    "fullName": entry.fullName,
+                    "leaveEnableDisable": entry.leaveEnableDisable,
+                    "leavePendingApprove": entry.leavePendingApprove,
+                    "leaveType": entry.leaveType,
+                    "dateFrom": entry.dateFrom,
+                    "dateTo": entry.dateTo,
+                    "remark": entry.remark,
+                    "createdAt": entry.createdAt,
+                    "createdBy": entry.createdBy,
+                    "leavesListId": entry.leavesListId,
+                    "noOfDays": entry.noOfDays,
                   })
               .toList();
         }
