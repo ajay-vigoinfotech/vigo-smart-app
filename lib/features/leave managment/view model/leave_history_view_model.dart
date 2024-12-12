@@ -9,7 +9,7 @@ class LeaveHistoryViewModel {
   SessionManager sessionManager = SessionManager();
   List<LeaveHistoryModel>? leaveHistoryList;
 
-  Future<void> fetchLeaveHistory(String token, ) async {
+  Future<void> fetchLeaveHistory(String token) async {
     const url = "${AppConstants.baseUrl}/API/PayRoll/GetEmployeeLeaveApp";
 
     try {
@@ -18,7 +18,7 @@ class LeaveHistoryViewModel {
         options: Options(
             headers: {'Authorization': 'Bearer $token'},
             contentType: Headers.formUrlEncodedContentType),
-        data: {''},
+        data: {'action':'7'},
       );
 
       if (response.statusCode == 200) {
