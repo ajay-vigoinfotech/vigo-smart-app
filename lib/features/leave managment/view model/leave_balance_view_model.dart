@@ -27,7 +27,7 @@ class LeaveBalanceViewModel {
         final responseData = LeaveBalanceResponse.fromJson(response.data);
         leavesBalanceList = responseData.table;
         leaveNameList = responseData.table1;
-        debugPrint('$response');
+        // debugPrint('$response');
       } else {
         debugPrint(
             'Error :: ${response.statusCode} - ${response.statusMessage}');

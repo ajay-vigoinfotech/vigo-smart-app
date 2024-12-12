@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:vigo_smart_app/core/strings/strings.dart';
 
 import '../view model/leave_balance_view_model.dart';
+import '../view model/leave_cancel_view_model.dart';
 import '../view model/leave_history_view_model.dart';
 
 class LeaveManagement extends StatefulWidget {
@@ -18,6 +19,9 @@ class _LeaveManagementState extends State<LeaveManagement> {
 
   LeaveHistoryViewModel leaveHistoryViewModel = LeaveHistoryViewModel();
   List<Map<String, dynamic>> leaveHistoryListData = [];
+  bool isLoading = true;
+
+  LeaveCancelViewModel leaveCancelViewModel = LeaveCancelViewModel();
 
   @override
   void initState() {
@@ -39,7 +43,7 @@ class _LeaveManagementState extends State<LeaveManagement> {
             padding: const EdgeInsets.all(10.0),
             child: Text(
               'Leave Balance',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
           ),
           SingleChildScrollView(
@@ -103,9 +107,116 @@ class _LeaveManagementState extends State<LeaveManagement> {
             padding: const EdgeInsets.all(10.0),
             child: Text(
               'Leave History',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
+          Expanded(
+            child: leaveHistoryListData.isEmpty
+                ? Center(
+              child: CircularProgressIndicator(),
+            )
+                : ListView.builder(
+              itemCount: leaveHistoryListData.length,
+              itemBuilder: (context, index) {
+                final data = leaveHistoryListData[index];
+
+                String status;
+                Color backgroundColor;
+                Color textColor;
+
+                switch (data['leavePendingApprove']) {
+                  case "0":
+                    status = 'Pending';
+                    backgroundColor = Colors.yellow;
+                    textColor = Colors.black;
+                    break;
+                  case "1":
+                    status = 'Approved';
+                    backgroundColor = Colors.green;
+                    textColor = Colors.white;
+                    break;
+                  case "2":
+                    status = 'Rejected';
+                    backgroundColor = Colors.red;
+                    textColor = Colors.white;
+                    break;
+                  case "3":
+                    status = 'Canceled';
+                    backgroundColor = Colors.grey;
+                    textColor = Colors.white;
+                    break;
+                  default:
+                    status = '';
+                    backgroundColor = Colors.white;
+                    textColor = Colors.white;
+                }
+
+                final dateRange = data['dateFrom'] == data['dateTo']
+                    ? data['dateFrom']
+                    : '${data['dateFrom']} / ${data['dateTo']}';
+
+                return Card(
+                  color: Colors.white,
+                  elevation: 5,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          children: [
+                            Text(data['noOfDays']),
+                            Text('Day'),
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            Text(dateRange),
+                            Text(data['leaveType'])
+                          ],
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            debugPrint('Status Tap');
+
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: backgroundColor,
+                              borderRadius: BorderRadius.circular(4.0),
+                            ),
+                            child: Text(
+                              status,
+                              style: TextStyle(
+                                color: textColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          Container(
+            color: Colors.blue,
+            height: 30,
+            child: Center(
+              child: ElevatedButton(
+                  onPressed: (){},
+                  child: Text('Apply leave')),
+            ),
+          ),
+          SizedBox(
+            height: 30,
+          )
         ],
       ),
     );
