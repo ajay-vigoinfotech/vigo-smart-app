@@ -7,7 +7,7 @@ class LeaveCancelViewModel {
   final Dio _dio = Dio();
   SessionManager sessionManager = SessionManager();
 
-  Future<void> markLeaveCancel(String token) async {
+  Future<void> markLeaveCancel(String token, {required employeesLeaveId}) async {
     const url = "${AppConstants.baseUrl}/API/Payroll/CancelEmpLeave";
 
     try {
@@ -15,7 +15,7 @@ class LeaveCancelViewModel {
           options: Options(
               headers: {'Authorization': 'Bearer $token'},
               contentType: Headers.formUrlEncodedContentType),
-          data: {});
+          data: {'leaveId' : employeesLeaveId});
 
       if (response.statusCode == 200) {
         debugPrint('$response');

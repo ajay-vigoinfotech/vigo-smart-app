@@ -60,13 +60,6 @@ class _SiteReportingState extends State<SiteReporting>
     fetchGetAssignSitesListData();
   }
 
-  @override
-  void dispose() {
-    _tabController.removeListener(_handleTabChange);
-    _tabController.dispose();
-    super.dispose();
-  }
-
   Future<void> fetchGetActivityQuestionsListData() async {
     String? token =
         await getActivityQuestionsListAppViewModel.sessionManager.getToken();
@@ -220,7 +213,8 @@ class _SiteReportingState extends State<SiteReporting>
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => SiteReportingDetails()),
+                  MaterialPageRoute(
+                      builder: (context) => SiteReportingDetails()),
                 );
               },
             ),
@@ -234,7 +228,6 @@ class _SiteReportingState extends State<SiteReporting>
             ],
           ),
         ),
-
         body: TabBarView(controller: _tabController, children: [
           Column(
             children: [
@@ -645,8 +638,8 @@ class _SiteReportingState extends State<SiteReporting>
                     )
                   : Expanded(
                       child: Center(
-                        // child: CircularProgressIndicator(),
-                      ),
+                          // child: CircularProgressIndicator(),
+                          ),
                     ),
             ],
           ),
@@ -657,7 +650,7 @@ class _SiteReportingState extends State<SiteReporting>
 
   Future<void> fetchScheduleSIteByUserID() async {
     String? token =
-    await getScheduleSiteListViewModel.sessionManager.getToken();
+        await getScheduleSiteListViewModel.sessionManager.getToken();
     if (token != null) {
       String formattedDate = DateFormat('yyyy-MM-dd').format(selectedDate);
 
@@ -669,15 +662,15 @@ class _SiteReportingState extends State<SiteReporting>
           getScheduleSiteListData =
               getScheduleSiteListViewModel.getScheduleSiteList!
                   .map((entry) => {
-                'siteId': entry.siteId,
-                'remarks': entry.remarks,
-                'scheduleDate': entry.scheduleDate,
-                'scheduleDate1': entry.scheduleDate1,
-                'statusText': entry.statusText,
-                'unitName': entry.unitName,
-                'createdBy': entry.createdBy,
-                'isActive': entry.isActive,
-              })
+                        'siteId': entry.siteId,
+                        'remarks': entry.remarks,
+                        'scheduleDate': entry.scheduleDate,
+                        'scheduleDate1': entry.scheduleDate1,
+                        'statusText': entry.statusText,
+                        'unitName': entry.unitName,
+                        'createdBy': entry.createdBy,
+                        'isActive': entry.isActive,
+                      })
                   .toList();
         });
       } else {
@@ -689,7 +682,6 @@ class _SiteReportingState extends State<SiteReporting>
       print('Token is null');
     }
   }
-
 
   // Future<void> fetchScheduleSIteByUserID() async {
   //   String? token =
@@ -799,5 +791,12 @@ class _SiteReportingState extends State<SiteReporting>
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _tabController.removeListener(_handleTabChange);
+    _tabController.dispose();
+    super.dispose();
   }
 }

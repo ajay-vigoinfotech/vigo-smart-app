@@ -52,7 +52,6 @@ class _LeaveManagementState extends State<LeaveManagement> {
               children: leavesBalanceListData.isEmpty
                   ? [const Center(child: CircularProgressIndicator())]
                   : leavesBalanceListData.map((leave) {
-                      // Find matching leaveName from table1
                       final matchingLeaveName = leavesNameListData.firstWhere(
                         (leaveName) => leaveName['leaveId'] == leave['leaveId'],
                         orElse: () => <String, String?>{},
@@ -60,12 +59,12 @@ class _LeaveManagementState extends State<LeaveManagement> {
                       return Padding(
                         padding: const EdgeInsets.all(5.0),
                         child: Card(
-                          // color: Colors.white,
+                          color: Colors.white,
                           elevation: 5,
                           child: Container(
                             decoration: const BoxDecoration(),
                             width: 170,
-                            height: 170,
+                            height: 120,
                             padding: const EdgeInsets.all(16),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -73,20 +72,19 @@ class _LeaveManagementState extends State<LeaveManagement> {
                                 Text(
                                   '${leave['totalLeaves']}',
                                   style: const TextStyle(
-                                    fontSize: 25,
+                                    fontSize: 20,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
-                                const SizedBox(height: 10),
                                 SizedBox(
-                                  height: 75,
+                                  height: 50,
                                   child: Text(
                                     matchingLeaveName.isNotEmpty
                                         ? '${matchingLeaveName['leaveName'] ?? ''}'
                                         : '',
                                     textAlign: TextAlign.center,
                                     style: const TextStyle(
-                                      fontSize: 18,
+                                      fontSize: 16,
                                       fontWeight: FontWeight.w500,
                                       color: Colors.black,
                                     ),
@@ -116,107 +114,271 @@ class _LeaveManagementState extends State<LeaveManagement> {
           Expanded(
             child: leaveHistoryListData.isEmpty
                 ? Center(
-              child: CircularProgressIndicator(),
-            )
+                    child: CircularProgressIndicator(),
+                  )
                 : ListView.builder(
-              itemCount: leaveHistoryListData.length,
-              itemBuilder: (context, index) {
-                final data = leaveHistoryListData[index];
+                    itemCount: leaveHistoryListData.length,
+                    itemBuilder: (context, index) {
+                      final data = leaveHistoryListData[index];
 
-                String status;
-                Color backgroundColor;
-                Color textColor;
+                      String status;
+                      Color backgroundColor;
+                      Color textColor;
 
-                switch (data['leavePendingApprove']) {
-                  case "0":
-                    status = 'Pending';
-                    backgroundColor = Colors.yellow;
-                    textColor = Colors.black;
-                    break;
-                  case "1":
-                    status = 'Approved';
-                    backgroundColor = Colors.green;
-                    textColor = Colors.white;
-                    break;
-                  case "2":
-                    status = 'Rejected';
-                    backgroundColor = Colors.red;
-                    textColor = Colors.white;
-                    break;
-                  case "3":
-                    status = 'Canceled';
-                    backgroundColor = Colors.grey;
-                    textColor = Colors.white;
-                    break;
-                  default:
-                    status = '';
-                    backgroundColor = Colors.white;
-                    textColor = Colors.white;
-                }
+                      switch (data['leavePendingApprove']) {
+                        case "0":
+                          status = 'Pending';
+                          backgroundColor = Colors.yellow;
+                          textColor = Colors.brown;
+                          break;
+                        case "1":
+                          status = 'Approved';
+                          backgroundColor = Colors.green;
+                          textColor = Colors.white;
+                          break;
+                        case "2":
+                          status = 'Rejected';
+                          backgroundColor = Colors.red;
+                          textColor = Colors.white;
+                          break;
+                        case "3":
+                          status = 'Canceled';
+                          backgroundColor = Colors.grey;
+                          textColor = Colors.white;
+                          break;
+                        default:
+                          status = '';
+                          backgroundColor = Colors.white;
+                          textColor = Colors.white;
+                      }
 
-                final dateRange = data['dateFrom'] == data['dateTo']
-                    ? data['dateFrom']
-                    : '${data['dateFrom']} / ${data['dateTo']}';
+                      final dateRange = data['dateFrom'] == data['dateTo']
+                          ? data['dateFrom']
+                          : '${data['dateFrom']} / ${data['dateTo']}';
 
-                return Card(
-                  color: Colors.white,
-                  elevation: 5,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          children: [
-                            Text(data['noOfDays']),
-                            Text('Day'),
-                          ],
-                        ),
-                        Column(
-                          children: [
-                            Text(dateRange),
-                            Text(data['leaveType'])
-                          ],
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            debugPrint('Status Tap');
+                      return SizedBox(
+                        child: Card(
+                          color: Colors.white,
+                          elevation: 5,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  flex: 0,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        data['noOfDays'],
+                                        style: const TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4.0),
+                                      Text(
+                                        'Day',
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.grey[700],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 1,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        dateRange ?? "",
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      const SizedBox(height: 4.0),
+                                      Text(
+                                        '${data['leaveType']}',
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.grey[700],
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
+                                  ),
+                                ),
 
-                          },
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: backgroundColor,
-                              borderRadius: BorderRadius.circular(4.0),
-                            ),
-                            child: Text(
-                              status,
-                              style: TextStyle(
-                                color: textColor,
-                                fontWeight: FontWeight.bold,
-                              ),
+                                // Status Section
+                                GestureDetector(
+                                  onTap: data['leavePendingApprove'] == "0"
+                                      ? () {
+                                          _showBottomSheet(context, data);
+                                        }
+                                      : null,
+                                  child: Container(
+                                    height: 40,
+                                    width: 80,
+                                    alignment: Alignment.center,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 1.0),
+                                    decoration: BoxDecoration(
+                                      color: backgroundColor,
+                                      borderRadius: BorderRadius.circular(6.0),
+                                    ),
+                                    child: Text(
+                                      status,
+                                      style: TextStyle(
+                                        color: textColor,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
           ),
-
-          Container(
-            color: Colors.blue,
-            height: 30,
-            child: Center(
-              child: ElevatedButton(
-                  onPressed: (){},
-                  child: Text('Apply leave')),
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(1.0),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 30, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    elevation: 5,
+                  ),
+                  onPressed: () {},
+                  child: Text(
+                    '+ Apply leave',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
             ),
           ),
           SizedBox(
             height: 30,
-          )
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showBottomSheet(BuildContext context, Map<String, dynamic> data) {
+    final dateRange = data['dateFrom'] == data['dateTo']
+        ? 'Leave on ${data['dateFrom']} for ${data['noOfDays']} day${data['noOfDays'] == "1" ? "" : "s"}'
+        : 'Leave from ${data['dateFrom']} to ${data['dateTo']} for ${data['noOfDays']} days';
+
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Padding(
+        padding: const EdgeInsets.all(1.0),
+        child: SizedBox(
+          height: 200,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  data['leaveType'],
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 5),
+                Text(
+                  dateRange,
+                  style: const TextStyle(fontSize: 18),
+                ),
+                SizedBox(height: 5),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _showValidationDialog(context, data['employeesLeaveId']);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 30, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    elevation: 5,
+                  ),
+                  child: const Text(
+                    'Cancel Leave',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showValidationDialog(BuildContext context, String employeesLeaveId) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Cancel Leave'),
+        content: const Text('Are you sure you want to cancel this leave?'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('No'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              final token =
+                  await leaveCancelViewModel.sessionManager.getToken();
+              await leaveCancelViewModel.markLeaveCancel(
+                token!,
+                employeesLeaveId: employeesLeaveId,
+              );
+              fetchLeaveHistoryData();
+              fetchEmployeeLeavesData();
+              debugPrint('Cancel Leave Action for ID: $employeesLeaveId');
+            },
+            child: const Text('Yes'),
+          ),
         ],
       ),
     );
