@@ -316,6 +316,7 @@ class _LeaveManagementState extends State<LeaveManagement> {
       builder: (context) => Padding(
         padding: const EdgeInsets.all(1.0),
         child: SizedBox(
+          width: double.infinity,
           height: 200,
           child: Padding(
             padding: const EdgeInsets.all(8.0),
@@ -323,7 +324,7 @@ class _LeaveManagementState extends State<LeaveManagement> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  data['leaveType'],
+                  '${data['leaveType']}',
                   style: const TextStyle(
                       fontSize: 18, fontWeight: FontWeight.bold),
                 ),

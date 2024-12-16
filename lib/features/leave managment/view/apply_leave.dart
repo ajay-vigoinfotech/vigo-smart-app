@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
+import 'package:vigo_smart_app/features/auth/session_manager/session_manager.dart';
+import '../../home/view/home_page.dart';
+import '../model/apply_leave_model.dart';
+import '../view model/apply_leave_view_model.dart';
 import '../view model/leave_balance_view_model.dart';
 
 class ApplyLeave extends StatefulWidget {
@@ -13,6 +19,12 @@ class _ApplyLeaveState extends State<ApplyLeave> {
   List<Map<String, dynamic>> leavesBalanceListData = [];
   List<Map<String, dynamic>> leavesNameListData = [];
   TextEditingController searchController = TextEditingController();
+  String? selectedLeaveName;
+  String? selectedLeaveId;
+  bool isMultiDays = false;
+  DateTime? startDate;
+  DateTime? endDate;
+  SessionManager sessionManager = SessionManager();
 
   @override
   void initState() {
@@ -91,7 +103,7 @@ class _ApplyLeaveState extends State<ApplyLeave> {
                                     );
                                     final leaveName =
                                         matchingLeaveName['leaveName'] ??
-                                            'null';
+                                            '';
                                     return leaveName.toLowerCase().contains(
                                         searchController.text.toLowerCase());
                                   }).map((leave) {
@@ -109,6 +121,12 @@ class _ApplyLeaveState extends State<ApplyLeave> {
                                             fontWeight: FontWeight.w500),
                                       ),
                                       onTap: () {
+                                        // Set the selected leave name
+                                        setState(() {
+                                          selectedLeaveName =
+                                              matchingLeaveName['leaveName'];
+                                          selectedLeaveId = leave['leaveId'];
+                                        });
                                         Navigator.pop(context);
                                         // Handle the selection logic if needed
                                       },
@@ -147,9 +165,149 @@ class _ApplyLeaveState extends State<ApplyLeave> {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
+
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Radio(
+                value: false,
+                groupValue: isMultiDays,
+                onChanged: (value) {
+                  setState(() {
+                    isMultiDays = value as bool;
+                    startDate = null;
+                    endDate = null;
+                  });
+                },
+              ),
+              Text("Full Day"),
+              Radio(
+                value: true,
+                groupValue: isMultiDays,
+                onChanged: (value) {
+                  setState(() {
+                    isMultiDays = value as bool;
+                    startDate = null;
+                    endDate = null;
+                  });
+                },
+              ),
+              Text("Multi Days"),
+            ],
+          ),
+          SizedBox(height: 8),
+
+          // Date Pickers for Full Day
+          if (!isMultiDays) ...[
+            Text("Select Date:", style: TextStyle(fontWeight: FontWeight.bold)),
+            ElevatedButton(
+              onPressed: () {
+                _selectDate(
+                    context, (date) => setState(() => startDate = date));
+              },
+              child: Text(startDate != null
+                  ? "${startDate!.toLocal()}".split(' ')[0]
+                  : "Select Date"),
+            ),
+          ],
+
+          // Date Pickers for Multi Days
+          if (isMultiDays) ...[
+            // Start Date
+            Text("Start Date:", style: TextStyle(fontWeight: FontWeight.bold)),
+            ElevatedButton(
+              onPressed: () {
+                _selectDate(context, (date) {
+                  setState(() {
+                    startDate = date;
+                    endDate = null; // Reset end date when start date changes
+                  });
+                });
+              },
+              child: Text(startDate != null
+                  ? "${startDate!.toLocal()}".split(' ')[0]
+                  : "Select Start Date"),
+            ),
+
+            SizedBox(height: 8),
+            // End Date
+            Text("End Date:", style: TextStyle(fontWeight: FontWeight.bold)),
+            ElevatedButton(
+              onPressed: startDate != null
+                  ? () {
+                      _selectDate(
+                          context, (date) => setState(() => endDate = date),
+                          minDate:
+                              startDate); // Start date as minimum selectable date
+                    }
+                  : null, // Disable until start date is selected
+              child: Text(endDate != null
+                  ? "${endDate!.toLocal()}".split(' ')[0]
+                  : "Select End Date",
+              ),
+            ),
+          ],
+          SizedBox(height: 16),
+          ElevatedButton(
+              onPressed: () async {
+                debugPrint('Apply Leave Button Tapped');
+
+                String? token = await sessionManager.getToken();
+                ApplyLeaveViewModel applyLeaveViewModel = ApplyLeaveViewModel();
+                bool isSingleDayLeave = endDate == null || startDate == endDate;
+
+
+                Map<String, dynamic> response =
+                    await applyLeaveViewModel.markApplyLeave(
+                  token!,
+                  ApplyLeaveModel(
+                      dateTo: isSingleDayLeave ? '$startDate' : '$endDate',
+                      action: '1',
+                      remark: 'remark',
+                      leaveTypeId: '$selectedLeaveId',
+                      dateFrom: '$startDate'
+                  ),
+                );
+
+                if (response['code'] == 200) {
+                  // Navigator.of(context).pop();
+
+                  QuickAlert.show(
+                    confirmBtnText: 'Ok',
+                    context: context,
+                    type: QuickAlertType.success,
+                    text: '${response['message']}',
+                    onConfirmBtnTap: () {
+                      Navigator.pushAndRemoveUntil(
+                        this.context,
+                        MaterialPageRoute(builder: (context) => HomePage()),
+                        (route) => false,
+                      );
+                    },
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Error: ${response['status']}')),
+                  );
+                }
+              },
+              child: Text('Apply leave'),
+          ),
         ],
       ),
     );
+  }
+
+  Future<void> _selectDate(
+      BuildContext context, Function(DateTime) onDatePicked,
+      {DateTime? minDate}) async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: minDate ?? DateTime.now(),
+      firstDate: minDate ?? DateTime.now(),
+      lastDate: DateTime(2030),
+    );
+    if (picked != null) onDatePicked(picked);
   }
 
   Future<void> fetchEmployeeLeavesData() async {
@@ -191,5 +349,3 @@ class _ApplyLeaveState extends State<ApplyLeave> {
     }
   }
 }
-
-
