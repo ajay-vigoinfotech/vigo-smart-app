@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:vigo_smart_app/features/auth/session_manager/session_manager.dart';
-import '../../home/view/home_page.dart';
+import 'package:vigo_smart_app/features/home/view/home_page.dart';
+import 'package:vigo_smart_app/features/leave%20managment/view/leave_management.dart';
 import '../model/apply_leave_model.dart';
 import '../view model/apply_leave_view_model.dart';
 import '../view model/leave_balance_view_model.dart';
@@ -19,12 +21,13 @@ class _ApplyLeaveState extends State<ApplyLeave> {
   List<Map<String, dynamic>> leavesBalanceListData = [];
   List<Map<String, dynamic>> leavesNameListData = [];
   TextEditingController searchController = TextEditingController();
-  String? selectedLeaveName;
-  String? selectedLeaveId;
+  String selectedLeaveName = '';
+  String selectedLeaveId = '';
   bool isMultiDays = false;
   DateTime? startDate;
   DateTime? endDate;
   SessionManager sessionManager = SessionManager();
+  String remark = '';
 
   @override
   void initState() {
@@ -38,217 +41,305 @@ class _ApplyLeaveState extends State<ApplyLeave> {
       appBar: AppBar(
         title: const Text('Apply Leave'),
       ),
-      body: Column(
-        children: [
-          const Padding(
-            padding: EdgeInsets.all(10.0),
-            child: Text(
-              'Select Leave Type',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Text(
+                    'Select Leave Type',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
             ),
-          ),
-          Center(
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) => Dialog(
-                      child: StatefulBuilder(
-                        builder: (context, setState) => SizedBox(
-                          height: 400,
-                          child: Column(
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.all(15.0),
-                                    child: Text(
-                                      'Designation',
-                                      style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold),
+            Center(
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 30, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    elevation: 5,
+                  ),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => Dialog(
+                        child: StatefulBuilder(
+                          builder: (dialogContext, setDialogState) => SizedBox(
+                            height: 400,
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.all(15.0),
+                                      child: Text(
+                                        'Designation',
+                                        style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: TextField(
+                                    controller: searchController,
+                                    onChanged: (value) {
+                                      setDialogState(() {});
+                                    },
+                                    decoration: const InputDecoration(
+                                      hintText: 'Search...',
+                                      border: OutlineInputBorder(),
+                                      prefixIcon: Icon(Icons.search),
                                     ),
                                   ),
-                                ],
-                              ),
-                              // Search Field
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: TextField(
-                                  controller: searchController,
-                                  onChanged: (value) {
-                                    setState(
-                                        () {}); // Triggers UI refresh on search input change
-                                  },
-                                  decoration: const InputDecoration(
-                                    hintText: 'Search...',
-                                    border: OutlineInputBorder(),
-                                    prefixIcon: Icon(Icons.search),
+                                ),
+                                Expanded(
+                                  child: ListView(
+                                    children:
+                                        leavesBalanceListData.where((leave) {
+                                      final matchingLeaveName =
+                                          leavesNameListData.firstWhere(
+                                        (leaveName) =>
+                                            leaveName['leaveId'] ==
+                                            leave['leaveId'],
+                                        orElse: () => <String, String?>{},
+                                      );
+                                      final leaveName =
+                                          matchingLeaveName['leaveName'] ?? '';
+                                      return leaveName.toLowerCase().contains(
+                                          searchController.text.toLowerCase());
+                                    }).map((leave) {
+                                      final matchingLeaveName =
+                                          leavesNameListData.firstWhere(
+                                        (leaveName) =>
+                                            leaveName['leaveId'] ==
+                                            leave['leaveId'],
+                                        orElse: () => <String, String?>{},
+                                      );
+                                      final leaveName =
+                                          matchingLeaveName['leaveName'] ?? '-';
+                                      final totalLeaves =
+                                          leave['totalLeaves'] ?? '0';
+                                      return ListTile(
+                                        title: Text(
+                                          '$leaveName ($totalLeaves)',
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.w500),
+                                        ),
+                                        onTap: () {
+                                          setState(() {
+                                            selectedLeaveName =
+                                                '$leaveName ($totalLeaves)';
+                                            selectedLeaveId = leave['leaveId'];
+                                          });
+                                          Navigator.pop(context);
+                                        },
+                                      );
+                                    }).toList(),
                                   ),
                                 ),
-                              ),
-                              Expanded(
-                                child: ListView(
-                                  children:
-                                      leavesBalanceListData.where((leave) {
-                                    final matchingLeaveName =
-                                        leavesNameListData.firstWhere(
-                                      (leaveName) =>
-                                          leaveName['leaveId'] ==
-                                          leave['leaveId'],
-                                      orElse: () => <String, String?>{},
-                                    );
-                                    final leaveName =
-                                        matchingLeaveName['leaveName'] ??
-                                            '';
-                                    return leaveName.toLowerCase().contains(
-                                        searchController.text.toLowerCase());
-                                  }).map((leave) {
-                                    final matchingLeaveName =
-                                        leavesNameListData.firstWhere(
-                                      (leaveName) =>
-                                          leaveName['leaveId'] ==
-                                          leave['leaveId'],
-                                      orElse: () => <String, String?>{},
-                                    );
-                                    return ListTile(
-                                      title: Text(
-                                        '${matchingLeaveName['leaveName'] ?? 'null'} (${leave['totalLeaves']})',
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.w500),
-                                      ),
-                                      onTap: () {
-                                        // Set the selected leave name
-                                        setState(() {
-                                          selectedLeaveName =
-                                              matchingLeaveName['leaveName'];
-                                          selectedLeaveId = leave['leaveId'];
-                                        });
-                                        Navigator.pop(context);
-                                        // Handle the selection logic if needed
-                                      },
-                                    );
-                                  }).toList(),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    TextButton(
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    children: [
+                                      TextButton(
                                         onPressed: () {
                                           Navigator.pop(context);
                                         },
-                                        child: Text('Cancel')),
-                                  ],
+                                        child: Text('Cancel'),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
+                    );
+                  },
+                  child: Text(
+                    selectedLeaveName.isEmpty
+                        ? 'Select Leave Type'
+                        : selectedLeaveName,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
-                  );
-                },
-                child: const Text('Select Leave Type'),
+                  ),
+                ),
               ),
             ),
-          ),
-          const Padding(
-            padding: EdgeInsets.all(10.0),
-            child: Text(
-              'Select Duration Type',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-          ),
-
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Radio(
-                value: false,
-                groupValue: isMultiDays,
-                onChanged: (value) {
-                  setState(() {
-                    isMultiDays = value as bool;
-                    startDate = null;
-                    endDate = null;
-                  });
-                },
-              ),
-              Text("Full Day"),
-              Radio(
-                value: true,
-                groupValue: isMultiDays,
-                onChanged: (value) {
-                  setState(() {
-                    isMultiDays = value as bool;
-                    startDate = null;
-                    endDate = null;
-                  });
-                },
-              ),
-              Text("Multi Days"),
-            ],
-          ),
-          SizedBox(height: 8),
-
-          // Date Pickers for Full Day
-          if (!isMultiDays) ...[
-            Text("Select Date:", style: TextStyle(fontWeight: FontWeight.bold)),
-            ElevatedButton(
-              onPressed: () {
-                _selectDate(
-                    context, (date) => setState(() => startDate = date));
-              },
-              child: Text(startDate != null
-                  ? "${startDate!.toLocal()}".split(' ')[0]
-                  : "Select Date"),
-            ),
-          ],
-
-          // Date Pickers for Multi Days
-          if (isMultiDays) ...[
-            // Start Date
-            Text("Start Date:", style: TextStyle(fontWeight: FontWeight.bold)),
-            ElevatedButton(
-              onPressed: () {
-                _selectDate(context, (date) {
-                  setState(() {
-                    startDate = date;
-                    endDate = null; // Reset end date when start date changes
-                  });
-                });
-              },
-              child: Text(startDate != null
-                  ? "${startDate!.toLocal()}".split(' ')[0]
-                  : "Select Start Date"),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Text(
+                    'Select Duration Type',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
             ),
 
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Radio(
+                  value: false,
+                  groupValue: isMultiDays,
+                  onChanged: (value) {
+                    setState(() {
+                      isMultiDays = value as bool;
+                      startDate = null;
+                      endDate = null;
+                    });
+                  },
+                ),
+                Text("Full Day"),
+                Radio(
+                  value: true,
+                  groupValue: isMultiDays,
+                  onChanged: (value) {
+                    setState(() {
+                      isMultiDays = value as bool;
+                      startDate = null;
+                      endDate = null;
+                    });
+                  },
+                ),
+                Text("Multi Days"),
+              ],
+            ),
             SizedBox(height: 8),
-            // End Date
-            Text("End Date:", style: TextStyle(fontWeight: FontWeight.bold)),
-            ElevatedButton(
-              onPressed: startDate != null
-                  ? () {
-                      _selectDate(
-                          context, (date) => setState(() => endDate = date),
-                          minDate:
-                              startDate); // Start date as minimum selectable date
-                    }
-                  : null, // Disable until start date is selected
-              child: Text(endDate != null
-                  ? "${endDate!.toLocal()}".split(' ')[0]
-                  : "Select End Date",
+
+            // Date Pickers for Full Day
+            if (!isMultiDays) ...[
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    Icon(Icons.calendar_month, color: Colors.blue),
+                    SizedBox(width: 8), // Add spacing between icon and button
+                    GestureDetector(
+                      onTap: () {
+                        _selectDate(context,
+                            (date) => setState(() => startDate = date));
+                      },
+                      child: Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade50, // Light background
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                              color: Colors.blue.shade300), // Add border
+                        ),
+                        child: Row(
+                          children: [
+                            Text(
+                              startDate != null
+                                  ? DateFormat('dd-MM-yyyy')
+                                      .format(startDate!) // Format date
+                                  : "Select Date",
+                              style: TextStyle(
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.w500),
+                            ),
+                            SizedBox(width: 8),
+                            Icon(Icons.arrow_drop_down, color: Colors.blue),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            ],
+
+            if (isMultiDays) ...[
+              Row(
+                children: [
+                  Icon(Icons.calendar_month),
+                  ElevatedButton(
+                    onPressed: () {
+                      _selectDate(context, (date) {
+                        setState(() {
+                          startDate = date;
+                          endDate = null;
+                        });
+                      });
+                    },
+                    child: Text(startDate != null
+                        ? "${startDate!.toLocal()}".split(' ')[0]
+                        : "Select Start Date"),
+                  ),
+                  Icon(Icons.calendar_month),
+                  ElevatedButton(
+                    onPressed: startDate != null
+                        ? () {
+                            _selectDate(context,
+                                (date) => setState(() => endDate = date),
+                                minDate: startDate);
+                          }
+                        : null,
+                    child: Text(
+                      endDate != null
+                          ? "${endDate!.toLocal()}".split(' ')[0]
+                          : "Select End Date",
+                    ),
+                  ),
+                ],
               ),
+              SizedBox(height: 8),
+            ],
+            SizedBox(height: 16),
+
+            Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: Text(
+                        'Reason for leave',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: TextField(
+                    onChanged: (value) {
+                      remark = value;
+                    },
+                    decoration: InputDecoration(hintText: 'Reason for leave'),
+                    // maxLines: 3,
+                  ),
+                )
+              ],
             ),
-          ],
-          SizedBox(height: 16),
-          ElevatedButton(
+            ElevatedButton(
               onPressed: () async {
                 debugPrint('Apply Leave Button Tapped');
 
@@ -256,27 +347,26 @@ class _ApplyLeaveState extends State<ApplyLeave> {
                 ApplyLeaveViewModel applyLeaveViewModel = ApplyLeaveViewModel();
                 bool isSingleDayLeave = endDate == null || startDate == endDate;
 
-
                 Map<String, dynamic> response =
                     await applyLeaveViewModel.markApplyLeave(
                   token!,
                   ApplyLeaveModel(
-                      dateTo: isSingleDayLeave ? '$startDate' : '$endDate',
-                      action: '1',
-                      remark: 'remark',
-                      leaveTypeId: '$selectedLeaveId',
-                      dateFrom: '$startDate'
+                    dateTo: isSingleDayLeave ? '$startDate' : '$endDate',
+                    action: '1',
+                    remark: remark,
+                    leaveTypeId: selectedLeaveId,
+                    dateFrom: '$startDate',
                   ),
                 );
 
-                if (response['code'] == 200) {
-                  // Navigator.of(context).pop();
+                int? statusCode = response['httpStatusCode']?[0]['statusCode'];
+                String message = response['httpStatusCode']?[0]['message'];
 
+                if (statusCode == 200) {
                   QuickAlert.show(
-                    confirmBtnText: 'Ok',
                     context: context,
                     type: QuickAlertType.success,
-                    text: '${response['message']}',
+                    text: message,
                     onConfirmBtnTap: () {
                       Navigator.pushAndRemoveUntil(
                         this.context,
@@ -285,15 +375,25 @@ class _ApplyLeaveState extends State<ApplyLeave> {
                       );
                     },
                   );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error: ${response['status']}')),
+                } else if (statusCode == 418) {
+                  QuickAlert.show(
+                    context: context,
+                    type: QuickAlertType.warning,
+                    text: message,
+                    onConfirmBtnTap: () {
+                      Navigator.pushAndRemoveUntil(
+                        this.context,
+                        MaterialPageRoute(builder: (context) => HomePage()),
+                        (route) => false,
+                      );
+                    },
                   );
                 }
               },
               child: Text('Apply leave'),
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
