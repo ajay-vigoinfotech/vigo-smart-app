@@ -1,10 +1,12 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:vigo_smart_app/features/auth/session_manager/session_manager.dart';
 import 'package:vigo_smart_app/features/home/view/home_page.dart';
-import 'package:vigo_smart_app/features/leave%20managment/view/leave_management.dart';
 import '../model/apply_leave_model.dart';
 import '../view model/apply_leave_view_model.dart';
 import '../view model/leave_balance_view_model.dart';
@@ -32,6 +34,7 @@ class _ApplyLeaveState extends State<ApplyLeave> {
   @override
   void initState() {
     super.initState();
+    checkInternetConnection();
     fetchEmployeeLeavesData();
   }
 
@@ -66,7 +69,7 @@ class _ApplyLeaveState extends State<ApplyLeave> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 30, vertical: 10),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.zero,
                     ),
                     elevation: 5,
                   ),
@@ -74,25 +77,35 @@ class _ApplyLeaveState extends State<ApplyLeave> {
                     showDialog(
                       context: context,
                       builder: (context) => Dialog(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        elevation: 10,
+                        insetPadding: EdgeInsets.all(20),
                         child: StatefulBuilder(
-                          builder: (dialogContext, setDialogState) => SizedBox(
-                            height: 400,
+                          builder: (dialogContext, setDialogState) => Container(
+                            padding: const EdgeInsets.all(16),
+                            constraints: BoxConstraints(
+                              maxHeight:
+                                  MediaQuery.of(context).size.height * 0.6,
+                              maxWidth: 500,
+                            ),
                             child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
-                                    Padding(
-                                      padding: const EdgeInsets.all(15.0),
-                                      child: Text(
-                                        'Designation',
-                                        style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold),
+                                    const Text(
+                                      'Designation',
+                                      style: TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   ],
                                 ),
+                                const SizedBox(height: 10),
                                 Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: TextField(
@@ -161,7 +174,14 @@ class _ApplyLeaveState extends State<ApplyLeave> {
                                         onPressed: () {
                                           Navigator.pop(context);
                                         },
-                                        child: Text('Cancel'),
+                                        child: Text(
+                                          'Cancel',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: Colors.redAccent,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -186,6 +206,7 @@ class _ApplyLeaveState extends State<ApplyLeave> {
                 ),
               ),
             ),
+            SizedBox(height: 15),
             Row(
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
@@ -213,7 +234,10 @@ class _ApplyLeaveState extends State<ApplyLeave> {
                     });
                   },
                 ),
-                Text("Full Day"),
+                Text(
+                  "Full Day",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
                 Radio(
                   value: true,
                   groupValue: isMultiDays,
@@ -225,9 +249,13 @@ class _ApplyLeaveState extends State<ApplyLeave> {
                     });
                   },
                 ),
-                Text("Multi Days"),
+                Text(
+                  "Multi Days",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
               ],
             ),
+
             SizedBox(height: 8),
 
             // Date Pickers for Full Day
@@ -237,7 +265,7 @@ class _ApplyLeaveState extends State<ApplyLeave> {
                 child: Row(
                   children: [
                     Icon(Icons.calendar_month, color: Colors.blue),
-                    SizedBox(width: 8), // Add spacing between icon and button
+                    SizedBox(width: 8),
                     GestureDetector(
                       onTap: () {
                         _selectDate(context,
@@ -247,10 +275,9 @@ class _ApplyLeaveState extends State<ApplyLeave> {
                         padding:
                             EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
-                          color: Colors.blue.shade50, // Light background
+                          color: Colors.blue.shade50,
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                              color: Colors.blue.shade300), // Add border
+                          border: Border.all(color: Colors.blue.shade300),
                         ),
                         child: Row(
                           children: [
@@ -258,12 +285,12 @@ class _ApplyLeaveState extends State<ApplyLeave> {
                               startDate != null
                                   ? DateFormat('dd-MM-yyyy')
                                       .format(startDate!) // Format date
-                                  : "Select Date",
+                                  : "Select Date*",
                               style: TextStyle(
                                   color: Colors.blue,
-                                  fontWeight: FontWeight.w500),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold),
                             ),
-                            SizedBox(width: 8),
                             Icon(Icons.arrow_drop_down, color: Colors.blue),
                           ],
                         ),
@@ -274,44 +301,111 @@ class _ApplyLeaveState extends State<ApplyLeave> {
               )
             ],
 
+            // Multi Days
             if (isMultiDays) ...[
-              Row(
-                children: [
-                  Icon(Icons.calendar_month),
-                  ElevatedButton(
-                    onPressed: () {
-                      _selectDate(context, (date) {
-                        setState(() {
-                          startDate = date;
-                          endDate = null;
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Icon(Icons.calendar_month, color: Colors.blue),
+                    GestureDetector(
+                      onTap: () {
+                        _selectDate(context, (date) {
+                          setState(() {
+                            startDate = date;
+                            endDate = null;
+                          });
                         });
-                      });
-                    },
-                    child: Text(startDate != null
-                        ? "${startDate!.toLocal()}".split(' ')[0]
-                        : "Select Start Date"),
-                  ),
-                  Icon(Icons.calendar_month),
-                  ElevatedButton(
-                    onPressed: startDate != null
-                        ? () {
-                            _selectDate(context,
-                                (date) => setState(() => endDate = date),
-                                minDate: startDate);
-                          }
-                        : null,
-                    child: Text(
-                      endDate != null
-                          ? "${endDate!.toLocal()}".split(' ')[0]
-                          : "Select End Date",
+                      },
+                      child: Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: startDate == null
+                              ? Colors.blue.shade50
+                              : Colors.blue.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                              color: startDate == null
+                                  ? Colors.blue.shade300
+                                  : Colors.blue.shade300),
+                        ),
+                        child: Row(
+                          children: [
+                            Text(
+                              startDate != null
+                                  ? DateFormat('dd-MM-yyyy').format(startDate!)
+                                  : "Start Date*",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: startDate == null
+                                    ? Colors.blue
+                                    : Colors.blue,
+                              ),
+                            ),
+                            Icon(Icons.arrow_drop_down, color: Colors.blue),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                    Icon(Icons.calendar_month, color: Colors.blue),
+                    GestureDetector(
+                      onTap: startDate != null
+                          ? () {
+                              _selectDate(
+                                context,
+                                (date) => setState(() => endDate = date),
+                                minDate: startDate,
+                              );
+                            }
+                          : () {
+                              Fluttertoast.showToast(
+                                msg: "Please select a Start Date first",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.BOTTOM,
+                                backgroundColor: Colors.red,
+                                textColor: Colors.white,
+                                fontSize: 16.0,
+                              );
+                            },
+                      child: Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: endDate == null
+                              ? Colors.blue.shade50
+                              : Colors.blue.shade50,
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                              color: startDate == null
+                                  ? Colors.blue.shade300
+                                  : Colors.blue.shade300),
+                        ),
+                        child: Row(
+                          children: [
+                            Text(
+                              endDate != null
+                                  ? DateFormat('dd-MM-yyyy').format(endDate!)
+                                  : "End Date*",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color:
+                                    endDate == null ? Colors.blue : Colors.blue,
+                              ),
+                            ),
+                            Icon(Icons.arrow_drop_down, color: Colors.blue),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              SizedBox(height: 8),
             ],
-            SizedBox(height: 16),
-
+            SizedBox(height: 15),
             Column(
               children: [
                 Row(
@@ -328,70 +422,162 @@ class _ApplyLeaveState extends State<ApplyLeave> {
                   ],
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: TextField(
-                    onChanged: (value) {
-                      remark = value;
-                    },
-                    decoration: InputDecoration(hintText: 'Reason for leave'),
-                    // maxLines: 3,
+                  padding: const EdgeInsets.all(12.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border:
+                          Border.all(color: Colors.grey.shade400, width: 1.5),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.shade100,
+                          spreadRadius: 1,
+                          blurRadius: 6,
+                          offset: Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: TextField(
+                      textInputAction: TextInputAction.done,
+                      onChanged: (value) {
+                        remark = value;
+                      },
+                      style: TextStyle(fontSize: 16.0, color: Colors.black),
+                      decoration: InputDecoration(
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        hintText: 'Reason for leave',
+                        hintStyle: TextStyle(color: Colors.grey.shade500),
+                        border: InputBorder.none,
+                      ),
+                      maxLines: 4,
+                      cursorColor: Colors.blueAccent,
+                    ),
                   ),
-                )
+                ),
               ],
             ),
-            ElevatedButton(
-              onPressed: () async {
-                debugPrint('Apply Leave Button Tapped');
-
-                String? token = await sessionManager.getToken();
-                ApplyLeaveViewModel applyLeaveViewModel = ApplyLeaveViewModel();
-                bool isSingleDayLeave = endDate == null || startDate == endDate;
-
-                Map<String, dynamic> response =
-                    await applyLeaveViewModel.markApplyLeave(
-                  token!,
-                  ApplyLeaveModel(
-                    dateTo: isSingleDayLeave ? '$startDate' : '$endDate',
-                    action: '1',
-                    remark: remark,
-                    leaveTypeId: selectedLeaveId,
-                    dateFrom: '$startDate',
-                  ),
-                );
-
-                int? statusCode = response['httpStatusCode']?[0]['statusCode'];
-                String message = response['httpStatusCode']?[0]['message'];
-
-                if (statusCode == 200) {
-                  QuickAlert.show(
-                    context: context,
-                    type: QuickAlertType.success,
-                    text: message,
-                    onConfirmBtnTap: () {
-                      Navigator.pushAndRemoveUntil(
-                        this.context,
-                        MaterialPageRoute(builder: (context) => HomePage()),
-                        (route) => false,
-                      );
-                    },
-                  );
-                } else if (statusCode == 418) {
-                  QuickAlert.show(
-                    context: context,
-                    type: QuickAlertType.warning,
-                    text: message,
-                    onConfirmBtnTap: () {
-                      Navigator.pushAndRemoveUntil(
-                        this.context,
-                        MaterialPageRoute(builder: (context) => HomePage()),
-                        (route) => false,
-                      );
-                    },
-                  );
-                }
-              },
-              child: Text('Apply leave'),
+            SizedBox(
+              height: 20,
             ),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.zero,
+                  ),
+                  elevation: 5,
+                ),
+                onPressed: () async {
+                  await checkInternetConnection();
+                  if (selectedLeaveId.isEmpty) {
+                    Fluttertoast.showToast(
+                      msg: "Please Select Leave Type",
+                      toastLength: Toast.LENGTH_SHORT,
+                      gravity: ToastGravity.BOTTOM,
+                      backgroundColor: Colors.black,
+                      textColor: Colors.white,
+                      fontSize: 16.0,
+                    );
+                    return;
+                  }
+                  if (startDate == null) {
+                    Fluttertoast.showToast(
+                      msg: "Please Select Date",
+                      toastLength: Toast.LENGTH_SHORT,
+                      gravity: ToastGravity.BOTTOM,
+                      backgroundColor: Colors.black,
+                      textColor: Colors.white,
+                      fontSize: 16.0,
+                    );
+                    return;
+                  }
+
+                  if (isMultiDays && endDate == null) {
+                    Fluttertoast.showToast(
+                      msg: "Please Select End Date",
+                      toastLength: Toast.LENGTH_SHORT,
+                      gravity: ToastGravity.BOTTOM,
+                      backgroundColor: Colors.black,
+                      textColor: Colors.white,
+                      fontSize: 16.0,
+                    );
+                    return;
+                  }
+                  debugPrint('Apply Leave Button Tapped');
+
+                  String? token = await sessionManager.getToken();
+                  ApplyLeaveViewModel applyLeaveViewModel =
+                      ApplyLeaveViewModel();
+                  bool isSingleDayLeave =
+                      endDate == null || startDate == endDate;
+
+                  Map<String, dynamic> response =
+                      await applyLeaveViewModel.markApplyLeave(
+                    token!,
+                    ApplyLeaveModel(
+                      dateTo: isSingleDayLeave ? '$startDate' : '$endDate',
+                      action: '1',
+                      remark: remark,
+                      leaveTypeId: selectedLeaveId,
+                      dateFrom: '$startDate',
+                    ),
+                  );
+
+                  int? statusCode =
+                      response['httpStatusCode']?[0]['statusCode'];
+                  String message = response['httpStatusCode']?[0]['message'];
+
+                  if (statusCode == 200) {
+                    QuickAlert.show(
+                      context: context,
+                      type: QuickAlertType.success,
+                      text: message,
+                      onConfirmBtnTap: () {
+                        Navigator.pushAndRemoveUntil(
+                          this.context,
+                          MaterialPageRoute(builder: (context) => HomePage()),
+                          (route) => false,
+                        );
+                      },
+                    );
+                  } else if (statusCode == 418) {
+                    QuickAlert.show(
+                      context: context,
+                      type: QuickAlertType.warning,
+                      text: message,
+                      onConfirmBtnTap: () {
+                        Navigator.pop(context);
+                      },
+                    );
+                  } else {
+                    QuickAlert.show(
+                      context: context,
+                      type: QuickAlertType.warning,
+                      text: 'Unknown Error',
+                      onConfirmBtnTap: () {
+                        Navigator.pop(context);
+                      },
+                    );
+                  }
+                },
+                child: Text(
+                  'APPLY',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+
+            SizedBox(height: 30),
           ],
         ),
       ),
@@ -447,5 +633,33 @@ class _ApplyLeaveState extends State<ApplyLeave> {
         }
       });
     }
+  }
+
+  Future<bool> checkInternetConnection() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+      showCupertinoDialog(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: const Text("No Internet Connection"),
+          content:
+              const Text("Please turn on the internet connection to proceed."),
+          actions: [
+            CupertinoDialogAction(
+              onPressed: () => Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => HomePage()),
+                (route) => false,
+              ),
+
+              // Navigator.pop(context),
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+      return false;
+    }
+    return true;
   }
 }

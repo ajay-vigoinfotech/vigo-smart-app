@@ -1,10 +1,12 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:vigo_smart_app/core/strings/strings.dart';
-import 'package:vigo_smart_app/features/leave%20managment/view/apply_leave.dart';
 
 import '../view model/leave_balance_view_model.dart';
 import '../view model/leave_cancel_view_model.dart';
 import '../view model/leave_history_view_model.dart';
+import 'apply_leave.dart';
 
 class LeaveManagement extends StatefulWidget {
   const LeaveManagement({super.key});
@@ -28,6 +30,7 @@ class _LeaveManagementState extends State<LeaveManagement> {
   void initState() {
     fetchEmployeeLeavesData();
     fetchLeaveHistoryData();
+    checkInternetConnection();
     super.initState();
   }
 
@@ -137,23 +140,23 @@ class _LeaveManagementState extends State<LeaveManagement> {
                         switch (data['leavePendingApprove']) {
                           case "0":
                             status = 'Pending';
-                            backgroundColor = Colors.yellow;
-                            textColor = Colors.brown;
+                            backgroundColor = Colors.yellow.shade200;
+                            textColor = Colors.yellow.shade900;
                             break;
                           case "1":
                             status = 'Approved';
-                            backgroundColor = Colors.green;
-                            textColor = Colors.white;
+                            backgroundColor = Colors.green.shade200;
+                            textColor = Colors.green.shade900;
                             break;
                           case "2":
                             status = 'Rejected';
-                            backgroundColor = Colors.red;
-                            textColor = Colors.white;
+                            backgroundColor = Colors.red.shade200;
+                            textColor = Colors.red.shade900;
                             break;
                           case "3":
                             status = 'Canceled';
-                            backgroundColor = Colors.grey;
-                            textColor = Colors.white;
+                            backgroundColor = Colors.grey.shade300;
+                            textColor = Colors.grey.shade900;
                             break;
                           default:
                             status = '';
@@ -278,7 +281,7 @@ class _LeaveManagementState extends State<LeaveManagement> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 30, vertical: 10),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.zero,
                       ),
                       elevation: 5,
                     ),
@@ -465,5 +468,27 @@ class _LeaveManagementState extends State<LeaveManagement> {
         }
       });
     }
+  }
+
+  Future<bool> checkInternetConnection() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+      showCupertinoDialog(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: const Text("No Internet Connection"),
+          content:
+          const Text("Please turn on the internet connection to proceed."),
+          actions: [
+            CupertinoDialogAction(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+      return false;
+    }
+    return true;
   }
 }

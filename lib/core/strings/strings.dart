@@ -23,7 +23,7 @@ class Strings {
   static const String syncData = "Sync Data";
   static const String guardsTeamView = "Guards TeamView";
   static const String paySlipApp = "PaySlip App";
-  static const String recruitmentApp = "Recruitment App";
+  static const String recruitmentApp = "Recruitment";
   static const String calendarViewApp = "Calendar View";
   static const String leaveMgmtApp = "Leave Management";
 }
