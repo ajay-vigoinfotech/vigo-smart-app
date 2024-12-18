@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:vigo_smart_app/features/recruitment/widget/custom_text_form_field.dart';
+import 'package:vigo_smart_app/features/recruitment/widget/gender_radio_button.dart';
 
 class RecruitmentStep1 extends StatefulWidget {
   const RecruitmentStep1({super.key});
@@ -15,11 +17,15 @@ class RecruitmentStep1 extends StatefulWidget {
 
 class _RecruitmentStep1State extends State<RecruitmentStep1> {
   bool _expandAll = true;
+  String? _selectedGender = 'Male';  // Default selected value
 
 
   final ImagePicker _picker = ImagePicker();
   String _aadhaarImageFront = '';
   String _aadhaarImageBack = '';
+
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController dateController = TextEditingController();
 
   Future<void> _selectImage(String type) async {
     showDialog(
@@ -32,14 +38,14 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
             ListTile(
               title: Text('Camera'),
               onTap: () async {
-                Navigator.pop(context); // Close the dialog
+                Navigator.pop(context);
                 await _pickImage(type, ImageSource.camera);
               },
             ),
             ListTile(
               title: Text('Gallery'),
               onTap: () async {
-                Navigator.pop(context); // Close the dialog
+                Navigator.pop(context);
                 await _pickImage(type, ImageSource.gallery);
               },
             ),
@@ -54,11 +60,10 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
     if (photo != null) {
       final File selectedFile = File(photo.path);
 
-      // Compress the image
       final compressedImage = await FlutterImageCompress.compressWithFile(
         selectedFile.path,
-        minWidth: 100,
-        minHeight: 100,
+        minWidth: 300, // Adjust image resolution
+        minHeight: 300,
         quality: 80,
       );
 
@@ -66,13 +71,49 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
         final base64String = base64Encode(compressedImage);
 
         setState(() {
-          if (type == 'aadhaar_front') {
+          if (type == 'front') {
             _aadhaarImageFront = base64String;
-          } else if (type == 'aadhaar_back') {
+          } else if (type == 'back') {
             _aadhaarImageBack = base64String;
           }
         });
       }
+    }
+  }
+
+  void _deleteImage(String type) async {
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirm Delete'),
+          content: Text(
+            type == 'front'
+                ? 'Are you sure you want to delete the front image?'
+                : 'Are you sure you want to delete the back image?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text('No'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text('Yes'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldDelete ?? false) {
+      setState(() {
+        if (type == 'front') {
+          _aadhaarImageFront = '';
+        } else if (type == 'back') {
+          _aadhaarImageBack = '';
+        }
+      });
     }
   }
 
@@ -122,13 +163,14 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                         children: [
                           // Aadhaar Number
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Icon(
                                 Icons.credit_card,
                                 color: Colors.green,
                               ),
-                              SizedBox(width: 10),
+                              SizedBox(width: 5),
                               Expanded(
                                 child: TextFormField(
                                   maxLength: 12,
@@ -141,12 +183,14 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                                       child: Text('Aadhaar No*'),
                                     ),
                                     border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8)),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
                                   ),
                                 ),
                               ),
                             ],
                           ),
+
                           SizedBox(height: 15),
                           // PAN Number
                           Row(
@@ -161,9 +205,11 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                                 child: TextFormField(
                                   maxLength: 10,
                                   keyboardType: TextInputType.text,
-                                  textCapitalization: TextCapitalization.characters,
+                                  textCapitalization:
+                                      TextCapitalization.characters,
                                   decoration: InputDecoration(
-                                    contentPadding: EdgeInsets.symmetric(horizontal: 10),
+                                    contentPadding:
+                                        EdgeInsets.symmetric(horizontal: 10),
                                     label: Padding(
                                       padding: const EdgeInsets.all(8.0),
                                       child: Text('PAN No*'),
@@ -183,42 +229,71 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                                     return null;
                                   },
                                   inputFormatters: [
-                                    FilteringTextInputFormatter.allow(RegExp(r'[A-Z0-9]')),
+                                    FilteringTextInputFormatter.allow(
+                                        RegExp(r'[A-Z0-9]')),
                                   ],
                                 ),
                               ),
                             ],
                           ),
-                          Text('Aadhaar Proof (Front/Back)'),
+                          SizedBox(height: 20),
+                          // Aadhaar Proof (Front/Back)
+                          Text(
+                            'Aadhaar Proof (Front/Back)',
+                          ),
+                          SizedBox(height: 10),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                             children: [
                               Column(
                                 children: [
                                   GestureDetector(
-                                    onTap: () => _selectImage('aadhaar_front'),
-                                    child: Icon(Icons.add_photo_alternate_outlined, size: 50),
+                                    onTap: () =>
+                                        _selectImage('front'), // Front Image
+                                    child: _aadhaarImageFront.isEmpty
+                                        ? Icon(
+                                            Icons.add_photo_alternate_outlined,
+                                            size: 50,
+                                          )
+                                        : Image.memory(
+                                            base64Decode(_aadhaarImageFront),
+                                            height: 100,
+                                            width: 100,
+                                            fit: BoxFit.cover,
+                                          ),
                                   ),
-
                                   GestureDetector(
-                                      onTap: () {
-                                        debugPrint('');
-                                      },
-                                      child: Text('Remove'),
+                                    onTap: () => _deleteImage('front'),
+                                    child: Text(
+                                      'Remove',
+                                      style: TextStyle(color: Colors.red),
+                                    ),
                                   ),
                                 ],
                               ),
                               Column(
                                 children: [
                                   GestureDetector(
-                                    onTap: () => _selectImage('aadhaar_back'),
-                                    child: Icon(Icons.add_photo_alternate_outlined, size: 50),
+                                    onTap: () =>
+                                        _selectImage('back'), // Back Image
+                                    child: _aadhaarImageBack.isEmpty
+                                        ? Icon(
+                                            Icons.add_photo_alternate_outlined,
+                                            size: 50,
+                                          )
+                                        : Image.memory(
+                                            base64Decode(_aadhaarImageBack),
+                                            height: 100,
+                                            width: 100,
+                                            fit: BoxFit.cover,
+                                          ),
                                   ),
                                   GestureDetector(
-                                      onTap: () {
-                                        debugPrint('');
-                                      },
-                                      child: Text('Remove')
+                                    onTap: () => _deleteImage('back'),
+                                    child: Text(
+                                      'Remove',
+                                      style: TextStyle(color: Colors.red),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -234,14 +309,90 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
             Card(
               color: Colors.white,
               elevation: 5,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+              margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
               child: Theme(
-                data: Theme.of(context).copyWith(dividerColor: Colors.white),
+                data: Theme.of(context)
+                    .copyWith(dividerColor: Colors.transparent),
                 child: ExpansionTile(
                   key: ValueKey(_expandAll),
                   initiallyExpanded: _expandAll,
                   title: Text('Personal Information'),
                   children: <Widget>[
-                    ListTile(title: Text('This is tile number 1')),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        children: [
+                          CustomTextFormField(
+                            icon: Icons.person,
+                            labelText: 'Name (As Per Aadhaar)',
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r'[a-zA-Z\s]')),
+                            ],
+                          ),
+                          CustomTextFormField(
+                            icon: Icons.person,
+                            labelText: 'Last Name',
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r'[a-zA-Z\s]')),
+                            ],
+                          ),
+                          CustomTextFormField(
+                            icon: Icons.person,
+                            labelText: "Father's Name",
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r'[a-zA-Z\s]')),
+                            ],
+                          ),
+                          CustomTextFormField(
+                            icon: Icons.person,
+                            labelText: "Mother's Name",
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r'[a-zA-Z\s]')),
+                            ],
+                          ),
+                          CustomTextFormField(
+                            icon: Icons.person,
+                            labelText: "Spouse's Name",
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(
+                                  RegExp(r'[a-zA-Z\s]')),
+                            ],
+                          ),
+                          CustomTextFormField(
+                              icon: Icons.call, labelText: "Mobile No",
+                            keyboardType: TextInputType.number,
+                          ),
+                          CustomTextFormField(
+                              icon: Icons.calendar_month,
+                              labelText: 'DOB',
+                            isDatePicker: true, // Enable Date Picker
+                            onChanged: (value) {
+                              setState(() {
+                                dateController.text = value ?? "";
+                              });
+                            },
+                          ),
+                          Row(
+                            crossAxisAlignment:CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text('Gender *', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),),
+                              ),
+                            ],
+                          ),
+                          GenderRadioButtons(),
+
+                        ],
+                      ),
+                    )
                   ],
                 ),
               ),
@@ -282,67 +433,5 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
         ),
       ),
     );
-  }
-
-  Widget _buildImagePicker(int imageNumber, File? imageFile) {
-    return Column(
-      children: [
-        GestureDetector(
-          onTap: () => _pickImage(_aadhaarImageFront , _aadhaarImageBack as ImageSource),
-          child: imageFile == null
-              ? Icon(
-            Icons.add_photo_alternate_outlined,
-            color: Colors.blueGrey,
-            size: 75,
-          )
-              : Image.file(
-            imageFile,
-            width: 100,
-            height: 100,
-            fit: BoxFit.cover,
-          ),
-        ),
-        SizedBox(height: 5),
-        GestureDetector(
-          onTap: () => _deleteImage(context, imageNumber),
-          child: Text(
-            'Delete',
-            style: TextStyle(
-                fontSize: 18, fontWeight: FontWeight.bold, color: Colors.red),
-          ),
-        ),
-      ],
-    );
-  }
-
-
-  void _deleteImage(BuildContext context, int imageNumber) async {
-    final shouldDelete = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Confirm Delete'),
-          content: Text('Are you sure you want to delete this image?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text('No'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: Text('Yes'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (shouldDelete ?? false) {
-      setState(() {
-        switch (imageNumber) {
-
-        }
-      });
-    }
   }
 }
