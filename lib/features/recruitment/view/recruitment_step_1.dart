@@ -50,6 +50,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
               ),
             ],
           ),
+
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
