@@ -76,6 +76,8 @@ dependencies:
   calendar_view: ^1.3.0
   flutter_calendar_carousel: ^2.4.4
   easy_date_timeline: ^2.0.4
+  image_cropper: ^8.1.0
+  syncfusion_flutter_signaturepad: ^28.1.33
 
 dev_dependencies:
   flutter_test:
