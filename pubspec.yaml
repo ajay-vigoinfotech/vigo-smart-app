@@ -78,6 +78,7 @@ dependencies:
   easy_date_timeline: ^2.0.4
   image_cropper: ^8.1.0
   syncfusion_flutter_signaturepad: ^28.1.33
+  signature: ^5.5.0
 
 dev_dependencies:
   flutter_test:

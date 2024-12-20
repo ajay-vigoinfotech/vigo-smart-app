@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
@@ -9,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:syncfusion_flutter_signaturepad/signaturepad.dart';
 import 'package:vigo_smart_app/features/recruitment/widget/custom_text_form_field.dart';
 import 'package:vigo_smart_app/features/recruitment/widget/gender_radio_button.dart';
+import '../view model/site_list_view_model.dart';
 
 class RecruitmentStep1 extends StatefulWidget {
   const RecruitmentStep1({super.key});
@@ -18,7 +20,7 @@ class RecruitmentStep1 extends StatefulWidget {
 }
 
 class _RecruitmentStep1State extends State<RecruitmentStep1> {
-  bool _expandAll = true;
+  bool _expandAll = false;
   String? _selectedStatus;
 
   final ImagePicker _picker = ImagePicker();
@@ -29,231 +31,37 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController dateController = TextEditingController();
 
-  final GlobalKey<SfSignaturePadState> _signaturePadKey = GlobalKey();
-  Uint8List? _signatureImageBytes;
-  bool _hasSignature = false; // Initially set to false
+  final GlobalKey<SfSignaturePadState> _signaturePadKey =
+      GlobalKey<SfSignaturePadState>();
+  bool _isSigned = false;
+  late Uint8List _signatureData;
 
-  void _showSignatureDialog() {
-    showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Sign Here'),
-              GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                },
-                child: Icon(Icons.cancel_outlined, size: 30),
-              ),
-            ],
-          ),
 
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                color: Colors.white,
-                height: 300,
-                width: 300,
-                child: SfSignaturePad(
-                  key: _signaturePadKey,
-                  backgroundColor: Colors.white,
-                  minimumStrokeWidth: 3,
-                  maximumStrokeWidth: 4,
-                ),
-              ),
-              Text('I agree to the terms and conditions.'),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: _hasSignature
-                  ? () {
-                _signaturePadKey.currentState?.clear();
-                setState(() {
-                  _hasSignature = false; // Disable buttons after clearing
-                });
-              }
-                  : null, // Disable button if _hasSignature is false
-              child: Text('Clear'),
-            ),
-            TextButton(
-              onPressed: _hasSignature
-                  ? () async {
-                final data = await _signaturePadKey.currentState!.toImage(pixelRatio: 3.0);
-                final bytes =
-                await data.toByteData(format: ui.ImageByteFormat.png);
+  // Get Assign Site List
+  SiteListViewModel siteListViewModel = SiteListViewModel();
+  List<Map<String, dynamic>> siteListData = [];
 
-                if (bytes != null) {
-                  setState(() {
-                    _signatureImageBytes = bytes.buffer.asUint8List();
-                  });
-                }
-                Navigator.of(context).pop();
-              }
-                  : null, // Disable button if _hasSignature is false
-              child: Text('Save'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  Future<void> fetchSiteListData() async {
+    String? token = await siteListViewModel.sessionManager.getToken();
+    if (token != null) {
+      await siteListViewModel.fetchAssignSiteList(token);
 
-  // Function to remove the captured signature
-  void _removeSignature() {
-    setState(() {
-      _signatureImageBytes = null; // Reset the signature preview
-    });
-  }
-
-  Future<void> _selectImage(String type) async {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('How do you want to select image'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: const Text('Camera'),
-              onTap: () async {
-                Navigator.pop(context);
-                if (type == 'digital_photo') {
-                  await _pickAndCropImage(
-                      type, ImageSource.camera); // Crop for digital photo
-                } else {
-                  await _pickImage(
-                      type, ImageSource.camera); // No crop for other types
-                }
-              },
-            ),
-            ListTile(
-              title: const Text('Gallery'),
-              onTap: () async {
-                Navigator.pop(context);
-                if (type == 'digital_photo') {
-                  await _pickAndCropImage(
-                      type, ImageSource.gallery); // Crop for digital photo
-                } else {
-                  await _pickImage(
-                      type, ImageSource.gallery); // No crop for other types
-                }
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _pickImage(String type, ImageSource source) async {
-    final XFile? photo = await _picker.pickImage(source: source);
-    if (photo != null) {
-      final File selectedFile = File(photo.path);
-
-      final compressedImage = await FlutterImageCompress.compressWithFile(
-        selectedFile.path,
-        minWidth: 300, // Adjust image resolution
-        minHeight: 300,
-        quality: 80,
-      );
-
-      if (compressedImage != null) {
-        final base64String = base64Encode(compressedImage);
-
-        setState(() {
-          if (type == 'front') {
-            _aadhaarImageFront = base64String;
-          } else if (type == 'back') {
-            _aadhaarImageBack = base64String;
-          }
-        });
-      }
-    }
-  }
-
-  Future<void> _pickAndCropImage(String type, ImageSource source) async {
-    // Pick an image using the selected source
-    final XFile? photo = await _picker.pickImage(source: source);
-    if (photo != null) {
-      // Crop the selected image
-      CroppedFile? croppedFile = await ImageCropper().cropImage(
-        sourcePath: photo.path,
-        uiSettings: [
-          IOSUiSettings(
-            title: 'Edit Photo',
-            aspectRatioPresets: [
-              CropAspectRatioPreset.original,
-              CropAspectRatioPreset.square,
-            ],
-          ),
-        ],
-      );
-
-      if (croppedFile != null) {
-        final File croppedImageFile = File(croppedFile.path);
-        final compressedImage = await FlutterImageCompress.compressWithFile(
-          croppedImageFile.path,
-          minWidth: 300, // Adjust resolution
-          minHeight: 300,
-          quality: 80,
-        );
-
-        if (compressedImage != null) {
-          final base64String = base64Encode(compressedImage);
-
-          setState(() {
-            if (type == 'digital_photo') {
-              _digitalPhoto = base64String;
-            }
-          });
-        }
-      }
-    }
-  }
-
-  void _deleteImage(String type) async {
-    final shouldDelete = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Confirm Delete'),
-          content: Text(
-            type == 'front'
-                ? 'Are you sure you want to delete the front image?'
-                : type == 'back'
-                    ? 'Are you sure you want to delete the back image?'
-                    : 'Are you sure you want to delete the digital photo?',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('No'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Yes'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (shouldDelete ?? false) {
       setState(() {
-        if (type == 'front') {
-          _aadhaarImageFront = '';
-        } else if (type == 'back') {
-          _aadhaarImageBack = '';
-        } else if (type == 'digital_photo') {
-          _digitalPhoto = '';
+        if (siteListViewModel.assignSiteList != null) {
+          siteListData = siteListViewModel.assignSiteList!
+              .map((entry) => {
+                    "siteId": entry.siteId,
+                  })
+              .toList();
         }
       });
     }
+  }
+
+  @override
+  void initState() {
+    fetchSiteListData();
+    super.initState();
   }
 
   @override
@@ -671,31 +479,14 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                         ),
                       ],
                     ),
-                    SizedBox(
-                      height: 30,
-                    ),
                     Column(
                       children: [
-                        _signatureImageBytes == null
-                            ? GestureDetector(
-                                onTap: _showSignatureDialog,
-                                child: Text("Click here to sign",
-                                    style: TextStyle(fontSize: 20)),
-                              )
-                            : Column(
-                                children: [
-                                  Image.memory(_signatureImageBytes!),
-                                  SizedBox(height: 10),
-                                  ElevatedButton(
-                                    onPressed: _removeSignature,
-                                    child: Text("Remove Signature"),
-                                  ),
-                                ],
-                              ),
                         SizedBox(
-                          height: 30,
-                        )
+                            height: 100, width: 100, child: _getBottomView()),
                       ],
+                    ),
+                    SizedBox(
+                      height: 40,
                     ),
                   ],
                 ),
@@ -712,7 +503,50 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                   initiallyExpanded: _expandAll,
                   title: Text('Deployment Details'),
                   children: <Widget>[
-                    ListTile(title: Text('This is tile number 1')),
+                    Center(
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(onPressed: () {
+                          showDialog(context: context,
+                              builder: (context) => Dialog(
+                                child: StatefulBuilder(
+                                    builder: (dialogContext, setDialogState) => Container(
+                                      padding: const EdgeInsets.all(16),
+                                      constraints: BoxConstraints(
+                                        maxHeight:
+                                        MediaQuery.of(context).size.height * 0.6,
+                                        maxWidth: 500,
+                                      ),
+                                      child: Column(
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Padding(
+                                                padding: const EdgeInsets.all(8.0),
+                                                child: Text('Site'),
+                                              ),
+                                            ],
+                                          ),
+                                          Column(
+                                            children: [
+                                              TextField(
+                                                decoration: InputDecoration(
+                                                  hintText: 'Search...'
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+
+                                    )),
+                              ));
+
+                        },
+                            child: Text('Select Site'),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -721,5 +555,300 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
         ),
       ),
     );
+  }
+
+  bool _handleOnDrawStart() {
+    _isSigned = true;
+    return false;
+  }
+
+  void _handleClearButtonPressed() {
+    _signaturePadKey.currentState?.clear();
+    _isSigned = false;
+  }
+
+  Future<void> _handleSaveButtonPressed() async {
+    try {
+      final ui.Image image =
+          await _signaturePadKey.currentState!.toImage(pixelRatio: 3.0);
+
+      final ByteData? byteData =
+          await image.toByteData(format: ui.ImageByteFormat.png);
+      if (byteData != null) {
+        final Uint8List data = byteData.buffer.asUint8List();
+
+        setState(() {
+          _signatureData = data;
+        });
+        debugPrint("Signature saved successfully!");
+      } else {
+        throw Exception("Failed to convert signature to PNG data.");
+      }
+    } catch (e) {
+      debugPrint("Error saving signature: $e");
+    }
+  }
+
+  void _showPopup() {
+    showDialog<Widget>(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder:
+              (BuildContext context, void Function(void Function()) setState) {
+            final Color textColor = Colors.black87;
+
+            return AlertDialog(
+              insetPadding: const EdgeInsets.all(12),
+              backgroundColor: Colors.white,
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Text('Draw your signature',
+                      style: TextStyle(
+                          color: textColor,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: 'Roboto-Medium')),
+                  InkWell(
+                    onTap: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Icon(Icons.clear, size: 24.0),
+                  )
+                ],
+              ),
+              titlePadding: const EdgeInsets.all(16.0),
+              content: SingleChildScrollView(
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width < 306
+                      ? MediaQuery.of(context).size.width
+                      : 450,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      Container(
+                        // width: MediaQuery.of(context).size.width < 306
+                        //     ? MediaQuery.of(context).size.width
+                        //     : 450,
+                        width: double.infinity,
+                        height: 300,
+                        decoration: BoxDecoration(
+                          border: Border.all(),
+                        ),
+                        child: SfSignaturePad(
+                          minimumStrokeWidth: 5.0,
+                          maximumStrokeWidth: 5.0,
+                          strokeColor: Colors.black,
+                          backgroundColor: Colors.white,
+                          onDrawStart: _handleOnDrawStart,
+                          key: _signaturePadKey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12.0),
+              actionsPadding: const EdgeInsets.all(8.0),
+              buttonPadding: EdgeInsets.zero,
+              actions: <Widget>[
+                TextButton(
+                  onPressed: () {
+                    _handleClearButtonPressed();
+                  },
+                  child: const Text(
+                    'CLEAR',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontFamily: 'Roboto-Medium'),
+                  ),
+                ),
+                const SizedBox(width: 8.0),
+                TextButton(
+                  onPressed: () {
+                    _handleSaveButtonPressed();
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('SAVE',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontFamily: 'Roboto-Medium')),
+                )
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _getBottomView() {
+    return InkWell(
+      splashColor: Colors.transparent,
+      highlightColor: Colors.transparent,
+      onTap: () {
+        _showPopup();
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(),
+        ),
+        height: 78,
+        width: 138,
+        child: _isSigned
+            ? Image.memory(_signatureData)
+            : Center(
+                child: Text(
+                  'Tap here to sign',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 16),
+                ),
+              ),
+      ),
+    );
+  }
+
+  Future<void> _selectImage(String type) async {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('How do you want to select image.'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              title: const Text('Camera'),
+              onTap: () async {
+                Navigator.pop(context);
+                if (type == 'digital_photo') {
+                  await _pickAndCropImage(type, ImageSource.camera);
+                } else {
+                  await _pickImage(type, ImageSource.camera);
+                }
+              },
+            ),
+            ListTile(
+              title: const Text('Gallery'),
+              onTap: () async {
+                Navigator.pop(context);
+                if (type == 'digital_photo') {
+                  await _pickAndCropImage(type, ImageSource.gallery);
+                } else {
+                  await _pickImage(type, ImageSource.gallery);
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _pickImage(String type, ImageSource source) async {
+    final XFile? photo = await _picker.pickImage(source: source);
+    if (photo != null) {
+      final File selectedFile = File(photo.path);
+
+      final compressedImage = await FlutterImageCompress.compressWithFile(
+        selectedFile.path,
+        minWidth: 300,
+        minHeight: 300,
+        quality: 80,
+      );
+
+      if (compressedImage != null) {
+        final base64String = base64Encode(compressedImage);
+
+        setState(() {
+          if (type == 'front') {
+            _aadhaarImageFront = base64String;
+          } else if (type == 'back') {
+            _aadhaarImageBack = base64String;
+          }
+        });
+      }
+    }
+  }
+
+  Future<void> _pickAndCropImage(String type, ImageSource source) async {
+    // Pick an image using the selected source
+    final XFile? photo = await _picker.pickImage(source: source);
+    if (photo != null) {
+      // Crop the selected image
+      CroppedFile? croppedFile = await ImageCropper().cropImage(
+        sourcePath: photo.path,
+        uiSettings: [
+          IOSUiSettings(
+            title: 'Edit Photo',
+            aspectRatioPresets: [
+              CropAspectRatioPreset.original,
+              CropAspectRatioPreset.square,
+            ],
+          ),
+        ],
+      );
+
+      if (croppedFile != null) {
+        final File croppedImageFile = File(croppedFile.path);
+        final compressedImage = await FlutterImageCompress.compressWithFile(
+          croppedImageFile.path,
+          minWidth: 300, // Adjust resolution
+          minHeight: 300,
+          quality: 80,
+        );
+
+        if (compressedImage != null) {
+          final base64String = base64Encode(compressedImage);
+
+          setState(() {
+            if (type == 'digital_photo') {
+              _digitalPhoto = base64String;
+            }
+          });
+        }
+      }
+    }
+  }
+
+  void _deleteImage(String type) async {
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Delete'),
+          content: Text(
+            type == 'front'
+                ? 'Are you sure you want to delete the front image?'
+                : type == 'back'
+                    ? 'Are you sure you want to delete the back image?'
+                    : 'Are you sure you want to delete the digital photo?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('No'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Yes'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldDelete ?? false) {
+      setState(() {
+        if (type == 'front') {
+          _aadhaarImageFront = '';
+        } else if (type == 'back') {
+          _aadhaarImageBack = '';
+        } else if (type == 'digital_photo') {
+          _digitalPhoto = '';
+        }
+      });
+    }
   }
 }
