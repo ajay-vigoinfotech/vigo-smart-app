@@ -121,13 +121,13 @@ class _HomePageState extends State<HomePage> {
       'color': Pallete.backgroundColor,
       'page': const SettingPage(),
     },
-    {
-      'code': 'SyncData',
-      'icon': Image.asset('assets/images/settings.webp'),
-      'name': Strings.syncData,
-      'color': Pallete.backgroundColor,
-      'page': const SettingPage(),
-    },
+    // {
+    //   'code': 'SyncData',
+    //   'icon': Image.asset('assets/images/settings.webp'),
+    //   'name': Strings.syncData,
+    //   'color': Pallete.backgroundColor,
+    //   'page': const SettingPage(),
+    // },
     {
       'code': 'SiteReportingApp',
       'icon': Image.asset('assets/images/site_reporting.webp'),
@@ -170,27 +170,27 @@ class _HomePageState extends State<HomePage> {
       'color': Pallete.backgroundColor,
       'page': const SettingPage(),
     },
-    {
-      'code': 'OtherAttendanceApp',
-      'icon': Image.asset('assets/images/site_reporting.webp'),
-      'name': Strings.siteReportingApp,
-      'color': Pallete.backgroundColor,
-      'page': const SettingPage(),
-    },
-    {
-      'code': 'GuardsTeamView',
-      'icon': Image.asset('assets/images/site_reporting.webp'),
-      'name': Strings.siteReportingApp,
-      'color': Pallete.backgroundColor,
-      'page': const SettingPage(),
-    },
-    {
-      'code': 'PaySlipApp',
-      'icon': Image.asset('assets/images/site_reporting.webp'),
-      'name': Strings.siteReportingApp,
-      'color': Pallete.backgroundColor,
-      'page': const SettingPage(),
-    },
+    // {
+    //   'code': 'OtherAttendanceApp',
+    //   'icon': Image.asset('assets/images/site_reporting.webp'),
+    //   'name': Strings.siteReportingApp,
+    //   'color': Pallete.backgroundColor,
+    //   'page': const SettingPage(),
+    // },
+    // {
+    //   'code': 'GuardsTeamView',
+    //   'icon': Image.asset('assets/images/site_reporting.webp'),
+    //   'name': Strings.siteReportingApp,
+    //   'color': Pallete.backgroundColor,
+    //   'page': const SettingPage(),
+    // },
+    // {
+    //   'code': 'PaySlipApp',
+    //   'icon': Image.asset('assets/images/site_reporting.webp'),
+    //   'name': Strings.siteReportingApp,
+    //   'color': Pallete.backgroundColor,
+    //   'page': const SettingPage(),
+    // },
   ];
 
   List<Map<String, dynamic>> filteredModules = [];

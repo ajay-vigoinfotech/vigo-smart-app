@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
+import 'package:quickalert/models/quickalert_animtype.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:vigo_smart_app/features/auth/session_manager/session_manager.dart';
@@ -537,7 +538,13 @@ class _ApplyLeaveState extends State<ApplyLeave> {
                   if (statusCode == 200) {
                     QuickAlert.show(
                       context: context,
+                      barrierDismissible: false,
                       type: QuickAlertType.success,
+                      confirmBtnTextStyle: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          fontSize: 20
+                      ),
                       text: message,
                       onConfirmBtnTap: () {
                         Navigator.pushAndRemoveUntil(
@@ -550,6 +557,12 @@ class _ApplyLeaveState extends State<ApplyLeave> {
                   } else if (statusCode == 418) {
                     QuickAlert.show(
                       context: context,
+                      confirmBtnText: 'OK',
+                      confirmBtnTextStyle: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        fontSize: 20
+                      ),
                       type: QuickAlertType.warning,
                       text: message,
                       onConfirmBtnTap: () {

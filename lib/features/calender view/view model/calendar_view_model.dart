@@ -28,7 +28,7 @@ class CalendarViewModel {
       if (response.statusCode == 200) {
         final responseData = CalendarModelResponse.fromJson(response.data);
         getCalendarResponseList = responseData.table;
-        debugPrint('$response');
+        // debugPrint('$response');
       } else {
         debugPrint(
             'Error :: ${response.statusCode} - ${response.statusMessage}');

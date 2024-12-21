@@ -65,9 +65,24 @@ class _TeamViewAttendanceListState extends State<TeamViewAttendanceList> {
                       });
                     },
                   ),
-                  TextButton(
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 15, vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.zero,
+                      ),
+                      elevation: 5,
+                    ),
                     onPressed: fetchAttendanceListData,
-                    child: const Text('Search'),
+                    child: const Text('Search',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500),
+                    ),
                   ),
                 ],
               ),

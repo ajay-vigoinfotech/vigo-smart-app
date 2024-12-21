@@ -1,3 +1,5 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:vigo_smart_app/core/strings/strings.dart';
 import 'package:vigo_smart_app/features/auth/session_manager/session_manager.dart';
@@ -11,6 +13,7 @@ import 'package:vigo_smart_app/features/team%20view/view/team_view_patrolling_li
 import 'package:vigo_smart_app/features/team%20view/view/team_view_site_list.dart';
 
 import '../../../core/theme/app_pallete.dart';
+import '../../home/view/home_page.dart';
 import '../../home/widgets/home_screen_card.dart';
 import '../view model/team_dashboard_count_view_model.dart';
 
@@ -44,6 +47,7 @@ class _TeamViewState extends State<TeamView> {
   @override
   void initState() {
     super.initState();
+    _checkInternetConnection();
     _fetchDashboardData();
     _fetchSiteDashboardData();
     _fetchFieldDashboardData();
@@ -338,5 +342,32 @@ class _TeamViewState extends State<TeamView> {
         _errorMessage = 'Authorization token not found';
       });
     }
+  }
+
+  Future<bool> _checkInternetConnection() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+      // Show dialog to ask user to turn on internet connection
+      showCupertinoDialog(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: const Text("No Internet Connection"),
+          content:
+          const Text("Please turn on the internet connection to proceed."),
+          actions: [
+            CupertinoDialogAction(
+              onPressed: () => Navigator.pushAndRemoveUntil(
+                this.context,
+                MaterialPageRoute(builder: (context) => HomePage()),
+                    (route) => false,
+              ),
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+      return false;
+    }
+    return true;
   }
 }

@@ -16,6 +16,7 @@ import 'package:vigo_smart_app/features/markduty/model/markselfieattendance_mode
 import '../../../core/utils.dart';
 import '../../auth/session_manager/session_manager.dart';
 import '../../auth/viewmodel/getlastselfieatt_view_model.dart';
+import '../../home/view/home_page.dart';
 import '../viewmodel/get_current_date_view_model.dart';
 import '../viewmodel/mark_selfie_view_model.dart';
 import '../widgets/map_page.dart';
@@ -38,7 +39,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   String formattedAccuracyValue = '';
   String uniqueIdv4 = "";
   String? inKm;
-  String?  inKmText;
+  String? inKmText;
   String? outKmText;
   String? dutyInRemark;
   String? dutyOutRemark;
@@ -46,18 +47,51 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   String? errorMessage;
   String _outKmError = '';
   String _inKmError = '';
-  // bool _kmError = false;
 
   bool isLoading = false;
 
+  String? formattedDateTime;
+  String? deviceDetails;
+  String? appVersion;
+  String? ipAddress;
+  String? uniqueId;
+  String? battery;
+  String? fcmToken;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    final String currentDateTime = Utils.getCurrentFormattedDateTime();
+    final String deviceInfo = await Utils.getDeviceDetails(context);
+    final String version = await Utils.getAppVersion();
+    final String ip = await Utils.getIpAddress();
+    final String uniqueID = await Utils.getUniqueID();
+    final int batteryStatus = await Utils.getBatteryLevel();
+    String? fcmToken = await Utils.getFCMToken();
+
+    setState(() {
+      formattedDateTime = currentDateTime;
+      deviceDetails = deviceInfo;
+      appVersion = version;
+      ipAddress = ip;
+      uniqueId = uniqueID;
+      battery = '$batteryStatus%';
+      fcmToken = '$fcmToken';
+    });
+  }
+
   final TextEditingController _inKmController = TextEditingController();
   final TextEditingController _outKmController = TextEditingController();
-
 
   final picker = ImagePicker();
   final SessionManager sessionManager = SessionManager();
   final MarkSelfieAttendance markSelfieAttendance = MarkSelfieAttendance();
   final GetLastSelfieAttViewModel getLastSelfieAttViewModel = GetLastSelfieAttViewModel();
+
   @override
   void initState() {
     super.initState();
@@ -148,8 +182,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                             style: TextStyle(
                                 fontSize: 22,
                                 color: Colors.white,
-                                fontWeight: FontWeight.bold
-                            ),
+                                fontWeight: FontWeight.bold),
                           ),
                         ),
                       ),
@@ -170,7 +203,8 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                             fontSize: 14, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 5),
-                      if (savedPunchOutImagePath != null && savedPunchOutImagePath!.isNotEmpty)
+                      if (savedPunchOutImagePath != null &&
+                          savedPunchOutImagePath!.isNotEmpty)
                         Image.file(
                           File(savedPunchOutImagePath!),
                           height: 130,
@@ -221,7 +255,12 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
               const Text("Please turn on the internet connection to proceed."),
           actions: [
             CupertinoDialogAction(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => Navigator.pushAndRemoveUntil(
+                this.context,
+                MaterialPageRoute(builder: (context) => HomePage()),
+                (route) => false,
+              ),
+              // Navigator.of(context).pop(),
               child: const Text("OK"),
             ),
           ],
@@ -313,7 +352,8 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
       child: MapPage(
         locationReceived: _onLocationReceived,
         speedReceived: _onSpeedReceived,
-        accuracyReceived: _onAccuracyReceived, isMapVisible: true,
+        accuracyReceived: _onAccuracyReceived,
+        isMapVisible: true,
       ),
     );
   }
@@ -437,7 +477,8 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
 
     if (markInImage != null) {
       final File image = File(markInImage.path);
-      final List<int>? compressedBytes = await FlutterImageCompress.compressWithFile(
+      final List<int>? compressedBytes =
+          await FlutterImageCompress.compressWithFile(
         image.absolute.path,
         minWidth: 400,
         minHeight: 400,
@@ -459,7 +500,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
               builder: (context, setState) {
                 final screenWidth = MediaQuery.of(context).size.width;
                 return AlertDialog(
-                  title: const Text("Mark In Details"),
+                  title: Center(child: const Text("Mark In Details", style: TextStyle(fontWeight: FontWeight.w600),)),
                   content: SizedBox(
                     width: screenWidth < 600 ? screenWidth * 0.9 : 400,
                     child: SingleChildScrollView(
@@ -468,7 +509,8 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                         children: [
                           Image.file(image, height: 100, width: 100),
                           TextField(
-                            decoration: const InputDecoration(labelText: 'Comment'),
+                            decoration:
+                                const InputDecoration(labelText: 'Comment'),
                             onChanged: (value) {
                               dutyInRemark = value;
                             },
@@ -476,7 +518,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                           TextField(
                             controller: _inKmController,
                             decoration: InputDecoration(
-                                labelText: 'KM',
+                              labelText: 'KM',
                               labelStyle: const TextStyle(
                                 color: Colors.black,
                               ),
@@ -496,127 +538,186 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                     ),
                   ),
                   actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text("Cancel"),
-                    ),
-                    isLoading
-                        ? const CircularProgressIndicator()
-                        : ElevatedButton(
-                            onPressed: () async {
-                              if(inKm == null || inKm!.isEmpty){
-                                setState(() {
-                                  _inKmError =
-                                  'Please enter in km!';
-                                });
-                                return;
-                              }
-
-                              if (inKm != null && inKm!.isNotEmpty) {
-                                setState(() {
-                                  isLoading = true;
-                                });
-
-                                await _loadCurrentDateTime();
-                                if (timeDateDisplay != null) {
-                                  punchTimeDateIn = timeDateDisplay;
-                                }
-                                await _saveImageToSP(markInImage.path);
-                                uniqueIdv4 = const Uuid().v4();
-
-                                SelfieAttendanceModel selfieAttendanceModel = SelfieAttendanceModel(
-                                  table: [
-                                    AttendanceTable(
-                                      uniqueId: uniqueIdv4,
-                                      dateTimeIn: punchTimeDateIn ?? '',
-                                      inKmsDriven: '$inKm',
-                                      dateTimeOut: "",
-                                      outKmsDriven: "",
-                                      siteId: "",
-                                      siteName: "-",
-                                    ),
-                                  ],
-                                );
-
-                                await sessionManager.saveSelfieAttendance(selfieAttendanceModel);
-
-                                print("Selfie attendance data saved to session manager.");
-
-                                String? token = await sessionManager.getToken();
-                                MarkSelfieAttendance markSelfieAttendance = MarkSelfieAttendance();
-                                final String deviceDetails = await Utils.getDeviceDetails(context);
-                                final String appVersion = await Utils.getAppVersion();
-                                final String ipAddress = await Utils.getIpAddress();
-                                final String uniqueId = await Utils.getUniqueID();
-                                final int battery = await Utils.getBatteryLevel();
-
-                                String formatDate(String dateString) {
-                                  DateFormat inputFormat = DateFormat("dd/MM/yyyy hh:mm a");
-                                  DateTime dateTime = inputFormat.parse(dateString);
-                                  DateFormat outputFormat = DateFormat("yyyy-MM-dd HH:mm");
-                                  return outputFormat.format(dateTime);
-                                }
-
-                                String formattedDateTimeIn = formatDate(punchTimeDateIn!);
-
-                                Map<String, dynamic> response = await markSelfieAttendance.markAttendance(
-                                  token!,
-                                  PunchDetails(
-                                    deviceDetails: deviceDetails,
-                                    deviceImei: uniqueId,
-                                    deviceIp: ipAddress,
-                                    userPhoto: base64InImage,
-                                    remark: dutyInRemark ?? '',
-                                    isOffline: '',
-                                    version: 'v$appVersion',
-                                    dataStatus: '',
-                                    checkInId: uniqueIdv4,
-                                    punchAction: 'IN',
-                                    locationAccuracy: formattedAccuracyValue,
-                                    locationSpeed: formattedSpeedValue,
-                                    batteryStatus: '$battery%',
-                                    locationStatus: 'true',
-                                    time: formattedDateTimeIn,
-                                    latLong: formattedLatLng,
-                                    kmsDriven: '$inKm',
-                                    siteId: '',
-                                    locationId: '',
-                                    distance: '',
-                                  ),
-                                );
-
-                                await _clearPunchOutData();
-
-                                if (response['code'] == 200) {
-                                  Navigator.of(context).pop();
-                                  QuickAlert.show(
-                                    context: context,
-                                    type: QuickAlertType.success,
-                                    text: '${response['status']}',
-                                  );
-                                  _loadPunchInImageFromSP();
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                        content: Text(
-                                            'Error: ${response['status']}')),
-                                  );
-                                  setState(() {
-                                    isLoading = false;
-                                  });
-                                }
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content:
-                                          Text('Please fill in all fields.')),
-                                );
-                              }
-                            },
-                            child: const Text('Submit'),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 10),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.zero,
+                            ),
+                            elevation: 5,
                           ),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text(
+                            "Cancel",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 17,
+                                fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                        isLoading
+                            ? const CircularProgressIndicator()
+                            : ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 10),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.zero,
+                                  ),
+                                  elevation: 5,
+                                ),
+                                onPressed: () async {
+                                  if (inKm == null || inKm!.isEmpty) {
+                                    setState(() {
+                                      _inKmError = 'Please enter in km!';
+                                    });
+                                    return;
+                                  }
+
+                                  if (inKm != null && inKm!.isNotEmpty) {
+                                    setState(() {
+                                      isLoading = true;
+                                    });
+
+                                    await _loadCurrentDateTime();
+                                    if (timeDateDisplay != null) {
+                                      punchTimeDateIn = timeDateDisplay;
+                                    }
+                                    await _saveImageToSP(markInImage.path);
+                                    uniqueIdv4 = const Uuid().v4();
+
+                                    SelfieAttendanceModel
+                                        selfieAttendanceModel =
+                                        SelfieAttendanceModel(
+                                      table: [
+                                        AttendanceTable(
+                                          uniqueId: uniqueIdv4,
+                                          dateTimeIn: punchTimeDateIn ?? '',
+                                          inKmsDriven: '$inKm',
+                                          dateTimeOut: "",
+                                          outKmsDriven: "",
+                                          siteId: "",
+                                          siteName: "-",
+                                        ),
+                                      ],
+                                    );
+
+                                    await sessionManager.saveSelfieAttendance(
+                                        selfieAttendanceModel);
+
+                                    print(
+                                        "Selfie attendance data saved to session manager.");
+
+                                    String? token =
+                                        await sessionManager.getToken();
+                                    MarkSelfieAttendance markSelfieAttendance =
+                                        MarkSelfieAttendance();
+                                    // final String deviceDetails = await Utils.getDeviceDetails(context);
+                                    // final String appVersion = await Utils.getAppVersion();
+                                    // final String ipAddress = await Utils.getIpAddress();
+                                    // final String uniqueId = await Utils.getUniqueID();
+                                    // final int battery = await Utils.getBatteryLevel();
+
+                                    String formatDate(String dateString) {
+                                      DateFormat inputFormat =
+                                          DateFormat("dd/MM/yyyy hh:mm a");
+                                      DateTime dateTime =
+                                          inputFormat.parse(dateString);
+                                      DateFormat outputFormat =
+                                          DateFormat("yyyy-MM-dd HH:mm");
+                                      return outputFormat.format(dateTime);
+                                    }
+
+                                    String formattedDateTimeIn =
+                                        formatDate(punchTimeDateIn!);
+
+                                    Map<String, dynamic> response =
+                                        await markSelfieAttendance
+                                            .markAttendance(
+                                      token!,
+                                      PunchDetails(
+                                        deviceDetails: '$deviceDetails',
+                                        deviceImei: '$uniqueId',
+                                        deviceIp: '$ipAddress',
+                                        userPhoto: base64InImage,
+                                        remark: dutyInRemark ?? '',
+                                        isOffline: '',
+                                        version: 'v$appVersion',
+                                        dataStatus: '',
+                                        checkInId: uniqueIdv4,
+                                        punchAction: 'IN',
+                                        locationAccuracy:
+                                            formattedAccuracyValue,
+                                        locationSpeed: formattedSpeedValue,
+                                        batteryStatus: '$battery%',
+                                        locationStatus: 'true',
+                                        time: formattedDateTimeIn,
+                                        latLong: formattedLatLng,
+                                        kmsDriven: '$inKm',
+                                        siteId: '',
+                                        locationId: '',
+                                        distance: '',
+                                      ),
+                                    );
+
+                                    await _clearPunchOutData();
+
+                                    if (response['code'] == 200) {
+                                      Navigator.of(context).pop();
+                                      QuickAlert.show(
+                                        context: context,
+                                        type: QuickAlertType.success,
+                                        text: '${response['status']}',
+                                        onConfirmBtnTap: () {
+                                          Navigator.pushAndRemoveUntil(
+                                            this.context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    HomePage()),
+                                            (route) => false,
+                                          );
+                                        },
+                                      );
+                                      _loadPunchInImageFromSP();
+                                    } else {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                            content: Text(
+                                                'Error: ${response['status']}')),
+                                      );
+                                      setState(() {
+                                        isLoading = false;
+                                      });
+                                    }
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                          content: Text(
+                                              'Please fill in all fields.')),
+                                    );
+                                  }
+                                },
+                                child: const Text(
+                                  'Submit',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                              ),
+                      ],
+                    ),
                   ],
                 );
               },
@@ -656,7 +757,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
         final String base64Image = base64Encode(compressedImageBytes);
         final base64OutImage = base64Image;
 
-        bool isLoading = false; // Loading state
+        bool isLoading = false;
 
         showDialog(
           barrierDismissible: false,
@@ -664,10 +765,14 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
           builder: (BuildContext context) {
             return StatefulBuilder(
               builder: (context, setState) {
-
                 final screenWidth = MediaQuery.of(context).size.width;
                 return AlertDialog(
-                  title: const Text("Mark Out Details"),
+                  backgroundColor: Colors.white,
+                  title: Center(
+                      child: const Text(
+                    "Mark Out Details",
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  )),
                   content: SizedBox(
                     width: screenWidth < 600 ? screenWidth * 0.9 : 400,
                     child: SingleChildScrollView(
@@ -685,7 +790,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                           TextField(
                             controller: _outKmController,
                             decoration: InputDecoration(
-                              labelText: 'OUT KM',
+                              labelText: 'Out KM',
                               labelStyle: const TextStyle(
                                 color: Colors.black,
                               ),
@@ -701,147 +806,204 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                     ),
                   ),
                   actions: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text("Cancel"),
-                    ),
-                    isLoading
-                        ? const CircularProgressIndicator() // Show progress indicator
-                        : ElevatedButton(
-                            onPressed: () async {
-                              if(outKm == null || outKm!.isEmpty){
-                                setState(() {
-                                  _outKmError =
-                                  'Please enter out km!';
-                                });
-                                return;
-                              }
-                              if (isLoading) return;
-
-                              // Verify that Out KM is greater than In KM
-                              final double inKmValue =
-                                  double.parse(inKm ?? '0.0');
-                              final double outKmValue =
-                                  double.parse(outKm ?? '0.0');
-
-                              if (outKmValue < inKmValue) {
-                                setState(() {
-                                  _outKmError =
-                                      'Out KM must be greater than In KM';
-                                });
-                                return;
-                              }
-
-                              setState(() {
-                                isLoading = true;
-                                outKmText = "$outKm KM";
-                              });
-
-                              if (outKm != null && outKm!.isNotEmpty) {
-                                await _loadCurrentDateTime();
-                                if (timeDateDisplay != null) {
-                                  punchTimeDateOut = timeDateDisplay;
-                                }
-
-                                await _savePunchOutImageToSP(markOutImage.path);
-                                SelfieAttendanceModel selfieAttendanceModel =
-                                    SelfieAttendanceModel(
-                                  table: [
-                                    AttendanceTable(
-                                      uniqueId: uniqueIdv4,
-                                      dateTimeIn: punchTimeDateIn ?? '',
-                                      inKmsDriven: '$inKm',
-                                      dateTimeOut: punchTimeDateOut ?? '',
-                                      outKmsDriven: '$outKm',
-                                      siteId: "",
-                                      siteName: "-",
-                                    ),
-                                  ],
-                                );
-
-                                await sessionManager.saveSelfieAttendance(
-                                    selfieAttendanceModel);
-
-                                String? token = await sessionManager.getToken();
-                                MarkSelfieAttendance markSelfieAttendance =
-                                    MarkSelfieAttendance();
-                                final String deviceDetails =
-                                    await Utils.getDeviceDetails(context);
-                                final String appVersion =
-                                    await Utils.getAppVersion();
-                                final String ipAddress =
-                                    await Utils.getIpAddress();
-                                final String uniqueId =
-                                    await Utils.getUniqueID();
-                                final int battery =
-                                    await Utils.getBatteryLevel();
-
-                                String formatDate(String dateString) {
-                                  DateFormat inputFormat =
-                                      DateFormat("dd/MM/yyyy hh:mm a");
-                                  DateTime dateTime =
-                                      inputFormat.parse(dateString);
-                                  DateFormat outputFormat =
-                                      DateFormat("yyyy-MM-dd HH:mm");
-                                  return outputFormat.format(dateTime);
-                                }
-
-                                String formattedDateTimeOut =
-                                    formatDate(punchTimeDateOut!);
-
-                                Map<String, dynamic> response =
-                                    await markSelfieAttendance.markAttendance(
-                                  token!,
-                                  PunchDetails(
-                                    deviceDetails: deviceDetails,
-                                    deviceImei: uniqueId,
-                                    deviceIp: ipAddress,
-                                    userPhoto: base64OutImage,
-                                    remark: dutyOutRemark ?? '',
-                                    isOffline: 'false',
-                                    version: appVersion,
-                                    dataStatus: '',
-                                    checkInId: uniqueIdv4,
-                                    punchAction: 'OUT',
-                                    locationAccuracy: formattedAccuracyValue,
-                                    locationSpeed: formattedSpeedValue,
-                                    batteryStatus: '$battery%',
-                                    locationStatus: '',
-                                    time: formattedDateTimeOut,
-                                    latLong: formattedLatLng,
-                                    kmsDriven: '$outKm',
-                                    siteId: '',
-                                    locationId: '',
-                                    distance: '',
-                                  ),
-                                );
-
-                                setState(() {
-                                  isLoading = false;
-                                });
-
-                                if (response['code'] == 200) {
-                                  Navigator.of(context).pop();
-                                  QuickAlert.show(
-                                    context: context,
-                                    type: QuickAlertType.success,
-                                    text: '${response['status']}',
-                                  );
-                                  _loadPunchInImageFromSP();
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                        content: Text(
-                                            'Error: ${response['status']}')),
-                                  );
-                                }
-                                _loadPunchOutImageFromSP();
-                              }
-                            },
-                            child: const Text('Submit'),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 10),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.zero,
+                            ),
+                            elevation: 5,
                           ),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: const Text(
+                            "Cancel",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 17,
+                                fontWeight: FontWeight.w500),
+                          ),
+                        ),
+                        isLoading
+                            ? const CircularProgressIndicator() // Show progress indicator
+                            : ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 10),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.zero,
+                                  ),
+                                  elevation: 5,
+                                ),
+                                onPressed: () async {
+                                  if (outKm == null || outKm!.isEmpty) {
+                                    setState(() {
+                                      _outKmError = 'Please enter out km!';
+                                    });
+                                    return;
+                                  }
+                                  if (isLoading) return;
+
+                                  // Verify that Out KM is greater than In KM
+                                  final double inKmValue =
+                                      double.parse(inKm ?? '0.0');
+                                  final double outKmValue =
+                                      double.parse(outKm ?? '0.0');
+
+                                  if (outKmValue < inKmValue) {
+                                    setState(() {
+                                      _outKmError =
+                                          'Out KM must be greater than In KM';
+                                    });
+                                    return;
+                                  }
+
+                                  setState(() {
+                                    isLoading = true;
+                                    outKmText = "$outKm KM";
+                                  });
+
+                                  if (outKm != null && outKm!.isNotEmpty) {
+                                    await _loadCurrentDateTime();
+                                    if (timeDateDisplay != null) {
+                                      punchTimeDateOut = timeDateDisplay;
+                                    }
+
+                                    await _savePunchOutImageToSP(
+                                        markOutImage.path);
+                                    SelfieAttendanceModel
+                                        selfieAttendanceModel =
+                                        SelfieAttendanceModel(
+                                      table: [
+                                        AttendanceTable(
+                                          uniqueId: uniqueIdv4,
+                                          dateTimeIn: punchTimeDateIn ?? '',
+                                          inKmsDriven: '$inKm',
+                                          dateTimeOut: punchTimeDateOut ?? '',
+                                          outKmsDriven: '$outKm',
+                                          siteId: "",
+                                          siteName: "-",
+                                        ),
+                                      ],
+                                    );
+
+                                    await sessionManager.saveSelfieAttendance(
+                                        selfieAttendanceModel);
+
+                                    String? token =
+                                        await sessionManager.getToken();
+                                    MarkSelfieAttendance markSelfieAttendance =
+                                        MarkSelfieAttendance();
+                                    final String deviceDetails =
+                                        await Utils.getDeviceDetails(context);
+                                    final String appVersion =
+                                        await Utils.getAppVersion();
+                                    final String ipAddress =
+                                        await Utils.getIpAddress();
+                                    final String uniqueId =
+                                        await Utils.getUniqueID();
+                                    final int battery =
+                                        await Utils.getBatteryLevel();
+
+                                    String formatDate(String dateString) {
+                                      DateFormat inputFormat =
+                                          DateFormat("dd/MM/yyyy hh:mm a");
+                                      DateTime dateTime =
+                                          inputFormat.parse(dateString);
+                                      DateFormat outputFormat =
+                                          DateFormat("yyyy-MM-dd HH:mm");
+                                      return outputFormat.format(dateTime);
+                                    }
+
+                                    String formattedDateTimeOut =
+                                        formatDate(punchTimeDateOut!);
+
+                                    Map<String, dynamic> response =
+                                        await markSelfieAttendance
+                                            .markAttendance(
+                                      token!,
+                                      PunchDetails(
+                                        deviceDetails: deviceDetails,
+                                        deviceImei: uniqueId,
+                                        deviceIp: ipAddress,
+                                        userPhoto: base64OutImage,
+                                        remark: dutyOutRemark ?? '',
+                                        isOffline: 'false',
+                                        version: appVersion,
+                                        dataStatus: '',
+                                        checkInId: uniqueIdv4,
+                                        punchAction: 'OUT',
+                                        locationAccuracy:
+                                            formattedAccuracyValue,
+                                        locationSpeed: formattedSpeedValue,
+                                        batteryStatus: '$battery%',
+                                        locationStatus: '',
+                                        time: formattedDateTimeOut,
+                                        latLong: formattedLatLng,
+                                        kmsDriven: '$outKm',
+                                        siteId: '',
+                                        locationId: '',
+                                        distance: '',
+                                      ),
+                                    );
+
+                                    setState(() {
+                                      isLoading = false;
+                                    });
+
+                                    if (response['code'] == 200) {
+                                      Navigator.of(context).pop();
+                                      QuickAlert.show(
+                                        context: context,
+                                        barrierDismissible: false,
+                                        type: QuickAlertType.success,
+                                        confirmBtnTextStyle: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                            fontSize: 20
+                                        ),
+                                        text: '${response['status']}',
+                                        onConfirmBtnTap: () {
+                                          Navigator.pushAndRemoveUntil(
+                                            this.context,
+                                            MaterialPageRoute(
+                                                builder: (context) =>
+                                                    HomePage()),
+                                            (route) => false,
+                                          );
+                                        },
+                                      );
+                                      _loadPunchInImageFromSP();
+                                    } else {
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(
+                                        SnackBar(
+                                            content: Text(
+                                                'Error: ${response['status']}')),
+                                      );
+                                    }
+                                    _loadPunchOutImageFromSP();
+                                  }
+                                },
+                                child: const Text(
+                                  'Submit',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                              ),
+                      ],
+                    ),
                   ],
                 );
               },
@@ -863,41 +1025,3 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     }
   }
 }
-
-// if(double.parse(outKm!) <=  double.parse(inKm!)) {
-//   ScaffoldMessenger.of(context).showSnackBar(
-//     const SnackBar(
-//         content: Text(
-//             'Out KM should be greater than In KM.')),
-//   );
-//   print('Out km should be greater than In Km');
-// }
-
-// Future<void> _loadCurrentDateTime() async {
-//   final getCurrentDateViewModel = GetCurrentDateViewModel();
-//   String? currentDateTime;
-//
-//   try {
-//     currentDateTime = await getCurrentDateViewModel.getTimeDate();
-//
-//     if (currentDateTime != null) {
-//       final formattedDateTime = Utils.formatDateTime(currentDateTime);
-//       setState(() {
-//         timeDateDisplay = formattedDateTime;
-//       });
-//     } else {
-//       currentDateTime = _setDeviceDateTime();
-//     }
-//   } catch (e) {
-//     debugPrint('Error fetching date from API: $e');
-//     currentDateTime = _setDeviceDateTime();
-//   }
-// }
-//
-// String _setDeviceDateTime() {
-//   String currentDateTime = DateFormat('dd/MM/yyyy hh:mm').format(DateTime.now());
-//   setState(() {
-//     timeDateDisplay = currentDateTime;
-//   });
-//   return currentDateTime;
-// }

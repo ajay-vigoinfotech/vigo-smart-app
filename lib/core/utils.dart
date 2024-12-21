@@ -88,13 +88,5 @@ class Utils {
     DateFormat formatter = DateFormat('dd/MM/yyyy h:mm a');
     return formatter.format(dateTime);
   }
-
-  // //method to get Punch In Current Date and Time
-  // static String punchInFormatDateTime(String apiDateTime) {
-  //   DateTime dateTime = DateTime.parse(apiDateTime);
-  //   DateFormat formatter = DateFormat('dd/MM/yyyy h:mm a');
-  //   return formatter.format(dateTime);
-  // }
-
 }
 

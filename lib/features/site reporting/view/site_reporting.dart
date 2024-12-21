@@ -1,4 +1,6 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:easy_date_timeline/easy_date_timeline.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
@@ -6,6 +8,7 @@ import 'package:vigo_smart_app/features/site%20reporting/view%20model/get_schedu
 import 'package:vigo_smart_app/features/site%20reporting/view/site_reporting_details.dart';
 import 'package:vigo_smart_app/features/site%20reporting/view/site_reporting_step_2.dart';
 import '../../../helper/database_helper.dart';
+import '../../home/view/home_page.dart';
 import '../model/get_active_site_list_model.dart';
 import '../view model/get_active_site_list_view_model.dart';
 import '../view model/get_activity_questions_list_app_view_model.dart';
@@ -54,6 +57,7 @@ class _SiteReportingState extends State<SiteReporting>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _tabController.addListener(_handleTabChange);
+    _checkInternetConnection();
     loadAssignSiteList();
     fetchGetActiveSiteListData();
     fetchScheduleSIteByUserID();
@@ -798,5 +802,34 @@ class _SiteReportingState extends State<SiteReporting>
     _tabController.removeListener(_handleTabChange);
     _tabController.dispose();
     super.dispose();
+  }
+
+
+  Future<bool> _checkInternetConnection() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+      // Show dialog to ask user to turn on internet connection
+      showCupertinoDialog(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: const Text("No Internet Connection"),
+          content:
+          const Text("Please turn on the internet connection to proceed."),
+          actions: [
+            CupertinoDialogAction(
+              onPressed: () => Navigator.pushAndRemoveUntil(
+                this.context,
+                MaterialPageRoute(builder: (context) => HomePage()),
+                    (route) => false,
+              ),
+              // Navigator.of(context).pop(),
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+      return false;
+    }
+    return true;
   }
 }

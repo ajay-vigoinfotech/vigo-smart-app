@@ -25,7 +25,7 @@ class LoginViewModel {
         final token = TokenModel.fromJson(response.data);
         await sessionManager.saveToken(token.accessToken.toString());
         _accessToken = await sessionManager.getToken();
-        return null;  // No error, login was successful
+        return null;
       } else {
         return 'Error: Received status code ${response.statusCode}';
       }
@@ -33,7 +33,7 @@ class LoginViewModel {
       if (e is DioException) {
         if (e.response != null && e.response!.data is Map<String, dynamic>) {
           final errorDescription = e.response!.data['error_description'];
-          return errorDescription ?? 'Login failed due to an unknown error'; // Return error description
+          return errorDescription ?? 'Login failed due to an unknown error';
         } else {
           return 'Unexpected error occurred: $e';
         }

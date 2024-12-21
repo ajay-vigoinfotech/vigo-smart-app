@@ -14,8 +14,7 @@ class TeamViewActivityAttendance extends StatefulWidget {
 
 class _TeamViewActivityAttendanceState
     extends State<TeamViewActivityAttendance> {
-  TeamViewActivityAttendanceViewModel teamViewActivityAttendanceViewModel =
-      TeamViewActivityAttendanceViewModel();
+  TeamViewActivityAttendanceViewModel teamViewActivityAttendanceViewModel = TeamViewActivityAttendanceViewModel();
 
   String? userId;
   String? fullName;
@@ -32,43 +31,6 @@ class _TeamViewActivityAttendanceState
     checkInternetConnection();
     filteredData = teamActivityAttendanceCountData;
     fetchTeamActivityAttendanceCountData();
-  }
-
-  Future<bool> checkInternetConnection() async {
-    var connectivityResult = await Connectivity().checkConnectivity();
-    if (connectivityResult.contains(ConnectivityResult.none)) {
-      showCupertinoDialog(
-        context: context,
-        builder: (context) => CupertinoAlertDialog(
-          title: const Text("No Internet Connection"),
-          content:
-              const Text("Please turn on the internet connection to proceed."),
-          actions: [
-            CupertinoDialogAction(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text("OK"),
-            ),
-          ],
-        ),
-      );
-      return false;
-    }
-    return true;
-  }
-
-  void filterSearchResults(String query) {
-    if (query.isEmpty) {
-      setState(() {
-        filteredData = teamActivityAttendanceCountData;
-      });
-    } else {
-      setState(() {
-        filteredData = teamActivityAttendanceCountData
-            .where((entry) =>
-                entry['fullName']!.toLowerCase().contains(query.toLowerCase()))
-            .toList();
-      });
-    }
   }
 
   @override
@@ -177,5 +139,42 @@ class _TeamViewActivityAttendanceState
     setState(() {
       isLoading = false;
     });
+  }
+
+  Future<bool> checkInternetConnection() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+      showCupertinoDialog(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: const Text("No Internet Connection"),
+          content:
+          const Text("Please turn on the internet connection to proceed."),
+          actions: [
+            CupertinoDialogAction(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+      return false;
+    }
+    return true;
+  }
+
+  void filterSearchResults(String query) {
+    if (query.isEmpty) {
+      setState(() {
+        filteredData = teamActivityAttendanceCountData;
+      });
+    } else {
+      setState(() {
+        filteredData = teamActivityAttendanceCountData
+            .where((entry) =>
+            entry['fullName']!.toLowerCase().contains(query.toLowerCase()))
+            .toList();
+      });
+    }
   }
 }

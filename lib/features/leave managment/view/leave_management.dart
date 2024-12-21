@@ -2,7 +2,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:vigo_smart_app/core/strings/strings.dart';
-
+import '../../home/view/home_page.dart';
 import '../view model/leave_balance_view_model.dart';
 import '../view model/leave_cancel_view_model.dart';
 import '../view model/leave_history_view_model.dart';
@@ -30,7 +30,7 @@ class _LeaveManagementState extends State<LeaveManagement> {
   void initState() {
     fetchEmployeeLeavesData();
     fetchLeaveHistoryData();
-    checkInternetConnection();
+    _checkInternetConnection();
     super.initState();
   }
 
@@ -470,9 +470,10 @@ class _LeaveManagementState extends State<LeaveManagement> {
     }
   }
 
-  Future<bool> checkInternetConnection() async {
+  Future<bool> _checkInternetConnection() async {
     var connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult.contains(ConnectivityResult.none)) {
+      // Show dialog to ask user to turn on internet connection
       showCupertinoDialog(
         context: context,
         builder: (context) => CupertinoAlertDialog(
@@ -481,7 +482,12 @@ class _LeaveManagementState extends State<LeaveManagement> {
           const Text("Please turn on the internet connection to proceed."),
           actions: [
             CupertinoDialogAction(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pushAndRemoveUntil(
+                this.context,
+                MaterialPageRoute(builder: (context) => HomePage()),
+                    (route) => false,
+              ),
+              // Navigator.of(context).pop(),
               child: const Text("OK"),
             ),
           ],

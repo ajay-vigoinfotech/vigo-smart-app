@@ -3,6 +3,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:vigo_smart_app/features/auth/model/marklogin_model.dart';
 import 'package:vigo_smart_app/features/auth/viewmodel/checksession_view_model.dart';
@@ -33,6 +35,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _partnerCodeController = TextEditingController();
   final TextEditingController _userIDController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  SessionManager sessionManager = SessionManager();
 
   final _formKey = GlobalKey<FormState>();
   bool isPasswordVisible = false;
@@ -42,11 +45,18 @@ class _LoginPageState extends State<LoginPage> {
   String appName = '';
   bool isSubmitting = false;
 
+  String? formattedDateTime;
+  String? deviceDetails;
+  String? appVersion;
+  String? ipAddress;
+  String? uniqueId;
+  String? battery;
+  String? fcmToken;
+
   final LoginViewModel _viewModel = LoginViewModel();
   final MarkLoginViewModel markLoginViewModel = MarkLoginViewModel();
   final UserViewModel userViewModel = UserViewModel();
-  final GetLastSelfieAttViewModel getLastSelfieAttViewModel =
-      GetLastSelfieAttViewModel();
+  final GetLastSelfieAttViewModel getLastSelfieAttViewModel = GetLastSelfieAttViewModel();
   final CheckSessionViewModel checkSessionViewModel = CheckSessionViewModel();
 
   @override
@@ -56,19 +66,30 @@ class _LoginPageState extends State<LoginPage> {
     fetchAndPrintSupportContact();
   }
 
-// Usage in function
-  Future<void> fetchAndPrintSupportContact() async {
-    final supportContactViewModel = SupportContactViewModel();
-    final supportContact = await supportContactViewModel.getSupportContact();
-    if (supportContact != null) {
-      setState(() {
-        ivr = supportContact.ivr;
-        whatsAppNum = supportContact.whatsapp;
-      });
-      print('IVR: ${supportContact.ivr}, WhatsApp: ${supportContact.whatsapp}');
-    } else {
-      print('Failed to fetch support contact.');
-    }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    final String currentDateTime = Utils.getCurrentFormattedDateTime();
+    final String deviceInfo = await Utils.getDeviceDetails(context);
+    final String version = await Utils.getAppVersion();
+    final String ip = await Utils.getIpAddress();
+    final String uniqueID = await Utils.getUniqueID();
+    final int batteryStatus = await Utils.getBatteryLevel();
+    String? fcmToken = await Utils.getFCMToken();
+
+    setState(() {
+      formattedDateTime = currentDateTime;
+      deviceDetails = deviceInfo;
+      appVersion = version;
+      ipAddress = ip;
+      uniqueId = uniqueID;
+      battery = '$batteryStatus%';
+      fcmToken = '$fcmToken';
+    });
   }
 
   @override
@@ -156,100 +177,6 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildSupportContact() {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              GestureDetector(
-                onTap: () => _launchDialer(ivr),
-                child: Image.asset(
-                  'assets/images/ic_help_desk.webp',
-                  width: 30,
-                  height: 30,
-                ),
-              ),
-              GestureDetector(
-                onTap: () => _launchDialer(ivr),
-                child: Text(
-                  ivr,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 17,
-                    color: Colors.blue,
-                    decoration: TextDecoration.none,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 5), // Spacer
-
-        // WhatsApp support
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              GestureDetector(
-                onTap: () => _launchWhatsApp(whatsAppNum!),
-                child: Image.asset(
-                  'assets/images/ic_whatsapp.webp', // Specify your image path
-                  width: 30, // Set desired width
-                  height: 30, // Set desired height
-                ),
-              ),
-              GestureDetector(
-                onTap: () => _launchWhatsApp(whatsAppNum!),
-                child: Text(
-                  whatsAppNum!,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 17,
-                    color: Colors.blue,
-                    decoration: TextDecoration.none,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  // Function to launch the Dialer
-  Future<void> _launchDialer(String number) async {
-    final Uri phoneUri = Uri(scheme: 'tel', path: number);
-    if (await canLaunchUrl(phoneUri)) {
-      await launchUrl(phoneUri);
-    } else {
-      throw 'Could not launch $number';
-    }
-  }
-
-  // Function to launch WhatsApp
-  Future<void> _launchWhatsApp(String number) async {
-    final Uri whatsappUri = Uri(
-      scheme: 'https',
-      host: 'api.whatsapp.com',
-      path: 'send',
-      queryParameters: {
-        'phone': number,
-        'text': 'Hello',
-      },
-    );
-    if (await canLaunchUrl(whatsappUri)) {
-      await launchUrl(whatsappUri);
-    } else {
-      throw 'Could not launch WhatsApp with $number';
-    }
-  }
-
   Future<dynamic> _onSubmit() async {
     if (isSubmitting) return;
 
@@ -267,8 +194,7 @@ class _LoginPageState extends State<LoginPage> {
 
     if (_formKey.currentState?.validate() ?? false) {
       try {
-        final username =
-            "${_partnerCodeController.text}/${_userIDController.text}";
+        final username = "${_partnerCodeController.text}/${_userIDController.text}#$deviceDetails/$uniqueId/$ipAddress";
         final loginRequest = LoginRequest(
           grantType: Strings.grantType,
           username: username,
@@ -283,14 +209,13 @@ class _LoginPageState extends State<LoginPage> {
           await sessionManager.saveLoginInfo(username);
 
           sessionManager.getToken().then((token) async {
-            final String formattedDateTime = Utils.getCurrentFormattedDateTime();
-            final String deviceDetails = await Utils.getDeviceDetails(context);
-            final String appVersion = await Utils.getAppVersion();
-            final String ipAddress = await Utils.getIpAddress();
-            final String uniqueId = await Utils.getUniqueID();
-            final int battery = await Utils.getBatteryLevel();
-            final String? fcmToken = await Utils.getFCMToken();
-            print(fcmToken);
+            // final String formattedDateTime = Utils.getCurrentFormattedDateTime();
+            // final String deviceDetails = await Utils.getDeviceDetails(context);
+            // final String appVersion = await Utils.getAppVersion();
+            // final String ipAddress = await Utils.getIpAddress();
+            // final String uniqueId = await Utils.getUniqueID();
+            // final int battery = await Utils.getBatteryLevel();
+            // final String? fcmToken = await Utils.getFCMToken();
 
             final String fullDeviceDetails = "$deviceDetails/$uniqueId/$ipAddress";
 
@@ -299,7 +224,7 @@ class _LoginPageState extends State<LoginPage> {
               punchAction: 'LOGIN',
               locationDetails: '',
               batteryStatus: '$battery%',
-              time: formattedDateTime,
+              time: '$formattedDateTime',
               latLong: '',
               version: 'v$appVersion',
               fcmToken: fcmToken ?? '',
@@ -322,28 +247,18 @@ class _LoginPageState extends State<LoginPage> {
 
             ModulesViewModel moduleService = ModulesViewModel();
             List<String> moduleCodes = await moduleService.getModules(token);
-
             List<String> distinctModuleCodes = moduleCodes.toSet().toList();
-
-            // Save the distinct module codes
             await sessionManager.saveModuleCodes(distinctModuleCodes);
-
-            // Print saved distinct module codes
             sessionManager.getModuleCodes().then((savedModuleCodes) {
-              // print(savedModuleCodes);
             });
-
             sessionManager.saveModuleCodes(moduleCodes);
             sessionManager.getModuleCodes().then((modulesCodes) async {
-              // print(modulesCodes);
             });
-
             userViewModel.getUserDetails(token);
             getLastSelfieAttViewModel.getLastSelfieAttendance(token);
-            checkSessionViewModel.checkSession(
-                token, CheckSessionModel as CheckSessionModel);
+            checkSessionViewModel.checkSession(token, CheckSessionModel as CheckSessionModel);
           }).catchError((error) {
-            print('Error: $error');
+            debugPrint('Error: $error');
           });
 
           Navigator.pushReplacement(
@@ -352,22 +267,36 @@ class _LoginPageState extends State<LoginPage> {
           );
         } else {
           // Display the error message returned by makeRequest
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              backgroundColor: Colors.red,
-              content: Text(
-                error,
-                style: const TextStyle(
-                    fontSize: 17,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold),
-              ),
+          // ScaffoldMessenger.of(context).showSnackBar(
+          //   SnackBar(
+          //     backgroundColor: Colors.orange,
+          //     content: Text(
+          //       error,
+          //       style: const TextStyle(
+          //           fontSize: 17,
+          //           color: Colors.white,
+          //           fontWeight: FontWeight.bold),
+          //     ),
+          //   ),
+          // );
+          //MP20133
+          QuickAlert.show(
+              context: context,
+            barrierDismissible: false,
+            confirmBtnText: 'OK',
+            headerBackgroundColor: Colors.yellow,
+            confirmBtnTextStyle: TextStyle(
+              fontSize: 20,
+              color: Colors.white,
+              fontWeight: FontWeight.w500,
             ),
+            type: QuickAlertType.warning,
+            text: error,
           );
         }
       } catch (e) {
         // Handle any uncaught exceptions
-        print('General exception: $e');
+        debugPrint('General exception: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             backgroundColor: Colors.red,
@@ -429,11 +358,6 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  static Future<String> getAppVersion() async {
-    final packageInfo = await PackageInfo.fromPlatform();
-    return packageInfo.version;
-  }
-
   Widget _buildSubmitButton() {
     return ElevatedButton(
       onPressed: isSubmitting ? null : _onSubmit,
@@ -486,5 +410,120 @@ class _LoginPageState extends State<LoginPage> {
       return false;
     }
     return true;
+  }
+
+
+  Widget _buildSupportContact() {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: () => _launchDialer(ivr),
+                child: Image.asset(
+                  'assets/images/ic_help_desk.webp',
+                  width: 30,
+                  height: 30,
+                ),
+              ),
+              GestureDetector(
+                onTap: () => _launchDialer(ivr),
+                child: Text(
+                  ivr,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 17,
+                    color: Colors.blue,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 5), // Spacer
+
+        // WhatsApp support
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: () => _launchWhatsApp(whatsAppNum!),
+                child: Image.asset(
+                  'assets/images/ic_whatsapp.webp',
+                  width: 30,
+                  height: 30,
+                ),
+              ),
+              GestureDetector(
+                onTap: () => _launchWhatsApp(whatsAppNum!),
+                child: Text(
+                  whatsAppNum!,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 17,
+                    color: Colors.blue,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Function to launch the Dialer
+  Future<void> _launchDialer(String number) async {
+    final Uri phoneUri = Uri(scheme: 'tel', path: number);
+    if (await canLaunchUrl(phoneUri)) {
+      await launchUrl(phoneUri);
+    } else {
+      throw 'Could not launch $number';
+    }
+  }
+
+  // Function to launch WhatsApp
+  Future<void> _launchWhatsApp(String number) async {
+    final Uri whatsappUri = Uri(
+      scheme: 'https',
+      host: 'api.whatsapp.com',
+      path: 'send',
+      queryParameters: {
+        'phone': number,
+        'text': 'Hello',
+      },
+    );
+    if (await canLaunchUrl(whatsappUri)) {
+      await launchUrl(whatsappUri);
+    } else {
+      throw 'Could not launch WhatsApp with $number';
+    }
+  }
+
+  static Future<String> getAppVersion() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    return packageInfo.version;
+  }
+
+  // Usage in function
+  Future<void> fetchAndPrintSupportContact() async {
+    final supportContactViewModel = SupportContactViewModel();
+    final supportContact = await supportContactViewModel.getSupportContact();
+    if (supportContact != null) {
+      setState(() {
+        ivr = supportContact.ivr;
+        whatsAppNum = supportContact.whatsapp;
+      });
+      print('IVR: ${supportContact.ivr}, WhatsApp: ${supportContact.whatsapp}');
+    } else {
+      print('Failed to fetch support contact.');
+    }
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_calendar_carousel/classes/event.dart';
 import 'package:flutter_calendar_carousel/flutter_calendar_carousel.dart';
 import 'package:intl/intl.dart';
+import '../../home/view/home_page.dart';
 import '../model/calendar_request_model.dart';
 import '../view model/calendar_view_model.dart';
 
@@ -29,7 +30,7 @@ class _CalendarViewState extends State<CalendarView> {
   @override
   void initState() {
     super.initState();
-    checkInternetConnection();
+    _checkInternetConnection();
     _fetchInitialData();
   }
 
@@ -46,7 +47,7 @@ class _CalendarViewState extends State<CalendarView> {
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 SizedBox(
-                  height: 355,
+                  height: 375,
                   child: Container(
                     decoration: BoxDecoration(
                         border: Border.all(),
@@ -474,9 +475,10 @@ class _CalendarViewState extends State<CalendarView> {
     return eventList;
   }
 
-  Future<bool> checkInternetConnection() async {
+  Future<bool> _checkInternetConnection() async {
     var connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult.contains(ConnectivityResult.none)) {
+      // Show dialog to ask user to turn on internet connection
       showCupertinoDialog(
         context: context,
         builder: (context) => CupertinoAlertDialog(
@@ -485,7 +487,12 @@ class _CalendarViewState extends State<CalendarView> {
           const Text("Please turn on the internet connection to proceed."),
           actions: [
             CupertinoDialogAction(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => Navigator.pushAndRemoveUntil(
+                this.context,
+                MaterialPageRoute(builder: (context) => HomePage()),
+                    (route) => false,
+              ),
+              // Navigator.of(context).pop(),
               child: const Text("OK"),
             ),
           ],
