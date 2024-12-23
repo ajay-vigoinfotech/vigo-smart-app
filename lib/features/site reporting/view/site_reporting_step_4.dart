@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
@@ -14,6 +13,9 @@ import '../../home/view/home_page.dart';
 import '../../markduty/viewmodel/get_current_date_view_model.dart';
 import '../model/mark_site_visit_model.dart';
 import '../view model/mark_site_visit_view_model.dart';
+
+import 'dart:typed_data';
+import 'package:image/image.dart' as img;
 
 class SiteReportingStep4 extends StatefulWidget {
   final dynamic value;
@@ -70,18 +72,29 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
   }
 
   Future<void> _takePhoto(int imageNumber) async {
-    final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
+    final XFile? photo = await _picker.pickImage(
+      source: ImageSource.camera,
+      maxWidth: 1920,
+      maxHeight: 1080,
+    );
 
     if (photo != null) {
       final selectedFile = File(photo.path);
-      final compressedImage = await FlutterImageCompress.compressWithFile(
-        selectedFile.path,
-        minWidth: 100,
-        minHeight: 100,
-        quality: 100,
-      );
 
-      if (compressedImage != null) {
+      // Compress the image using the `image` package
+      final img.Image? originalImage =
+          img.decodeImage(selectedFile.readAsBytesSync());
+      if (originalImage != null) {
+        final img.Image resizedImage = img.copyResize(
+          originalImage,
+          width: 100,
+          height: 100,
+        );
+
+        final Uint8List compressedImage = Uint8List.fromList(
+          img.encodeJpg(resizedImage, quality: 100),
+        );
+
         final base64String = base64Encode(compressedImage);
 
         setState(() {
@@ -111,6 +124,49 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
       }
     }
   }
+
+  // Future<void> _takePhoto(int imageNumber) async {
+  //   final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
+  //
+  //   if (photo != null) {
+  //     final selectedFile = File(photo.path);
+  //     final compressedImage = await FlutterImageCompress.compressWithFile(
+  //       selectedFile.path,
+  //       minWidth: 100,
+  //       minHeight: 100,
+  //       quality: 100,
+  //     );
+  //
+  //     if (compressedImage != null) {
+  //       final base64String = base64Encode(compressedImage);
+  //
+  //       setState(() {
+  //         switch (imageNumber) {
+  //           case 1:
+  //             _userImage = selectedFile;
+  //             _base64UserImage = base64String;
+  //             break;
+  //           case 2:
+  //             _assetImage1 = selectedFile;
+  //             _base64AssetImage1 = base64String;
+  //             break;
+  //           case 3:
+  //             _assetImage2 = selectedFile;
+  //             _base64AssetImage2 = base64String;
+  //             break;
+  //           case 4:
+  //             _assetImage3 = selectedFile;
+  //             _base64AssetImage3 = base64String;
+  //             break;
+  //           case 5:
+  //             _assetImage4 = selectedFile;
+  //             _base64AssetImage4 = base64String;
+  //             break;
+  //         }
+  //       });
+  //     }
+  //   }
+  // }
 
   void _deleteImage(BuildContext context, int imageNumber) async {
     final shouldDelete = await showDialog<bool>(
@@ -332,7 +388,7 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
                   showDialog(
                     context: context,
                     barrierDismissible: false,
-                    barrierColor: Colors.black.withOpacity(0.5),
+                    barrierColor: Colors.black,
                     builder: (BuildContext context) {
                       return Center(
                         child: Container(

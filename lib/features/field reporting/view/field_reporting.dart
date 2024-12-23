@@ -21,6 +21,9 @@ import '../model/field_reporting_model.dart';
 import '../view model/field_reporting_view_model.dart';
 import '../view model/get_field_reporting_view_model.dart';
 
+import 'dart:typed_data';
+import 'package:image/image.dart' as img;
+
 class FieldReporting extends StatefulWidget {
   const FieldReporting({super.key});
 
@@ -236,25 +239,35 @@ class _FieldReportingState extends State<FieldReporting>
     );
   }
 
+
   Future<void> onInButtonPressed() async {
     bool isConnected = await checkInternetConnection();
     if (!isConnected) return;
+
     final ImagePicker picker = ImagePicker();
     final XFile? patrollingImage = await picker.pickImage(
       source: ImageSource.camera,
-      imageQuality: 70,
+      maxWidth: 1920,
+      maxHeight: 1080,
     );
 
     if (patrollingImage != null) {
       final File image = File(patrollingImage.path);
-      final List<int>? compressedBytes = await FlutterImageCompress.compressWithFile(
-        image.absolute.path,
-        minWidth: 400,
-        minHeight: 400,
-        quality: 70, // Adjust compression quality
-      );
 
-      if (compressedBytes != null) {
+      // Compress the image using the `image` package
+      final img.Image? originalImage = img.decodeImage(image.readAsBytesSync());
+      if (originalImage != null) {
+        final img.Image resizedImage = img.copyResize(
+          originalImage,
+          width: 400,
+          height: 400,
+        );
+
+        final Uint8List compressedBytes = Uint8List.fromList(
+          img.encodeJpg(resizedImage, quality: 40),
+        );
+
+        // Convert the compressed image to Base64
         final String base64Image = base64Encode(compressedBytes);
 
         showDialog(
@@ -270,8 +283,8 @@ class _FieldReportingState extends State<FieldReporting>
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Image.file(
-                            image,
+                          Image.memory(
+                            compressedBytes,
                             height: 125,
                             width: 125,
                           ),
@@ -306,14 +319,14 @@ class _FieldReportingState extends State<FieldReporting>
                             elevation: 5,
                           ),
                           onPressed: () => Navigator.of(context).pop(),
-                          child: const Text("Close",
+                          child: const Text(
+                            "Close",
                             style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 17,
                                 fontWeight: FontWeight.w500),
                           ),
                         ),
-
                         isLoading
                             ? const CircularProgressIndicator()
                             : ElevatedButton(
@@ -327,7 +340,6 @@ class _FieldReportingState extends State<FieldReporting>
                             ),
                             elevation: 5,
                           ),
-
                           onPressed: isLoading
                               ? null
                               : () async {
@@ -337,28 +349,46 @@ class _FieldReportingState extends State<FieldReporting>
                             try {
                               await _loadCurrentDateTime();
                               punchTimeDateIn = timeDateDisplay;
-                              await _savePunchTimeDateInToSP(punchTimeDateIn!);
-                              await _saveImageToSP(patrollingImage.path);
+                              await _savePunchTimeDateInToSP(
+                                  punchTimeDateIn!);
+                              await _saveImageToSP(
+                                  patrollingImage.path);
                               uniqueIdv4 = const Uuid().v4();
 
-                              String? token = await sessionManager.getToken();
-                              MarkFieldReportingViewModel markFieldReportingViewModel = MarkFieldReportingViewModel();
-                              final String deviceDetails = await Utils.getDeviceDetails(context);
-                              final String appVersion = await Utils.getAppVersion();
-                              final String ipAddress = await Utils.getIpAddress();
-                              final String uniqueId = await Utils.getUniqueID();
-                              final int battery = await Utils.getBatteryLevel();
+                              String? token =
+                              await sessionManager.getToken();
+                              MarkFieldReportingViewModel
+                              markFieldReportingViewModel =
+                              MarkFieldReportingViewModel();
+                              final String deviceDetails =
+                              await Utils.getDeviceDetails(
+                                  context);
+                              final String appVersion =
+                              await Utils.getAppVersion();
+                              final String ipAddress =
+                              await Utils.getIpAddress();
+                              final String uniqueId =
+                              await Utils.getUniqueID();
+                              final int battery =
+                              await Utils.getBatteryLevel();
 
                               String formatDate(String dateString) {
-                                DateFormat inputFormat = DateFormat("dd/MM/yyyy hh:mm a");
-                                DateTime dateTime = inputFormat.parse(dateString);
-                                DateFormat outputFormat = DateFormat("yyyy-MM-dd HH:mm");
-                                return outputFormat.format(dateTime);
+                                DateFormat inputFormat =
+                                DateFormat("dd/MM/yyyy hh:mm a");
+                                DateTime dateTime =
+                                inputFormat.parse(dateString);
+                                DateFormat outputFormat =
+                                DateFormat("yyyy-MM-dd HH:mm");
+                                return outputFormat
+                                    .format(dateTime);
                               }
 
-                              String formattedDateTimeIn = formatDate(punchTimeDateIn!);
+                              String formattedDateTimeIn =
+                              formatDate(punchTimeDateIn!);
 
-                              Map<String, dynamic> response = await markFieldReportingViewModel.markFieldReporting(
+                              Map<String, dynamic> response =
+                              await markFieldReportingViewModel
+                                  .markFieldReporting(
                                 token!,
                                 MarkFieldReportingModel(
                                   deviceDetails: deviceDetails,
@@ -371,8 +401,10 @@ class _FieldReportingState extends State<FieldReporting>
                                   dataStatus: '',
                                   checkInId: uniqueIdv4,
                                   punchAction: 'IN',
-                                  locationAccuracy: formattedAccuracyValue,
-                                  locationSpeed: formattedSpeedValue,
+                                  locationAccuracy:
+                                  formattedAccuracyValue,
+                                  locationSpeed:
+                                  formattedSpeedValue,
                                   batteryStatus: '$battery',
                                   locationStatus: 'true',
                                   time: formattedDateTimeIn,
@@ -390,16 +422,18 @@ class _FieldReportingState extends State<FieldReporting>
                                 QuickAlert.show(
                                   barrierDismissible: false,
                                   confirmBtnText: 'OK',
-                                  confirmBtnTextStyle: TextStyle(
-                                      fontWeight: FontWeight.bold,
+                                  confirmBtnTextStyle:
+                                  TextStyle(
+                                      fontWeight:
+                                      FontWeight.bold,
                                       color: Colors.white,
-                                      fontSize: 20
-                                  ),
+                                      fontSize: 20),
                                   context: context,
                                   type: QuickAlertType.success,
                                   text: '${response['status']}',
                                   onConfirmBtnTap: () {
-                                    Navigator.pushAndRemoveUntil(
+                                    Navigator
+                                        .pushAndRemoveUntil(
                                       this.context,
                                       MaterialPageRoute(
                                           builder: (context) =>
@@ -422,7 +456,8 @@ class _FieldReportingState extends State<FieldReporting>
                               ScaffoldMessenger.of(context)
                                   .showSnackBar(
                                 SnackBar(
-                                    content: Text('Error: $error')),
+                                    content:
+                                    Text('Error: $error')),
                               );
                             } finally {
                               setState(() {
@@ -430,7 +465,8 @@ class _FieldReportingState extends State<FieldReporting>
                               });
                             }
                           },
-                          child: const Text("Submit",
+                          child: const Text(
+                            "Submit",
                             style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 17,
@@ -448,6 +484,222 @@ class _FieldReportingState extends State<FieldReporting>
       }
     }
   }
+
+  // Future<void> onInButtonPressed() async {
+  //   bool isConnected = await checkInternetConnection();
+  //   if (!isConnected) return;
+  //   final ImagePicker picker = ImagePicker();
+  //   final XFile? patrollingImage = await picker.pickImage(
+  //     source: ImageSource.camera,
+  //     maxWidth: 1920,
+  //     maxHeight: 1080,
+  //     // imageQuality: 20,
+  //   );
+  //
+  //   if (patrollingImage != null) {
+  //     final File image = File(patrollingImage.path);
+  //
+  //     final List<int>? compressedBytes = await FlutterImageCompress.compressWithFile(
+  //       image.absolute.path,
+  //       minWidth: 400,
+  //       minHeight: 400,
+  //       quality: 70, // Adjust compression quality
+  //     );
+  //
+  //     if (compressedBytes != null) {
+  //       final String base64Image = base64Encode(compressedBytes);
+  //
+  //       showDialog(
+  //         context: context,
+  //         builder: (BuildContext context) {
+  //           return StatefulBuilder(
+  //             builder: (BuildContext context, StateSetter setState) {
+  //               return AlertDialog(
+  //                 title: const Center(child: Text("Mark Patrolling")),
+  //                 content: SizedBox(
+  //                   width: 800,
+  //                   child: SingleChildScrollView(
+  //                     child: Column(
+  //                       mainAxisSize: MainAxisSize.min,
+  //                       children: [
+  //                         Image.file(
+  //                           image,
+  //                           height: 125,
+  //                           width: 125,
+  //                         ),
+  //                         const SizedBox(height: 3),
+  //                         TextField(
+  //                           maxLines: 1,
+  //                           decoration: const InputDecoration(
+  //                             hintText: "Enter comment",
+  //                             border: OutlineInputBorder(),
+  //                           ),
+  //                           onChanged: (value) {
+  //                             dutyInRemark = value;
+  //                           },
+  //                         ),
+  //                       ],
+  //                     ),
+  //                   ),
+  //                 ),
+  //                 actions: [
+  //                   Row(
+  //                     mainAxisAlignment: MainAxisAlignment.spaceAround,
+  //                     children: [
+  //                       ElevatedButton(
+  //                         style: ElevatedButton.styleFrom(
+  //                           backgroundColor: Colors.red,
+  //                           foregroundColor: Colors.white,
+  //                           padding: const EdgeInsets.symmetric(
+  //                               horizontal: 20, vertical: 10),
+  //                           shape: RoundedRectangleBorder(
+  //                             borderRadius: BorderRadius.zero,
+  //                           ),
+  //                           elevation: 5,
+  //                         ),
+  //                         onPressed: () => Navigator.of(context).pop(),
+  //                         child: const Text("Close",
+  //                           style: TextStyle(
+  //                               color: Colors.white,
+  //                               fontSize: 17,
+  //                               fontWeight: FontWeight.w500),
+  //                         ),
+  //                       ),
+  //
+  //                       isLoading
+  //                           ? const CircularProgressIndicator()
+  //                           : ElevatedButton(
+  //                         style: ElevatedButton.styleFrom(
+  //                           backgroundColor: Colors.green,
+  //                           foregroundColor: Colors.white,
+  //                           padding: const EdgeInsets.symmetric(
+  //                               horizontal: 20, vertical: 10),
+  //                           shape: RoundedRectangleBorder(
+  //                             borderRadius: BorderRadius.zero,
+  //                           ),
+  //                           elevation: 5,
+  //                         ),
+  //
+  //                         onPressed: isLoading
+  //                             ? null
+  //                             : () async {
+  //                           setState(() {
+  //                             isLoading = true;
+  //                           });
+  //                           try {
+  //                             await _loadCurrentDateTime();
+  //                             punchTimeDateIn = timeDateDisplay;
+  //                             await _savePunchTimeDateInToSP(punchTimeDateIn!);
+  //                             await _saveImageToSP(patrollingImage.path);
+  //                             uniqueIdv4 = const Uuid().v4();
+  //
+  //                             String? token = await sessionManager.getToken();
+  //                             MarkFieldReportingViewModel markFieldReportingViewModel = MarkFieldReportingViewModel();
+  //                             final String deviceDetails = await Utils.getDeviceDetails(context);
+  //                             final String appVersion = await Utils.getAppVersion();
+  //                             final String ipAddress = await Utils.getIpAddress();
+  //                             final String uniqueId = await Utils.getUniqueID();
+  //                             final int battery = await Utils.getBatteryLevel();
+  //
+  //                             String formatDate(String dateString) {
+  //                               DateFormat inputFormat = DateFormat("dd/MM/yyyy hh:mm a");
+  //                               DateTime dateTime = inputFormat.parse(dateString);
+  //                               DateFormat outputFormat = DateFormat("yyyy-MM-dd HH:mm");
+  //                               return outputFormat.format(dateTime);
+  //                             }
+  //
+  //                             String formattedDateTimeIn = formatDate(punchTimeDateIn!);
+  //
+  //                             Map<String, dynamic> response = await markFieldReportingViewModel.markFieldReporting(
+  //                               token!,
+  //                               MarkFieldReportingModel(
+  //                                 deviceDetails: deviceDetails,
+  //                                 deviceImei: uniqueId,
+  //                                 deviceIp: ipAddress,
+  //                                 userPhoto: base64Image,
+  //                                 remark: '$dutyInRemark',
+  //                                 isOffline: 'false',
+  //                                 version: appVersion,
+  //                                 dataStatus: '',
+  //                                 checkInId: uniqueIdv4,
+  //                                 punchAction: 'IN',
+  //                                 locationAccuracy: formattedAccuracyValue,
+  //                                 locationSpeed: formattedSpeedValue,
+  //                                 batteryStatus: '$battery',
+  //                                 locationStatus: 'true',
+  //                                 time: formattedDateTimeIn,
+  //                                 latLong: formattedLatLng,
+  //                                 kmsDriven: '0',
+  //                                 siteId: '',
+  //                                 locationId: '',
+  //                                 distance: '',
+  //                               ),
+  //                             );
+  //
+  //                             if (response['code'] == 200) {
+  //                               Navigator.of(context).pop();
+  //
+  //                               QuickAlert.show(
+  //                                 barrierDismissible: false,
+  //                                 confirmBtnText: 'OK',
+  //                                 confirmBtnTextStyle: TextStyle(
+  //                                     fontWeight: FontWeight.bold,
+  //                                     color: Colors.white,
+  //                                     fontSize: 20
+  //                                 ),
+  //                                 context: context,
+  //                                 type: QuickAlertType.success,
+  //                                 text: '${response['status']}',
+  //                                 onConfirmBtnTap: () {
+  //                                   Navigator.pushAndRemoveUntil(
+  //                                     this.context,
+  //                                     MaterialPageRoute(
+  //                                         builder: (context) =>
+  //                                             HomePage()),
+  //                                         (route) => false,
+  //                                   );
+  //                                 },
+  //                               );
+  //
+  //                               _loadPunchInImageFromSP();
+  //                             } else {
+  //                               ScaffoldMessenger.of(context)
+  //                                   .showSnackBar(
+  //                                 SnackBar(
+  //                                     content: Text(
+  //                                         'Error: ${response['status']}')),
+  //                               );
+  //                             }
+  //                           } catch (error) {
+  //                             ScaffoldMessenger.of(context)
+  //                                 .showSnackBar(
+  //                               SnackBar(
+  //                                   content: Text('Error: $error')),
+  //                             );
+  //                           } finally {
+  //                             setState(() {
+  //                               isLoading = false;
+  //                             });
+  //                           }
+  //                         },
+  //                         child: const Text("Submit",
+  //                           style: TextStyle(
+  //                               color: Colors.white,
+  //                               fontSize: 17,
+  //                               fontWeight: FontWeight.w500),
+  //                         ),
+  //                       ),
+  //                     ],
+  //                   ),
+  //                 ],
+  //               );
+  //             },
+  //           );
+  //         },
+  //       );
+  //     }
+  //   }
+  // }
 
   Future<void> refreshGetFieldReportingData() async {
     await fetchGetFieldReportingData();

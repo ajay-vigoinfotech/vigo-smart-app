@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:quickalert/models/quickalert_type.dart';
@@ -478,7 +477,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
       source: ImageSource.camera,
       maxWidth: 1920,
       maxHeight: 1080,
-      imageQuality: 1,
+      // imageQuality: 1,
     );
 
     // if (markInImage != null) {
@@ -509,7 +508,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
         );
 
         final Uint8List compressedBytes = Uint8List.fromList(
-          img.encodeJpg(resizedImage, quality: 20),
+          img.encodeJpg(resizedImage, quality: 30),
         );
 
         final String base64Image = base64Encode(compressedBytes);
@@ -798,7 +797,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
         );
 
         final Uint8List compressedBytes = Uint8List.fromList(
-          img.encodeJpg(resizedImage, quality: 20),
+          img.encodeJpg(resizedImage, quality: 30),
         );
 
         final String base64Image = base64Encode(compressedBytes);
