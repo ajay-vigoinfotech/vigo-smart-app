@@ -472,6 +472,8 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     final ImagePicker picker = ImagePicker();
     final XFile? markInImage = await picker.pickImage(
       source: ImageSource.camera,
+      maxWidth: 1920,
+      maxHeight: 1080,
       imageQuality: 1,
     );
 
@@ -740,6 +742,8 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
     final ImagePicker picker = ImagePicker();
     final XFile? markOutImage = await picker.pickImage(
       source: ImageSource.camera,
+      maxWidth: 1920,
+      maxHeight: 1080,
       imageQuality: 1,
     );
 
