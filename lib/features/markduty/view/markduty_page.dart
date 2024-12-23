@@ -482,7 +482,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
         image.absolute.path,
         minWidth: 400,
         minHeight: 400,
-        quality: 1,
+        quality: 10,
       );
 
       if (compressedBytes != null) {
@@ -750,7 +750,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
         markOutImage.path,
         minWidth: 400,
         minHeight: 400,
-        quality: 1,
+        quality: 10,
       );
 
       if (compressedImageBytes != null) {
