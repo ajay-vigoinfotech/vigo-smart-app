@@ -94,7 +94,7 @@ class _SiteReportingStep2State extends State<SiteReportingStep2> {
                 controller: searchController,
                 onChanged: filterActivity,
                 decoration: InputDecoration(
-                  hintText: "Search Employee",
+                  hintText: "Search here",
                   prefixIcon: const Icon(Icons.search),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),

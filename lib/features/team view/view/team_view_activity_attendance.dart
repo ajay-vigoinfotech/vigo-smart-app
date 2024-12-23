@@ -28,7 +28,7 @@ class _TeamViewActivityAttendanceState
   @override
   void initState() {
     super.initState();
-    checkInternetConnection();
+    _checkInternetConnection();
     filteredData = teamActivityAttendanceCountData;
     fetchTeamActivityAttendanceCountData();
   }
@@ -141,9 +141,10 @@ class _TeamViewActivityAttendanceState
     });
   }
 
-  Future<bool> checkInternetConnection() async {
+  Future<bool> _checkInternetConnection() async {
     var connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult.contains(ConnectivityResult.none)) {
+      // Show dialog to ask user to turn on internet connection
       showCupertinoDialog(
         context: context,
         builder: (context) => CupertinoAlertDialog(
@@ -152,7 +153,10 @@ class _TeamViewActivityAttendanceState
           const Text("Please turn on the internet connection to proceed."),
           actions: [
             CupertinoDialogAction(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pop(context);
+              },
               child: const Text("OK"),
             ),
           ],

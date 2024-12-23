@@ -1,3 +1,5 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:vigo_smart_app/features/site%20reporting/view/previous_site_reporting_list.dart';
@@ -28,8 +30,12 @@ class _TeamViewActivitySiteReportListState
   @override
   void initState() {
     fetchTeamViewActivitySiteReportListData();
+    checkInternetConnection();
     super.initState();
   }
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -275,5 +281,32 @@ class _TeamViewActivitySiteReportListState
         }).toList();
       });
     }
+  }
+
+
+  Future<bool> checkInternetConnection() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+      // Show dialog to ask user to turn on internet connection
+      showCupertinoDialog(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: const Text("No Internet Connection"),
+          content:
+          const Text("Please turn on the internet connection to proceed."),
+          actions: [
+            CupertinoDialogAction(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pop(context);
+              },
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+      return false;
+    }
+    return true;
   }
 }

@@ -102,7 +102,7 @@ class _HomePageState extends State<HomePage> {
     },
     {
       'code': 'CalendarViewApp',
-      'icon':  Image.asset('assets/images/ic_calender_attendance.webp'),
+      'icon': Image.asset('assets/images/ic_calender_attendance.webp'),
       'name': Strings.calendarViewApp,
       'color': Pallete.backgroundColor,
       'page': const CalendarView(),
@@ -133,7 +133,9 @@ class _HomePageState extends State<HomePage> {
       'icon': Image.asset('assets/images/site_reporting.webp'),
       'name': Strings.siteReportingApp,
       'color': Pallete.backgroundColor,
-      'page': const SiteReporting(searchText: '',),
+      'page': const SiteReporting(
+        searchText: '',
+      ),
     },
     {
       'code': 'SiteReportingQRApp',
@@ -199,7 +201,6 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _loadAppName();
-
     refreshServerData();
     getUserData();
     getModules();
@@ -230,22 +231,49 @@ class _HomePageState extends State<HomePage> {
     return Drawer(
       child: ListView(
         children: [
-          UserAccountsDrawerHeader(
-            accountName: Text('$employeeCode'),
-            accountEmail: Text("$name"),
-            currentAccountPicture: CircleAvatar(
-              backgroundImage: newUserProfilePic != "-"
-                  ? NetworkImage(newUserProfilePic!)
-                  : const AssetImage("assets/images/place_holder.webp")
-                      as ImageProvider,
-              onBackgroundImageError: (error, stackTrace) {
-                debugPrint("Failed to load profile picture: $error");
-              },
+          Center(
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(8.0),
+              color: Colors.purple.shade50,
+              child: Column(
+                // crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircleAvatar(
+                    radius: 50,
+                    backgroundImage: newUserProfilePic != "-"
+                        ? NetworkImage(newUserProfilePic!)
+                        : const AssetImage("assets/images/place_holder.webp")
+                            as ImageProvider,
+                    onBackgroundImageError: (error, stackTrace) {
+                      debugPrint("Failed to load profile picture: $error");
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '$employeeCode',
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '$name',
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           ...filteredModules.map((module) {
             return ListTile(
-              title: Text(module['name']),
+              title: Text(module['name'], style: TextStyle(fontWeight: FontWeight.w500),),
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
@@ -600,7 +628,7 @@ class _HomePageState extends State<HomePage> {
   //     ),
   //   );
   // }
-
+  //
   // Future<void> _refreshData() async {
   //   await getLastSelfieAtt();
   //   await getUserData();
@@ -642,7 +670,7 @@ class _HomePageState extends State<HomePage> {
                 ), // Corrected syntax
                 title: const Text('Settings'),
                 onTap: () {
-                  Navigator.push(
+                  Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
                       builder: (context) => const SettingPage(),
@@ -871,11 +899,12 @@ class _HomePageState extends State<HomePage> {
           compName = data.compName ?? "-";
           helplineNo = data.helplineNo ?? "-";
           helpLineWhatsapp = data.helpLineWhatsapp ?? "-";
-          userProfilePic = data.userProfilePic!.substring(2);
+          userProfilePic = data.userProfilePic!.substring(1);
 
-          newUserProfilePic = data.userProfilePic != null
-              ? "${AppConstants.baseUrl}${data.userProfilePic}"
+          newUserProfilePic = userProfilePic != null
+              ? "${AppConstants.baseUrl}${userProfilePic}"
               : "-";
+          debugPrint('$newUserProfilePic');
         });
       } else {
         debugPrint('No Token Found');

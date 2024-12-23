@@ -42,7 +42,7 @@ class _PunchHistoryState extends State<PunchHistory> {
               controller: searchController,
               onChanged: filterSearchResults,
               decoration: InputDecoration(
-                hintText: "Search Employee",
+                hintText: "Search here",
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),

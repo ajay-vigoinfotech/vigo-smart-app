@@ -42,7 +42,7 @@ class _SiteReportingDetailsState extends State<SiteReportingDetails> {
               controller: searchController,
               onChanged: filterSearchResults,
               decoration: InputDecoration(
-                hintText: "Search Employee",
+                hintText: "Search here",
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8.0),
@@ -103,15 +103,19 @@ class _SiteReportingDetailsState extends State<SiteReportingDetails> {
   Future<bool> checkInternetConnection() async {
     var connectivityResult = await Connectivity().checkConnectivity();
     if (connectivityResult.contains(ConnectivityResult.none)) {
+      // Show dialog to ask user to turn on internet connection
       showCupertinoDialog(
         context: context,
         builder: (context) => CupertinoAlertDialog(
           title: const Text("No Internet Connection"),
           content:
-              const Text("Please turn on the internet connection to proceed."),
+          const Text("Please turn on the internet connection to proceed."),
           actions: [
             CupertinoDialogAction(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pop(context);
+              },
               child: const Text("OK"),
             ),
           ],
