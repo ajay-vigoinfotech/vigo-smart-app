@@ -64,7 +64,6 @@ dependencies:
   app_settings: ^5.1.1
   open_settings_plus: ^0.4.0
   path_provider: ^2.1.4
-  flutter_image_compress: ^2.3.0
   font_awesome_flutter: ^10.7.0
   flutter_svg: ^2.0.10+1
   awesome_dialog: ^3.2.1
@@ -76,6 +75,7 @@ dependencies:
   easy_date_timeline: ^2.0.4
   image_cropper: ^8.1.0
   syncfusion_flutter_signaturepad: ^28.1.33
+  flutter_image_compress: ^2.3.0
 
 dev_dependencies:
   flutter_test:
