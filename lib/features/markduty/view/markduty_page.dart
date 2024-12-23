@@ -21,6 +21,10 @@ import '../viewmodel/get_current_date_view_model.dart';
 import '../viewmodel/mark_selfie_view_model.dart';
 import '../widgets/map_page.dart';
 
+import 'dart:typed_data';
+import 'package:image/image.dart' as img;
+
+
 class MarkdutyPage extends StatefulWidget {
   const MarkdutyPage({super.key});
 
@@ -477,18 +481,37 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
       imageQuality: 1,
     );
 
+    // if (markInImage != null) {
+    //   final File image = File(markInImage.path);
+    //
+    //
+    //   final List<int>? compressedBytes = await FlutterImageCompress.compressWithFile(
+    //     image.absolute.path,
+    //     minWidth: 400,
+    //     minHeight: 400,
+    //     quality: 10,
+    //   );
+    //
+    //   if (compressedBytes != null) {
+    //     final String base64Image = base64Encode(compressedBytes);
+    //     final base64InImage = base64Image;
+
     if (markInImage != null) {
       final File image = File(markInImage.path);
 
+      // Compress the image using the `image` package
+      final img.Image? originalImage = img.decodeImage(image.readAsBytesSync());
+      if (originalImage != null) {
+        final img.Image resizedImage = img.copyResize(
+          originalImage,
+          width: 400,
+          height: 400,
+        );
 
-      final List<int>? compressedBytes = await FlutterImageCompress.compressWithFile(
-        image.absolute.path,
-        minWidth: 400,
-        minHeight: 400,
-        quality: 10,
-      );
+        final Uint8List compressedBytes = Uint8List.fromList(
+          img.encodeJpg(resizedImage, quality: 20),
+        );
 
-      if (compressedBytes != null) {
         final String base64Image = base64Encode(compressedBytes);
         final base64InImage = base64Image;
 
@@ -749,17 +772,36 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
       imageQuality: 1,
     );
 
+    // if (markOutImage != null) {
+    //   final File image = File(markOutImage.path);
+    //   final compressedImageBytes = await FlutterImageCompress.compressWithFile(
+    //     markOutImage.path,
+    //     minWidth: 400,
+    //     minHeight: 400,
+    //     quality: 10,
+    //   );
+    //
+    //   if (compressedImageBytes != null) {
+    //     final String base64Image = base64Encode(compressedImageBytes);
+    //     final base64OutImage = base64Image;
+
     if (markOutImage != null) {
       final File image = File(markOutImage.path);
-      final compressedImageBytes = await FlutterImageCompress.compressWithFile(
-        markOutImage.path,
-        minWidth: 400,
-        minHeight: 400,
-        quality: 10,
-      );
 
-      if (compressedImageBytes != null) {
-        final String base64Image = base64Encode(compressedImageBytes);
+      // Compress the image using the `image` package
+      final img.Image? originalImage = img.decodeImage(image.readAsBytesSync());
+      if (originalImage != null) {
+        final img.Image resizedImage = img.copyResize(
+          originalImage,
+          width: 400,
+          height: 400,
+        );
+
+        final Uint8List compressedBytes = Uint8List.fromList(
+          img.encodeJpg(resizedImage, quality: 20),
+        );
+
+        final String base64Image = base64Encode(compressedBytes);
         final base64OutImage = base64Image;
 
         bool isLoading = false;
