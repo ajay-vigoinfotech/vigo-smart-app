@@ -479,6 +479,8 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
 
     if (markInImage != null) {
       final File image = File(markInImage.path);
+
+
       final List<int>? compressedBytes = await FlutterImageCompress.compressWithFile(
         image.absolute.path,
         minWidth: 400,
