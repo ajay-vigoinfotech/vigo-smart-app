@@ -23,7 +23,6 @@ import '../widgets/map_page.dart';
 import 'dart:typed_data';
 import 'package:image/image.dart' as img;
 
-
 class MarkdutyPage extends StatefulWidget {
   const MarkdutyPage({super.key});
 
@@ -52,6 +51,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   String _inKmError = '';
 
   bool isLoading = false;
+  bool isCancelDisabled = false;
 
   String? formattedDateTime;
   String? deviceDetails;
@@ -93,7 +93,8 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
   final picker = ImagePicker();
   final SessionManager sessionManager = SessionManager();
   final MarkSelfieAttendance markSelfieAttendance = MarkSelfieAttendance();
-  final GetLastSelfieAttViewModel getLastSelfieAttViewModel = GetLastSelfieAttViewModel();
+  final GetLastSelfieAttViewModel getLastSelfieAttViewModel =
+      GetLastSelfieAttViewModel();
 
   @override
   void initState() {
@@ -477,7 +478,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
       source: ImageSource.camera,
       maxWidth: 1920,
       maxHeight: 1080,
-      // imageQuality: 1,
+      imageQuality: 1,
     );
 
     // if (markInImage != null) {
@@ -508,7 +509,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
         );
 
         final Uint8List compressedBytes = Uint8List.fromList(
-          img.encodeJpg(resizedImage, quality: 30),
+          img.encodeJpg(resizedImage, quality: 50),
         );
 
         final String base64Image = base64Encode(compressedBytes);
@@ -525,7 +526,11 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
               builder: (context, setState) {
                 final screenWidth = MediaQuery.of(context).size.width;
                 return AlertDialog(
-                  title: Center(child: const Text("Mark In Details", style: TextStyle(fontWeight: FontWeight.w600),)),
+                  title: Center(
+                      child: const Text(
+                    "Mark In Details",
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  )),
                   content: SizedBox(
                     width: screenWidth < 600 ? screenWidth * 0.9 : 400,
                     child: SingleChildScrollView(
@@ -577,9 +582,11 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                             ),
                             elevation: 5,
                           ),
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
+                          onPressed: isCancelDisabled
+                              ? null
+                              : () {
+                                  Navigator.of(context).pop();
+                                },
                           child: const Text(
                             "Cancel",
                             style: TextStyle(
@@ -612,6 +619,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                                   if (inKm != null && inKm!.isNotEmpty) {
                                     setState(() {
                                       isLoading = true;
+                                      isCancelDisabled = true;
                                     });
 
                                     await _loadCurrentDateTime();
@@ -797,7 +805,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
         );
 
         final Uint8List compressedBytes = Uint8List.fromList(
-          img.encodeJpg(resizedImage, quality: 30),
+          img.encodeJpg(resizedImage, quality: 50),
         );
 
         final String base64Image = base64Encode(compressedBytes);
@@ -866,7 +874,9 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                             ),
                             elevation: 5,
                           ),
-                          onPressed: () {
+                          onPressed: isCancelDisabled
+                              ? null
+                              : () {
                             Navigator.of(context).pop();
                           },
                           child: const Text(
@@ -916,6 +926,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                                   setState(() {
                                     isLoading = true;
                                     outKmText = "$outKm KM";
+                                    isCancelDisabled = true;
                                   });
 
                                   if (outKm != null && outKm!.isNotEmpty) {
@@ -1015,8 +1026,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                                         confirmBtnTextStyle: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             color: Colors.white,
-                                            fontSize: 20
-                                        ),
+                                            fontSize: 20),
                                         text: '${response['status']}',
                                         onConfirmBtnTap: () {
                                           Navigator.pushAndRemoveUntil(

@@ -34,7 +34,8 @@ class FieldReporting extends StatefulWidget {
 class _FieldReportingState extends State<FieldReporting>
     with SingleTickerProviderStateMixin {
   SessionManager sessionManager = SessionManager();
-  GetFieldReportingViewModel getFieldReportingViewModel = GetFieldReportingViewModel();
+  GetFieldReportingViewModel getFieldReportingViewModel =
+      GetFieldReportingViewModel();
   List<Map<String, dynamic>> getFieldReportingData = [];
   List<Map<String, dynamic>> filteredData = [];
   TextEditingController searchController = TextEditingController();
@@ -50,6 +51,7 @@ class _FieldReportingState extends State<FieldReporting>
   String? inKm;
 
   bool isLoading = false;
+  bool isCancelDisabled = false;
 
   late TabController _tabController;
 
@@ -239,7 +241,6 @@ class _FieldReportingState extends State<FieldReporting>
     );
   }
 
-
   Future<void> onInButtonPressed() async {
     bool isConnected = await checkInternetConnection();
     if (!isConnected) return;
@@ -264,7 +265,7 @@ class _FieldReportingState extends State<FieldReporting>
         );
 
         final Uint8List compressedBytes = Uint8List.fromList(
-          img.encodeJpg(resizedImage, quality: 40),
+          img.encodeJpg(resizedImage, quality: 50),
         );
 
         // Convert the compressed image to Base64
@@ -318,7 +319,11 @@ class _FieldReportingState extends State<FieldReporting>
                             ),
                             elevation: 5,
                           ),
-                          onPressed: () => Navigator.of(context).pop(),
+                          onPressed: isCancelDisabled
+                              ? null
+                              : () {
+                                  Navigator.of(context).pop();
+                                },
                           child: const Text(
                             "Close",
                             style: TextStyle(
@@ -330,149 +335,146 @@ class _FieldReportingState extends State<FieldReporting>
                         isLoading
                             ? const CircularProgressIndicator()
                             : ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 10),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.zero,
-                            ),
-                            elevation: 5,
-                          ),
-                          onPressed: isLoading
-                              ? null
-                              : () async {
-                            setState(() {
-                              isLoading = true;
-                            });
-                            try {
-                              await _loadCurrentDateTime();
-                              punchTimeDateIn = timeDateDisplay;
-                              await _savePunchTimeDateInToSP(
-                                  punchTimeDateIn!);
-                              await _saveImageToSP(
-                                  patrollingImage.path);
-                              uniqueIdv4 = const Uuid().v4();
-
-                              String? token =
-                              await sessionManager.getToken();
-                              MarkFieldReportingViewModel
-                              markFieldReportingViewModel =
-                              MarkFieldReportingViewModel();
-                              final String deviceDetails =
-                              await Utils.getDeviceDetails(
-                                  context);
-                              final String appVersion =
-                              await Utils.getAppVersion();
-                              final String ipAddress =
-                              await Utils.getIpAddress();
-                              final String uniqueId =
-                              await Utils.getUniqueID();
-                              final int battery =
-                              await Utils.getBatteryLevel();
-
-                              String formatDate(String dateString) {
-                                DateFormat inputFormat =
-                                DateFormat("dd/MM/yyyy hh:mm a");
-                                DateTime dateTime =
-                                inputFormat.parse(dateString);
-                                DateFormat outputFormat =
-                                DateFormat("yyyy-MM-dd HH:mm");
-                                return outputFormat
-                                    .format(dateTime);
-                              }
-
-                              String formattedDateTimeIn =
-                              formatDate(punchTimeDateIn!);
-
-                              Map<String, dynamic> response =
-                              await markFieldReportingViewModel
-                                  .markFieldReporting(
-                                token!,
-                                MarkFieldReportingModel(
-                                  deviceDetails: deviceDetails,
-                                  deviceImei: uniqueId,
-                                  deviceIp: ipAddress,
-                                  userPhoto: base64Image,
-                                  remark: '$dutyInRemark',
-                                  isOffline: 'false',
-                                  version: appVersion,
-                                  dataStatus: '',
-                                  checkInId: uniqueIdv4,
-                                  punchAction: 'IN',
-                                  locationAccuracy:
-                                  formattedAccuracyValue,
-                                  locationSpeed:
-                                  formattedSpeedValue,
-                                  batteryStatus: '$battery',
-                                  locationStatus: 'true',
-                                  time: formattedDateTimeIn,
-                                  latLong: formattedLatLng,
-                                  kmsDriven: '0',
-                                  siteId: '',
-                                  locationId: '',
-                                  distance: '',
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 10),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.zero,
+                                  ),
+                                  elevation: 5,
                                 ),
-                              );
+                                onPressed: isLoading
+                                    ? null
+                                    : () async {
+                                        setState(() {
+                                          isLoading = true;
+                                          isCancelDisabled = true;
+                                        });
+                                        try {
+                                          await _loadCurrentDateTime();
+                                          punchTimeDateIn = timeDateDisplay;
+                                          await _savePunchTimeDateInToSP(
+                                              punchTimeDateIn!);
+                                          await _saveImageToSP(
+                                              patrollingImage.path);
+                                          uniqueIdv4 = const Uuid().v4();
 
-                              if (response['code'] == 200) {
-                                Navigator.of(context).pop();
+                                          String? token =
+                                              await sessionManager.getToken();
+                                          MarkFieldReportingViewModel
+                                              markFieldReportingViewModel =
+                                              MarkFieldReportingViewModel();
+                                          final String deviceDetails =
+                                              await Utils.getDeviceDetails(
+                                                  context);
+                                          final String appVersion =
+                                              await Utils.getAppVersion();
+                                          final String ipAddress =
+                                              await Utils.getIpAddress();
+                                          final String uniqueId =
+                                              await Utils.getUniqueID();
+                                          final int battery =
+                                              await Utils.getBatteryLevel();
 
-                                QuickAlert.show(
-                                  barrierDismissible: false,
-                                  confirmBtnText: 'OK',
-                                  confirmBtnTextStyle:
-                                  TextStyle(
-                                      fontWeight:
-                                      FontWeight.bold,
+                                          String formatDate(String dateString) {
+                                            DateFormat inputFormat = DateFormat(
+                                                "dd/MM/yyyy hh:mm a");
+                                            DateTime dateTime =
+                                                inputFormat.parse(dateString);
+                                            DateFormat outputFormat =
+                                                DateFormat("yyyy-MM-dd HH:mm");
+                                            return outputFormat
+                                                .format(dateTime);
+                                          }
+
+                                          String formattedDateTimeIn =
+                                              formatDate(punchTimeDateIn!);
+
+                                          Map<String, dynamic> response =
+                                              await markFieldReportingViewModel
+                                                  .markFieldReporting(
+                                            token!,
+                                            MarkFieldReportingModel(
+                                              deviceDetails: deviceDetails,
+                                              deviceImei: uniqueId,
+                                              deviceIp: ipAddress,
+                                              userPhoto: base64Image,
+                                              remark: '$dutyInRemark',
+                                              isOffline: 'false',
+                                              version: appVersion,
+                                              dataStatus: '',
+                                              checkInId: uniqueIdv4,
+                                              punchAction: 'IN',
+                                              locationAccuracy:
+                                                  formattedAccuracyValue,
+                                              locationSpeed:
+                                                  formattedSpeedValue,
+                                              batteryStatus: '$battery',
+                                              locationStatus: 'true',
+                                              time: formattedDateTimeIn,
+                                              latLong: formattedLatLng,
+                                              kmsDriven: '0',
+                                              siteId: '',
+                                              locationId: '',
+                                              distance: '',
+                                            ),
+                                          );
+
+                                          if (response['code'] == 200) {
+                                            Navigator.of(context).pop();
+
+                                            QuickAlert.show(
+                                              barrierDismissible: false,
+                                              confirmBtnText: 'OK',
+                                              confirmBtnTextStyle: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                  fontSize: 20),
+                                              context: context,
+                                              type: QuickAlertType.success,
+                                              text: '${response['status']}',
+                                              onConfirmBtnTap: () {
+                                                Navigator.pushAndRemoveUntil(
+                                                  this.context,
+                                                  MaterialPageRoute(
+                                                      builder: (context) =>
+                                                          HomePage()),
+                                                  (route) => false,
+                                                );
+                                              },
+                                            );
+
+                                            _loadPunchInImageFromSP();
+                                          } else {
+                                            ScaffoldMessenger.of(context)
+                                                .showSnackBar(
+                                              SnackBar(
+                                                  content: Text(
+                                                      'Error: ${response['status']}')),
+                                            );
+                                          }
+                                        } catch (error) {
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                                content: Text('Error: $error')),
+                                          );
+                                        } finally {
+                                          setState(() {
+                                            isLoading = false;
+                                          });
+                                        }
+                                      },
+                                child: const Text(
+                                  "Submit",
+                                  style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 20),
-                                  context: context,
-                                  type: QuickAlertType.success,
-                                  text: '${response['status']}',
-                                  onConfirmBtnTap: () {
-                                    Navigator
-                                        .pushAndRemoveUntil(
-                                      this.context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              HomePage()),
-                                          (route) => false,
-                                    );
-                                  },
-                                );
-
-                                _loadPunchInImageFromSP();
-                              } else {
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(
-                                  SnackBar(
-                                      content: Text(
-                                          'Error: ${response['status']}')),
-                                );
-                              }
-                            } catch (error) {
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(
-                                SnackBar(
-                                    content:
-                                    Text('Error: $error')),
-                              );
-                            } finally {
-                              setState(() {
-                                isLoading = false;
-                              });
-                            }
-                          },
-                          child: const Text(
-                            "Submit",
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 17,
-                                fontWeight: FontWeight.w500),
-                          ),
-                        ),
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                              ),
                       ],
                     ),
                   ],
@@ -778,7 +780,8 @@ class _FieldReportingState extends State<FieldReporting>
       child: MapPage(
         locationReceived: _onLocationReceived,
         speedReceived: _onSpeedReceived,
-        accuracyReceived: _onAccuracyReceived, isMapVisible: true,
+        accuracyReceived: _onAccuracyReceived,
+        isMapVisible: true,
       ),
     );
   }
@@ -938,13 +941,13 @@ class _FieldReportingState extends State<FieldReporting>
         builder: (context) => CupertinoAlertDialog(
           title: const Text("No Internet Connection"),
           content:
-          const Text("Please turn on the internet connection to proceed."),
+              const Text("Please turn on the internet connection to proceed."),
           actions: [
             CupertinoDialogAction(
               onPressed: () => Navigator.pushAndRemoveUntil(
                 this.context,
                 MaterialPageRoute(builder: (context) => HomePage()),
-                    (route) => false,
+                (route) => false,
               ),
               // Navigator.of(context).pop(),
               child: const Text("OK"),

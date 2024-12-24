@@ -64,6 +64,37 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
   String _base64AssetImage3 = '';
   String _base64AssetImage4 = '';
 
+  String? formattedDateTime;
+  String? deviceDetails;
+  String? appVersion;
+  String? ipAddress;
+  String? uniqueId;
+  String? battery;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    final String currentDateTime = Utils.getCurrentFormattedDateTime();
+    final String deviceInfo = await Utils.getDeviceDetails(context);
+    final String version = await Utils.getAppVersion();
+    final String ip = await Utils.getIpAddress();
+    final String uniqueID = await Utils.getUniqueID();
+    final int batteryStatus = await Utils.getBatteryLevel();
+
+    setState(() {
+      formattedDateTime = currentDateTime;
+      deviceDetails = deviceInfo;
+      appVersion = version;
+      ipAddress = ip;
+      uniqueId = uniqueID;
+      battery = '$batteryStatus%';
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -87,8 +118,8 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
       if (originalImage != null) {
         final img.Image resizedImage = img.copyResize(
           originalImage,
-          width: 100,
-          height: 100,
+          width: 450,
+          height: 450,
         );
 
         final Uint8List compressedImage = Uint8List.fromList(
@@ -126,7 +157,11 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
   }
 
   // Future<void> _takePhoto(int imageNumber) async {
-  //   final XFile? photo = await _picker.pickImage(source: ImageSource.camera);
+  //   final XFile? photo = await _picker.pickImage(source: ImageSource.camera,
+  //   maxWidth: 1920,
+  //     maxHeight: 1080,
+  //
+  //   );
   //
   //   if (photo != null) {
   //     final selectedFile = File(photo.path);
@@ -134,7 +169,7 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
   //       selectedFile.path,
   //       minWidth: 100,
   //       minHeight: 100,
-  //       quality: 100,
+  //       quality: 50,
   //     );
   //
   //     if (compressedImage != null) {
@@ -265,7 +300,7 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
               ),
             ),
             Text(
-              'Take Selfie',
+              'Take Selfie*',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
             ),
             SizedBox(height: 5),
@@ -282,7 +317,7 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
                 Column(
                   children: [
                     Text(
-                      'Photo 1',
+                      'Photo 1*',
                       style:
                           TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                     ),
@@ -388,7 +423,7 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
                   showDialog(
                     context: context,
                     barrierDismissible: false,
-                    barrierColor: Colors.black,
+                    barrierColor: Colors.black.withAlpha(128),
                     builder: (BuildContext context) {
                       return Center(
                         child: Container(
@@ -426,12 +461,11 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
                   String? token = await sessionManager.getToken();
                   MarkSiteVisitViewModel markSiteVisitViewModel =
                       MarkSiteVisitViewModel();
-                  final String deviceDetails =
-                      await Utils.getDeviceDetails(context);
-                  final String appVersion = await Utils.getAppVersion();
-                  final String ipAddress = await Utils.getIpAddress();
-                  final String uniqueId = await Utils.getUniqueID();
-                  final int battery = await Utils.getBatteryLevel();
+                  // final String deviceDetails = await Utils.getDeviceDetails(context);
+                  // final String appVersion = await Utils.getAppVersion();
+                  // final String ipAddress = await Utils.getIpAddress();
+                  // final String uniqueId = await Utils.getUniqueID();
+                  // final int battery = await Utils.getBatteryLevel();
 
                   String assetImgString = '';
                   if (_base64AssetImage1.isNotEmpty) {
