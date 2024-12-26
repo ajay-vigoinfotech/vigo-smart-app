@@ -86,8 +86,7 @@ class _ApplyLeaveState extends State<ApplyLeave> {
                           builder: (dialogContext, setDialogState) => Container(
                             padding: const EdgeInsets.all(16),
                             constraints: BoxConstraints(
-                              maxHeight:
-                                  MediaQuery.of(context).size.height * 0.6,
+                              maxHeight: MediaQuery.of(context).size.height * 0.6,
                               maxWidth: 500,
                             ),
                             child: Column(
@@ -124,29 +123,20 @@ class _ApplyLeaveState extends State<ApplyLeave> {
                                   child: ListView(
                                     children:
                                         leavesBalanceListData.where((leave) {
-                                      final matchingLeaveName =
-                                          leavesNameListData.firstWhere(
-                                        (leaveName) =>
-                                            leaveName['leaveId'] ==
-                                            leave['leaveId'],
+                                      final matchingLeaveName = leavesNameListData.firstWhere(
+                                        (leaveName) => leaveName['leaveId'] == leave['leaveId'],
                                         orElse: () => <String, String?>{},
                                       );
-                                      final leaveName =
-                                          matchingLeaveName['leaveName'] ?? '';
+                                      final leaveName = matchingLeaveName['leaveName'] ?? '';
                                       return leaveName.toLowerCase().contains(
                                           searchController.text.toLowerCase());
                                     }).map((leave) {
-                                      final matchingLeaveName =
-                                          leavesNameListData.firstWhere(
-                                        (leaveName) =>
-                                            leaveName['leaveId'] ==
-                                            leave['leaveId'],
+                                      final matchingLeaveName = leavesNameListData.firstWhere(
+                                        (leaveName) => leaveName['leaveId'] == leave['leaveId'],
                                         orElse: () => <String, String?>{},
                                       );
-                                      final leaveName =
-                                          matchingLeaveName['leaveName'] ?? '-';
-                                      final totalLeaves =
-                                          leave['totalLeaves'] ?? '0';
+                                      final leaveName = matchingLeaveName['leaveName'] ?? '-';
+                                      final totalLeaves = leave['totalLeaves'] ?? '0';
                                       return ListTile(
                                         title: Text(
                                           '$leaveName ($totalLeaves)',
@@ -155,8 +145,7 @@ class _ApplyLeaveState extends State<ApplyLeave> {
                                         ),
                                         onTap: () {
                                           setState(() {
-                                            selectedLeaveName =
-                                                '$leaveName ($totalLeaves)';
+                                            selectedLeaveName = '$leaveName ($totalLeaves)';
                                             selectedLeaveId = leave['leaveId'];
                                           });
                                           Navigator.pop(context);
@@ -542,8 +531,7 @@ class _ApplyLeaveState extends State<ApplyLeave> {
                       confirmBtnTextStyle: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
-                          fontSize: 20
-                      ),
+                          fontSize: 20),
                       text: message,
                       onConfirmBtnTap: () {
                         Navigator.pushAndRemoveUntil(
@@ -558,10 +546,9 @@ class _ApplyLeaveState extends State<ApplyLeave> {
                       context: context,
                       confirmBtnText: 'OK',
                       confirmBtnTextStyle: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        fontSize: 20
-                      ),
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          fontSize: 20),
                       type: QuickAlertType.warning,
                       text: message,
                       onConfirmBtnTap: () {

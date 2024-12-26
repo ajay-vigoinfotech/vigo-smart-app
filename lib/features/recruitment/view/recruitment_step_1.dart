@@ -8,6 +8,7 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:syncfusion_flutter_signaturepad/signaturepad.dart';
+import 'package:vigo_smart_app/features/recruitment/view%20model/designation_list_view_model.dart';
 import 'package:vigo_smart_app/features/recruitment/widget/custom_text_form_field.dart';
 import 'package:vigo_smart_app/features/recruitment/widget/gender_radio_button.dart';
 import '../view model/site_list_view_model.dart';
@@ -31,15 +32,15 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController dateController = TextEditingController();
 
-  final GlobalKey<SfSignaturePadState> _signaturePadKey =
-      GlobalKey<SfSignaturePadState>();
+  final GlobalKey<SfSignaturePadState> _signaturePadKey = GlobalKey<SfSignaturePadState>();
   bool _isSigned = false;
   late Uint8List _signatureData;
-
 
   // Get Assign Site List
   SiteListViewModel siteListViewModel = SiteListViewModel();
   List<Map<String, dynamic>> siteListData = [];
+  List<Map<String, dynamic>> filterSiteListData = [];
+  String selectedSite = '';
 
   Future<void> fetchSiteListData() async {
     String? token = await siteListViewModel.sessionManager.getToken();
@@ -51,9 +52,71 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
           siteListData = siteListViewModel.assignSiteList!
               .map((entry) => {
                     "siteId": entry.siteId,
+                    "compID": entry.compID,
+                    "clientId": entry.clientId,
+                    "siteName": entry.siteName,
+                    "siteCode": entry.siteCode,
+                    "unitName": entry.unitName,
+                    "clientName": entry.clientName,
                   })
               .toList();
         }
+      });
+      setState(() {
+        filterSiteListData = siteListData;
+      });
+    }
+  }
+
+  void filterSiteListResults(String query) {
+    if (query.isEmpty) {
+      setState(() {
+        filterSiteListData = siteListData;
+      });
+    } else {
+      setState(() {
+        filterSiteListData = siteListData.where((entry) {
+          final siteId = entry['siteId']?.toLowerCase() ?? '';
+          final compID = entry['compID']?.toLowerCase() ?? '';
+          final inRemarks = entry['inRemarks']?.toLowerCase() ?? '';
+          final outRemarks = entry['outRemarks']?.toLowerCase() ?? '';
+          final unitName = entry['unitName']?.toLowerCase() ?? '';
+
+          return siteId.contains(query.toLowerCase()) ||
+              compID.contains(query.toLowerCase()) ||
+              inRemarks.contains(query.toLowerCase()) ||
+              outRemarks.contains(query.toLowerCase()) ||
+              unitName.contains(query.toLowerCase()) ;
+        }).toList();
+      });
+    }
+  }
+
+  // Get Designation List
+  DesignationListViewModel designationListViewModel = DesignationListViewModel();
+  List<Map<String, dynamic>> designationListData = [];
+  List<Map<String, dynamic>> filterDesignationListData = [];
+  String selectedDesignation = '';
+
+  Future<void> fetchDesignationListData() async {
+    String? token = await designationListViewModel.sessionManager.getToken();
+    if (token != null) {
+      await designationListViewModel.fetchAssignDesignationList(token);
+
+      setState(() {
+        if (designationListViewModel.assignDesignationList != null) {
+          designationListData = designationListViewModel.assignDesignationList!
+              .map((entry) => {
+            "designationId": entry.designationId,
+            "designationCode": entry.designationCode,
+            "designationName": entry.designationName,
+
+          })
+              .toList();
+        }
+      });
+      setState(() {
+        filterDesignationListData = designationListData;
       });
     }
   }
@@ -61,6 +124,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
   @override
   void initState() {
     fetchSiteListData();
+    fetchDesignationListData();
     super.initState();
   }
 
@@ -85,477 +149,298 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            Card(
-              color: Colors.white,
-              elevation: 5,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-              child: Theme(
-                data: Theme.of(context)
-                    .copyWith(dividerColor: Colors.transparent),
-                child: ExpansionTile(
-                  key: ValueKey(_expandAll),
-                  initiallyExpanded: _expandAll,
-                  title: Row(
-                    children: [
-                      Text('Aadhaar Details'),
-                    ],
-                  ),
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.all(10.0),
-                      child: Column(
-                        children: [
-                          // Aadhaar Number
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.credit_card,
-                                color: Colors.green,
-                              ),
-                              SizedBox(width: 5),
-                              Expanded(
-                                child: TextFormField(
-                                  maxLength: 12,
-                                  keyboardType: TextInputType.number,
-                                  decoration: InputDecoration(
-                                    contentPadding:
-                                        EdgeInsets.symmetric(horizontal: 10),
-                                    label: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Text('Aadhaar No*'),
-                                    ),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
+            _aadhaarDetails(),
+            _personalDetails(),
+            _personalDocuments(),
+        Card(
+          color: Colors.white,
+          elevation: 5,
+          child: Theme(
+            data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+            child: ExpansionTile(
+              key: ValueKey(_expandAll),
+              initiallyExpanded: _expandAll,
+              title: Text('Deployment Details'),
+              children: <Widget>[
+                _selectSite(),
+                _selectDesignation(),
 
-                          SizedBox(height: 15),
-                          // PAN Number
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Icon(
-                                Icons.credit_card,
-                                color: Colors.green,
-                              ),
-                              SizedBox(width: 10),
-                              Expanded(
-                                child: TextFormField(
-                                  maxLength: 10,
-                                  keyboardType: TextInputType.text,
-                                  textCapitalization:
-                                      TextCapitalization.characters,
-                                  decoration: InputDecoration(
-                                    contentPadding:
-                                        EdgeInsets.symmetric(horizontal: 10),
-                                    label: Padding(
-                                      padding: const EdgeInsets.all(8.0),
-                                      child: Text('PAN No*'),
-                                    ),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                  validator: (value) {
-                                    String pattern = r'^[A-Z]{5}[0-9]{4}[A-Z]$';
-                                    RegExp regex = RegExp(pattern);
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter PAN number';
-                                    } else if (!regex.hasMatch(value)) {
-                                      return 'Please enter a valid PAN number';
-                                    }
-                                    return null;
-                                  },
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.allow(
-                                        RegExp(r'[A-Z0-9]')),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: 20),
-                          // Aadhaar Proof (Front/Back)
-                          Text(
-                            'Aadhaar Proof (Front/Back)',
-                          ),
-                          SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              Column(
-                                children: [
-                                  GestureDetector(
-                                    onTap: () =>
-                                        _selectImage('front'), // Front Image
-                                    child: _aadhaarImageFront.isEmpty
-                                        ? Icon(
-                                            Icons.add_photo_alternate_outlined,
-                                            size: 50,
-                                          )
-                                        : Image.memory(
-                                            base64Decode(_aadhaarImageFront),
-                                            height: 100,
-                                            width: 100,
-                                            fit: BoxFit.cover,
-                                          ),
-                                  ),
-                                  GestureDetector(
-                                    onTap: () => _deleteImage('front'),
-                                    child: Text(
-                                      'Remove',
-                                      style: TextStyle(color: Colors.red),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Column(
-                                children: [
-                                  GestureDetector(
-                                    onTap: () =>
-                                        _selectImage('back'), // Back Image
-                                    child: _aadhaarImageBack.isEmpty
-                                        ? Icon(
-                                            Icons.add_photo_alternate_outlined,
-                                            size: 50,
-                                          )
-                                        : Image.memory(
-                                            base64Decode(_aadhaarImageBack),
-                                            height: 100,
-                                            width: 100,
-                                            fit: BoxFit.cover,
-                                          ),
-                                  ),
-                                  GestureDetector(
-                                    onTap: () => _deleteImage('back'),
-                                    child: Text(
-                                      'Remove',
-                                      style: TextStyle(color: Colors.red),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              ],
             ),
-            Card(
-              color: Colors.white,
-              elevation: 5,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-              child: Theme(
-                data: Theme.of(context)
-                    .copyWith(dividerColor: Colors.transparent),
-                child: ExpansionTile(
-                  key: ValueKey(_expandAll),
-                  initiallyExpanded: _expandAll,
-                  title: Text('Personal Information'),
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        children: [
-                          CustomTextFormField(
-                            icon: Icons.person,
-                            labelText: 'Name (As Per Aadhaar)',
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                  RegExp(r'[a-zA-Z\s]')),
-                            ],
-                          ),
-                          CustomTextFormField(
-                            icon: Icons.person,
-                            labelText: 'Last Name',
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                  RegExp(r'[a-zA-Z\s]')),
-                            ],
-                          ),
-                          CustomTextFormField(
-                            icon: Icons.person,
-                            labelText: "Father's Name",
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                  RegExp(r'[a-zA-Z\s]')),
-                            ],
-                          ),
-                          CustomTextFormField(
-                            icon: Icons.person,
-                            labelText: "Mother's Name",
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                  RegExp(r'[a-zA-Z\s]')),
-                            ],
-                          ),
-                          CustomTextFormField(
-                            icon: Icons.person,
-                            labelText: "Spouse's Name",
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                  RegExp(r'[a-zA-Z\s]')),
-                            ],
-                          ),
-                          CustomTextFormField(
-                            icon: Icons.call,
-                            labelText: "Mobile No",
-                            keyboardType: TextInputType.number,
-                          ),
-                          CustomTextFormField(
-                            icon: Icons.calendar_month,
-                            labelText: 'DOB',
-                            isDatePicker: true, // Enable Date Picker
-                            onChanged: (value) {
-                              setState(() {
-                                dateController.text = value ?? "";
-                              });
-                            },
-                          ),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  'Gender *',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700),
-                                ),
-                              ),
-                            ],
-                          ),
-                          GenderRadioButtons(),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  'Marital Status',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700),
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(
-                            width: double.infinity,
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Container(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 12.0, vertical: 8.0),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                  border:
-                                      Border.all(color: Colors.grey, width: 1),
-                                ),
-                                child: DropdownButton<String>(
-                                  isExpanded: true,
-                                  value: _selectedStatus,
-                                  hint: Text('Select Marital Status',
-                                      style: TextStyle(color: Colors.black54)),
-                                  items: <String>[
-                                    'Married',
-                                    'Unmarried',
-                                    'Separated',
-                                    'Widow'
-                                  ].map((String value) {
-                                    return DropdownMenuItem<String>(
-                                      value: value,
-                                      child: Text(value),
-                                    );
-                                  }).toList(),
-                                  onChanged: (String? newValue) {
-                                    setState(() {
-                                      _selectedStatus = newValue;
-                                    });
-                                  },
-                                  underline: SizedBox(),
-                                  icon: Icon(Icons.arrow_drop_down,
-                                      color: Colors.black),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  ],
-                ),
-              ),
-            ),
-            Card(
-              color: Colors.white,
-              elevation: 5,
-              child: Theme(
-                data: Theme.of(context)
-                    .copyWith(dividerColor: Colors.transparent),
-                child: ExpansionTile(
-                  key: ValueKey(_expandAll),
-                  initiallyExpanded: _expandAll,
-                  title: Text('Personal Documents'),
-                  children: <Widget>[
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            'Digital Photo',
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w700),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        Center(
-                          child: Stack(
-                            alignment: Alignment.center,
-                            children: [
-                              GestureDetector(
-                                onTap: () => _selectImage('digital_photo'),
-                                child: _digitalPhoto.isEmpty
-                                    ? CircleAvatar(
-                                        backgroundColor: Colors.transparent,
-                                        radius: 100,
-                                        child: ClipOval(
-                                          child: Image.asset(
-                                            'assets/images/user_camera.png',
-                                            fit: BoxFit.cover,
-                                            height: 200,
-                                            width: 200,
-                                          ),
-                                        ),
-                                      )
-                                    : CircleAvatar(
-                                        backgroundColor: Colors.transparent,
-                                        radius: 100,
-                                        child: ClipOval(
-                                          child: Image.memory(
-                                            base64Decode(_digitalPhoto),
-                                            fit: BoxFit.cover,
-                                            height: 200,
-                                            width: 200,
-                                          ),
-                                        ),
-                                      ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            'Digital Signature',
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w700),
-                          ),
-                        ),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        SizedBox(
-                            height: 100, width: 100, child: _getBottomView()),
-                      ],
-                    ),
-                    SizedBox(
-                      height: 40,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Card(
-              color: Colors.white,
-              elevation: 5,
-              child: Theme(
-                data: Theme.of(context)
-                    .copyWith(dividerColor: Colors.transparent),
-                child: ExpansionTile(
-                  key: ValueKey(_expandAll),
-                  initiallyExpanded: _expandAll,
-                  title: Text('Deployment Details'),
-                  children: <Widget>[
-                    Center(
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(onPressed: () {
-                          showDialog(context: context,
-                              builder: (context) => Dialog(
-                                child: StatefulBuilder(
-                                    builder: (dialogContext, setDialogState) => Container(
-                                      padding: const EdgeInsets.all(16),
-                                      constraints: BoxConstraints(
-                                        maxHeight:
-                                        MediaQuery.of(context).size.height * 0.6,
-                                        maxWidth: 500,
-                                      ),
-                                      child: Column(
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Padding(
-                                                padding: const EdgeInsets.all(8.0),
-                                                child: Text('Site'),
-                                              ),
-                                            ],
-                                          ),
-                                          Column(
-                                            children: [
-                                              TextField(
-                                                decoration: InputDecoration(
-                                                  hintText: 'Search...'
-                                                ),
-                                              )
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-
-                                    )),
-                              ));
-
-                        },
-                            child: Text('Select Site'),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+          ),
+        ),
           ],
         ),
       ),
     );
   }
+
+  Widget _selectSite() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.zero,
+              ),
+              elevation: 5,
+            ),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => Dialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  elevation: 10,
+                  insetPadding: EdgeInsets.all(20),
+                  child: StatefulBuilder(
+                    builder: (dialogContext, setDialogState) => Container(
+                      padding: const EdgeInsets.all(16),
+                      constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(context).size.height * 0.6,
+                        maxWidth: 500,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              'Select Site',
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: TextField(
+                              onChanged: (value) {
+                                setDialogState(() {
+                                  filterSiteListData = siteListData
+                                      .where((site) => site['unitName']
+                                      ?.toLowerCase()
+                                      .contains(value.toLowerCase()) ?? false)
+                                      .toList();
+                                });
+                              },
+                              decoration: InputDecoration(
+                                hintText: 'Search...',
+                                prefixIcon: Icon(Icons.search),
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: filterSiteListData.isNotEmpty
+                                ? ListView.separated(
+                              itemCount: filterSiteListData.length,
+                              separatorBuilder: (context, index) => Divider(
+                                color: Colors.grey.shade900,
+                                thickness: 1,
+                              ),
+                              itemBuilder: (context, index) {
+                                if (index >= filterSiteListData.length) return SizedBox.shrink();
+                                final site = filterSiteListData[index];
+                                return ListTile(
+                                  title: Text(site['unitName'] ?? ''),
+                                  onTap: () {
+                                    setState(() {
+                                      selectedSite = site['unitName'] ?? '';
+                                    });
+                                    Navigator.pop(context);
+                                  },
+                                );
+                              },
+                            )
+                                : const Center(
+                              child: Text(
+                                'No records found',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text(
+                                    'Cancel',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.redAccent,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+            child: Text(
+              selectedSite.isEmpty ? 'Select Site' : selectedSite,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+              maxLines: 1,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _selectDesignation() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.zero,
+              ),
+              elevation: 5,
+            ),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => Dialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  elevation: 10,
+                  insetPadding: EdgeInsets.all(20),
+                  child: StatefulBuilder(
+                    builder: (dialogContext, setDialogState) => Container(
+                      padding: const EdgeInsets.all(16),
+                      constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(context).size.height * 0.6,
+                        maxWidth: 500,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              'Select Designation',
+                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: TextField(
+                              onChanged: (value) {
+                                setDialogState(() {
+                                  filterDesignationListData = designationListData
+                                      .where((designation) => designation['designationName']
+                                      ?.toLowerCase()
+                                      .contains(value.toLowerCase()) ?? false)
+                                      .toList();
+                                });
+                              },
+                              decoration: InputDecoration(
+                                hintText: 'Search...',
+                                prefixIcon: Icon(Icons.search),
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: filterDesignationListData.isNotEmpty
+                                ? ListView.separated(
+                              itemCount: filterDesignationListData.length,
+                              separatorBuilder: (context, index) => Divider(
+                                color: Colors.grey.shade900,
+                                thickness: 1,
+                              ),
+                              itemBuilder: (context, index) {
+                                if (index >= filterDesignationListData.length) return SizedBox.shrink();
+                                final designation = filterDesignationListData[index];
+                                return ListTile(
+                                  title: Text(designation['designationName'] ?? ''),
+                                  onTap: () {
+                                    setState(() {
+                                      selectedDesignation = designation['designationName'] ?? '';
+                                    });
+                                    Navigator.pop(context);
+                                  },
+                                );
+                              },
+                            )
+                                : const Center(
+                              child: Text(
+                                'No records found',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text(
+                                    'Cancel',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.redAccent,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+            child: Text(
+              selectedDesignation.isEmpty ? 'Select Designation' : selectedDesignation,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+              maxLines: 1,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
 
   bool _handleOnDrawStart() {
     _isSigned = true;
@@ -850,5 +735,404 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
         }
       });
     }
+  }
+
+  Widget _aadhaarDetails() {
+    return Card(
+      color: Colors.white,
+      elevation: 5,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          key: ValueKey(_expandAll),
+          initiallyExpanded: _expandAll,
+          title: Row(
+            children: [
+              Text('Aadhaar Details'),
+            ],
+          ),
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Column(
+                children: [
+                  // Aadhaar Number
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.credit_card,
+                        color: Colors.green,
+                      ),
+                      SizedBox(width: 5),
+                      Expanded(
+                        child: TextFormField(
+                          maxLength: 12,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 10),
+                            label: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text('Aadhaar No*'),
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  SizedBox(height: 15),
+                  // PAN Number
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Icon(
+                        Icons.credit_card,
+                        color: Colors.green,
+                      ),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: TextFormField(
+                          maxLength: 10,
+                          keyboardType: TextInputType.text,
+                          textCapitalization: TextCapitalization.characters,
+                          decoration: InputDecoration(
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 10),
+                            label: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text('PAN No*'),
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          validator: (value) {
+                            String pattern = r'^[A-Z]{5}[0-9]{4}[A-Z]$';
+                            RegExp regex = RegExp(pattern);
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter PAN number';
+                            } else if (!regex.hasMatch(value)) {
+                              return 'Please enter a valid PAN number';
+                            }
+                            return null;
+                          },
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                                RegExp(r'[A-Z0-9]')),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 20),
+                  // Aadhaar Proof (Front/Back)
+                  Text(
+                    'Aadhaar Proof (Front/Back)',
+                  ),
+                  SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Column(
+                        children: [
+                          GestureDetector(
+                            onTap: () => _selectImage('front'), // Front Image
+                            child: _aadhaarImageFront.isEmpty
+                                ? Icon(
+                                    Icons.add_photo_alternate_outlined,
+                                    size: 50,
+                                  )
+                                : Image.memory(
+                                    base64Decode(_aadhaarImageFront),
+                                    height: 100,
+                                    width: 100,
+                                    fit: BoxFit.cover,
+                                  ),
+                          ),
+                          GestureDetector(
+                            onTap: () => _deleteImage('front'),
+                            child: Text(
+                              'Remove',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          GestureDetector(
+                            onTap: () => _selectImage('back'), // Back Image
+                            child: _aadhaarImageBack.isEmpty
+                                ? Icon(
+                                    Icons.add_photo_alternate_outlined,
+                                    size: 50,
+                                  )
+                                : Image.memory(
+                                    base64Decode(_aadhaarImageBack),
+                                    height: 100,
+                                    width: 100,
+                                    fit: BoxFit.cover,
+                                  ),
+                          ),
+                          GestureDetector(
+                            onTap: () => _deleteImage('back'),
+                            child: Text(
+                              'Remove',
+                              style: TextStyle(color: Colors.red),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _personalDetails() {
+    return Card(
+      color: Colors.white,
+      elevation: 5,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          key: ValueKey(_expandAll),
+          initiallyExpanded: _expandAll,
+          title: Text('Personal Information'),
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  CustomTextFormField(
+                    icon: Icons.person,
+                    labelText: 'Name (As Per Aadhaar)',
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
+                    ],
+                  ),
+                  CustomTextFormField(
+                    icon: Icons.person,
+                    labelText: 'Last Name',
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
+                    ],
+                  ),
+                  CustomTextFormField(
+                    icon: Icons.person,
+                    labelText: "Father's Name",
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
+                    ],
+                  ),
+                  CustomTextFormField(
+                    icon: Icons.person,
+                    labelText: "Mother's Name",
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
+                    ],
+                  ),
+                  CustomTextFormField(
+                    icon: Icons.person,
+                    labelText: "Spouse's Name",
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
+                    ],
+                  ),
+                  CustomTextFormField(
+                    icon: Icons.call,
+                    labelText: "Mobile No",
+                    keyboardType: TextInputType.number,
+                  ),
+                  CustomTextFormField(
+                    icon: Icons.calendar_month,
+                    labelText: 'DOB',
+                    isDatePicker: true, // Enable Date Picker
+                    onChanged: (value) {
+                      setState(() {
+                        dateController.text = value ?? "";
+                      });
+                    },
+                  ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          'Gender *',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                    ],
+                  ),
+                  GenderRadioButtons(),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          'Marital Status',
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    width: double.infinity,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 12.0, vertical: 8.0),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8.0),
+                          border: Border.all(color: Colors.grey, width: 1),
+                        ),
+                        child: DropdownButton<String>(
+                          isExpanded: true,
+                          value: _selectedStatus,
+                          hint: Text('Select Marital Status',
+                              style: TextStyle(color: Colors.black54)),
+                          items: <String>[
+                            'Married',
+                            'Unmarried',
+                            'Separated',
+                            'Widow'
+                          ].map((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                          }).toList(),
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              _selectedStatus = newValue;
+                            });
+                          },
+                          underline: SizedBox(),
+                          icon:
+                              Icon(Icons.arrow_drop_down, color: Colors.black),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _personalDocuments() {
+    return Card(
+      color: Colors.white,
+      elevation: 5,
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          key: ValueKey(_expandAll),
+          initiallyExpanded: _expandAll,
+          title: Text('Personal Documents'),
+          children: <Widget>[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    'Digital Photo',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ],
+            ),
+            Column(
+              children: [
+                Center(
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: () => _selectImage('digital_photo'),
+                        child: _digitalPhoto.isEmpty
+                            ? CircleAvatar(
+                                backgroundColor: Colors.transparent,
+                                radius: 100,
+                                child: ClipOval(
+                                  child: Image.asset(
+                                    'assets/images/user_camera.png',
+                                    fit: BoxFit.cover,
+                                    height: 200,
+                                    width: 200,
+                                  ),
+                                ),
+                              )
+                            : CircleAvatar(
+                                backgroundColor: Colors.transparent,
+                                radius: 100,
+                                child: ClipOval(
+                                  child: Image.memory(
+                                    base64Decode(_digitalPhoto),
+                                    fit: BoxFit.cover,
+                                    height: 200,
+                                    width: 200,
+                                  ),
+                                ),
+                              ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    'Digital Signature',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ],
+            ),
+            Column(
+              children: [
+                SizedBox(height: 100, width: 100, child: _getBottomView()),
+              ],
+            ),
+            SizedBox(
+              height: 40,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -47,7 +47,7 @@ class _TeamViewActivityAttendanceListState extends State<TeamViewActivityAttenda
             "outRemarks": entry.outRemarks,
           })
               .toList();
-          filteredData = teamActivityAttendanceData; // Initialize filtered data
+          filteredData = teamActivityAttendanceData;
         });
       }
     }
