@@ -8,6 +8,7 @@ class CustomTextFormField extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
   final bool isDatePicker;
   final void Function(String?)? onChanged;
+  final TextEditingController? controller; // Added controller for better control
 
   const CustomTextFormField({
     super.key,
@@ -17,6 +18,7 @@ class CustomTextFormField extends StatelessWidget {
     this.inputFormatters,
     this.isDatePicker = false,
     this.onChanged,
+    this.controller, // Accepting controller
   });
 
   @override
@@ -24,7 +26,7 @@ class CustomTextFormField extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           Icon(icon),
           const SizedBox(width: 5),
@@ -43,26 +45,24 @@ class CustomTextFormField extends StatelessWidget {
                 if (selectedDate != null) {
                   final formattedDate =
                       "${selectedDate.day}/${selectedDate.month}/${selectedDate.year}";
-                  onChanged?.call(formattedDate);
+                  onChanged?.call(formattedDate); // Pass formatted date
                 }
               }
                   : null,
               child: AbsorbPointer(
-                absorbing: isDatePicker,
+                absorbing: isDatePicker, // Absorbs input while date picker is active
                 child: TextFormField(
+                  controller: controller, // Use the controller if provided
                   keyboardType: keyboardType,
                   inputFormatters: inputFormatters,
                   decoration: InputDecoration(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 10),
-                    label: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(labelText),
-                    ),
+                    labelText: labelText,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  onChanged: onChanged,
+                  onChanged: onChanged, // Keeps other changes working
                 ),
               ),
             ),

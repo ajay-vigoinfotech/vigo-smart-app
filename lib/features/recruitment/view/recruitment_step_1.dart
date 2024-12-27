@@ -11,6 +11,8 @@ import 'package:syncfusion_flutter_signaturepad/signaturepad.dart';
 import 'package:vigo_smart_app/features/recruitment/view%20model/designation_list_view_model.dart';
 import 'package:vigo_smart_app/features/recruitment/widget/custom_text_form_field.dart';
 import 'package:vigo_smart_app/features/recruitment/widget/gender_radio_button.dart';
+import '../view model/branch_list_view_model.dart';
+import '../view model/duplicate_aadhaar_view_model.dart';
 import '../view model/site_list_view_model.dart';
 
 class RecruitmentStep1 extends StatefulWidget {
@@ -32,91 +34,76 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController dateController = TextEditingController();
 
-  final GlobalKey<SfSignaturePadState> _signaturePadKey = GlobalKey<SfSignaturePadState>();
+  final GlobalKey<SfSignaturePadState> _signaturePadKey =
+      GlobalKey<SfSignaturePadState>();
   bool _isSigned = false;
   late Uint8List _signatureData;
 
-  // Get Assign Site List
-  SiteListViewModel siteListViewModel = SiteListViewModel();
-  List<Map<String, dynamic>> siteListData = [];
-  List<Map<String, dynamic>> filterSiteListData = [];
-  String selectedSite = '';
+  final TextEditingController aadhaarController = TextEditingController();
+  // Check Duplicate Aadhaar
 
-  Future<void> fetchSiteListData() async {
-    String? token = await siteListViewModel.sessionManager.getToken();
-    if (token != null) {
-      await siteListViewModel.fetchAssignSiteList(token);
+  bool isDuplicate = false;
+  String errorMessage = '';
 
-      setState(() {
-        if (siteListViewModel.assignSiteList != null) {
-          siteListData = siteListViewModel.assignSiteList!
-              .map((entry) => {
-                    "siteId": entry.siteId,
-                    "compID": entry.compID,
-                    "clientId": entry.clientId,
-                    "siteName": entry.siteName,
-                    "siteCode": entry.siteCode,
-                    "unitName": entry.unitName,
-                    "clientName": entry.clientName,
-                  })
-              .toList();
+  DuplicateAadhaarViewModel duplicateAadhaarViewModel =
+      DuplicateAadhaarViewModel();
+  void validateAadhaarNumber(String aadhaarNo) async {
+    if (aadhaarNo.length == 12) {
+      String? token = await duplicateAadhaarViewModel.sessionManager.getToken();
+      if (token != null) {
+        bool duplicateCheck = await duplicateAadhaarViewModel
+            .fetchDuplicateAadhaarList(token, aadhaarNo);
+
+        setState(() {
+          isDuplicate = duplicateCheck;
+          errorMessage = duplicateCheck ? 'Already exists: $aadhaarNo' : '';
+        });
+
+        if (duplicateCheck) {
+          showDialog(
+            barrierDismissible: false,
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text('Duplicate Aadhaar Found!'),
+              content: Text('The Aadhaar number $aadhaarNo already exists.'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('OK'),
+                ),
+              ],
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: Colors.green.shade700,
+              content: Row(
+                children: [
+                  Icon(
+                    Icons.check_circle,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    'The Aadhaar number is valid.',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
         }
-      });
-      setState(() {
-        filterSiteListData = siteListData;
-      });
-    }
-  }
-
-  void filterSiteListResults(String query) {
-    if (query.isEmpty) {
-      setState(() {
-        filterSiteListData = siteListData;
-      });
+      }
     } else {
       setState(() {
-        filterSiteListData = siteListData.where((entry) {
-          final siteId = entry['siteId']?.toLowerCase() ?? '';
-          final compID = entry['compID']?.toLowerCase() ?? '';
-          final inRemarks = entry['inRemarks']?.toLowerCase() ?? '';
-          final outRemarks = entry['outRemarks']?.toLowerCase() ?? '';
-          final unitName = entry['unitName']?.toLowerCase() ?? '';
-
-          return siteId.contains(query.toLowerCase()) ||
-              compID.contains(query.toLowerCase()) ||
-              inRemarks.contains(query.toLowerCase()) ||
-              outRemarks.contains(query.toLowerCase()) ||
-              unitName.contains(query.toLowerCase()) ;
-        }).toList();
-      });
-    }
-  }
-
-  // Get Designation List
-  DesignationListViewModel designationListViewModel = DesignationListViewModel();
-  List<Map<String, dynamic>> designationListData = [];
-  List<Map<String, dynamic>> filterDesignationListData = [];
-  String selectedDesignation = '';
-
-  Future<void> fetchDesignationListData() async {
-    String? token = await designationListViewModel.sessionManager.getToken();
-    if (token != null) {
-      await designationListViewModel.fetchAssignDesignationList(token);
-
-      setState(() {
-        if (designationListViewModel.assignDesignationList != null) {
-          designationListData = designationListViewModel.assignDesignationList!
-              .map((entry) => {
-            "designationId": entry.designationId,
-            "designationCode": entry.designationCode,
-            "designationName": entry.designationName,
-
-          })
-              .toList();
-        }
-      });
-      setState(() {
-        filterDesignationListData = designationListData;
+        isDuplicate = false;
+        errorMessage = '';
       });
     }
   }
@@ -125,6 +112,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
   void initState() {
     fetchSiteListData();
     fetchDesignationListData();
+    fetchBranchListData();
     super.initState();
   }
 
@@ -152,23 +140,34 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
             _aadhaarDetails(),
             _personalDetails(),
             _personalDocuments(),
-        Card(
-          color: Colors.white,
-          elevation: 5,
-          child: Theme(
-            data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-            child: ExpansionTile(
-              key: ValueKey(_expandAll),
-              initiallyExpanded: _expandAll,
-              title: Text('Deployment Details'),
-              children: <Widget>[
-                _selectSite(),
-                _selectDesignation(),
-
-              ],
+            _deploymentDetails(),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.indigo,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 30, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.zero,
+                    ),
+                    elevation: 5,
+                  ),
+                  onPressed: () {},
+                  child: Text(
+                    'Submit and Next',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
             ),
-          ),
-        ),
+            SizedBox(height: 40),
           ],
         ),
       ),
@@ -214,7 +213,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                             padding: const EdgeInsets.all(8.0),
                             child: Text(
                               'Select Site',
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
                             ),
                           ),
                           Padding(
@@ -223,9 +223,11 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                               onChanged: (value) {
                                 setDialogState(() {
                                   filterSiteListData = siteListData
-                                      .where((site) => site['unitName']
-                                      ?.toLowerCase()
-                                      .contains(value.toLowerCase()) ?? false)
+                                      .where((site) =>
+                                          site['unitName']
+                                              ?.toLowerCase()
+                                              .contains(value.toLowerCase()) ??
+                                          false)
                                       .toList();
                                 });
                               },
@@ -239,31 +241,35 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                           Expanded(
                             child: filterSiteListData.isNotEmpty
                                 ? ListView.separated(
-                              itemCount: filterSiteListData.length,
-                              separatorBuilder: (context, index) => Divider(
-                                color: Colors.grey.shade900,
-                                thickness: 1,
-                              ),
-                              itemBuilder: (context, index) {
-                                if (index >= filterSiteListData.length) return SizedBox.shrink();
-                                final site = filterSiteListData[index];
-                                return ListTile(
-                                  title: Text(site['unitName'] ?? ''),
-                                  onTap: () {
-                                    setState(() {
-                                      selectedSite = site['unitName'] ?? '';
-                                    });
-                                    Navigator.pop(context);
-                                  },
-                                );
-                              },
-                            )
+                                    itemCount: filterSiteListData.length,
+                                    separatorBuilder: (context, index) =>
+                                        Divider(
+                                      color: Colors.grey.shade900,
+                                      thickness: 1,
+                                    ),
+                                    itemBuilder: (context, index) {
+                                      if (index >= filterSiteListData.length) {
+                                        return SizedBox.shrink();
+                                      }
+                                      final site = filterSiteListData[index];
+                                      return ListTile(
+                                        title: Text(site['unitName'] ?? ''),
+                                        onTap: () {
+                                          setState(() {
+                                            selectedSite =
+                                                site['unitName'] ?? '';
+                                          });
+                                          Navigator.pop(context);
+                                        },
+                                      );
+                                    },
+                                  )
                                 : const Center(
-                              child: Text(
-                                'No records found',
-                                style: TextStyle(fontSize: 16),
-                              ),
-                            ),
+                                    child: Text(
+                                      'No records found',
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                  ),
                           ),
                           Padding(
                             padding: const EdgeInsets.all(8.0),
@@ -347,7 +353,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                             padding: const EdgeInsets.all(8.0),
                             child: Text(
                               'Select Designation',
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
                             ),
                           ),
                           Padding(
@@ -355,11 +362,15 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                             child: TextField(
                               onChanged: (value) {
                                 setDialogState(() {
-                                  filterDesignationListData = designationListData
-                                      .where((designation) => designation['designationName']
-                                      ?.toLowerCase()
-                                      .contains(value.toLowerCase()) ?? false)
-                                      .toList();
+                                  filterDesignationListData =
+                                      designationListData
+                                          .where((designation) =>
+                                              designation['designationName']
+                                                  ?.toLowerCase()
+                                                  .contains(
+                                                      value.toLowerCase()) ??
+                                              false)
+                                          .toList();
                                 });
                               },
                               decoration: InputDecoration(
@@ -372,31 +383,40 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                           Expanded(
                             child: filterDesignationListData.isNotEmpty
                                 ? ListView.separated(
-                              itemCount: filterDesignationListData.length,
-                              separatorBuilder: (context, index) => Divider(
-                                color: Colors.grey.shade900,
-                                thickness: 1,
-                              ),
-                              itemBuilder: (context, index) {
-                                if (index >= filterDesignationListData.length) return SizedBox.shrink();
-                                final designation = filterDesignationListData[index];
-                                return ListTile(
-                                  title: Text(designation['designationName'] ?? ''),
-                                  onTap: () {
-                                    setState(() {
-                                      selectedDesignation = designation['designationName'] ?? '';
-                                    });
-                                    Navigator.pop(context);
-                                  },
-                                );
-                              },
-                            )
+                                    itemCount: filterDesignationListData.length,
+                                    separatorBuilder: (context, index) =>
+                                        Divider(
+                                      color: Colors.grey.shade900,
+                                      thickness: 1,
+                                    ),
+                                    itemBuilder: (context, index) {
+                                      if (index >=
+                                          filterDesignationListData.length) {
+                                        return SizedBox.shrink();
+                                      }
+                                      final designation =
+                                          filterDesignationListData[index];
+                                      return ListTile(
+                                        title: Text(
+                                            designation['designationName'] ??
+                                                ''),
+                                        onTap: () {
+                                          setState(() {
+                                            selectedDesignation = designation[
+                                                    'designationName'] ??
+                                                '';
+                                          });
+                                          Navigator.pop(context);
+                                        },
+                                      );
+                                    },
+                                  )
                                 : const Center(
-                              child: Text(
-                                'No records found',
-                                style: TextStyle(fontSize: 16),
-                              ),
-                            ),
+                                    child: Text(
+                                      'No records found',
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                  ),
                           ),
                           Padding(
                             padding: const EdgeInsets.all(8.0),
@@ -427,7 +447,9 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
               );
             },
             child: Text(
-              selectedDesignation.isEmpty ? 'Select Designation' : selectedDesignation,
+              selectedDesignation.isEmpty
+                  ? 'Select Designation'
+                  : selectedDesignation,
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 16,
@@ -441,6 +463,147 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
     );
   }
 
+  Widget _selectBranch() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.zero,
+              ),
+              elevation: 5,
+            ),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => Dialog(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  elevation: 10,
+                  insetPadding: EdgeInsets.all(20),
+                  child: StatefulBuilder(
+                    builder: (dialogContext, setDialogState) => Container(
+                      padding: const EdgeInsets.all(16),
+                      constraints: BoxConstraints(
+                        maxHeight: MediaQuery.of(context).size.height * 0.6,
+                        maxWidth: 500,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              'Select Branch',
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: TextField(
+                              onChanged: (value) {
+                                setDialogState(() {
+                                  filterBranchListData = branchListData
+                                      .where((branch) =>
+                                          branch['branchName']
+                                              ?.toLowerCase()
+                                              .contains(value.toLowerCase()) ??
+                                          false)
+                                      .toList();
+                                });
+                              },
+                              decoration: InputDecoration(
+                                hintText: 'Search...',
+                                prefixIcon: Icon(Icons.search),
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: filterBranchListData.isNotEmpty
+                                ? ListView.separated(
+                                    itemCount: filterBranchListData.length,
+                                    separatorBuilder: (context, index) =>
+                                        Divider(
+                                      color: Colors.grey.shade900,
+                                      thickness: 1,
+                                    ),
+                                    itemBuilder: (context, index) {
+                                      if (index >=
+                                          filterBranchListData.length) {
+                                        return SizedBox.shrink();
+                                      }
+                                      final branch =
+                                          filterBranchListData[index];
+                                      return ListTile(
+                                        title: Text(branch['branchName'] ?? ''),
+                                        onTap: () {
+                                          setState(() {
+                                            selectedBranch =
+                                                branch['branchName'] ?? '';
+                                          });
+                                          Navigator.pop(context);
+                                        },
+                                      );
+                                    },
+                                  )
+                                : const Center(
+                                    child: Text(
+                                      'No records found',
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                  ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: Text(
+                                    'Cancel',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.redAccent,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+            child: Text(
+              selectedBranch.isEmpty ? 'Select Branch' : selectedBranch,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+              maxLines: 1,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   bool _handleOnDrawStart() {
     _isSigned = true;
@@ -531,6 +694,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                           key: _signaturePadKey,
                         ),
                       ),
+                      Text('I agree to the terms and conditions.')
                     ],
                   ),
                 ),
@@ -576,21 +740,28 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
       onTap: () {
         _showPopup();
       },
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(),
-        ),
-        height: 78,
-        width: 138,
-        child: _isSigned
-            ? Image.memory(_signatureData)
-            : Center(
-                child: Text(
-                  'Tap here to sign',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16),
+      child: Center(
+        child: Container(
+          width: double.infinity,
+          height: 200,
+          decoration: BoxDecoration(
+            border: Border.all(),
+          ),
+          child: _isSigned
+              ? Image.memory(
+                  _signatureData,
+                  width: 500,
+                  height: 500,
+                  fit: BoxFit.contain,
+                )
+              : Center(
+                  child: Text(
+                    'Tap here to sign',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 20),
+                  ),
                 ),
-              ),
+        ),
       ),
     );
   }
@@ -772,6 +943,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                       SizedBox(width: 5),
                       Expanded(
                         child: TextFormField(
+                          controller: aadhaarController,
                           maxLength: 12,
                           keyboardType: TextInputType.number,
                           decoration: InputDecoration(
@@ -784,13 +956,25 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
+                            suffixIcon: isDuplicate
+                                ? Tooltip(
+                                    message: errorMessage,
+                                    child: Icon(
+                                      Icons.warning,
+                                      color: Colors.red,
+                                    ),
+                                  )
+                                : null,
                           ),
+                          onChanged: (value) {
+                            validateAadhaarNumber(value);
+                          },
                         ),
                       ),
                     ],
                   ),
 
-                  SizedBox(height: 15),
+                  SizedBox(height: 10),
                   // PAN Number
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -966,7 +1150,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                   CustomTextFormField(
                     icon: Icons.calendar_month,
                     labelText: 'DOB',
-                    isDatePicker: true, // Enable Date Picker
+                    isDatePicker: true,
+                    controller: dateController,
                     onChanged: (value) {
                       setState(() {
                         dateController.text = value ?? "";
@@ -1124,15 +1309,176 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
             ),
             Column(
               children: [
-                SizedBox(height: 100, width: 100, child: _getBottomView()),
+                SizedBox(
+                    height: 200,
+                    width: double.infinity,
+                    child: _getBottomView()),
+                TextButton(
+                  onPressed: () {
+                    _showValidationDialog();
+                    debugPrint('Signature removed');
+                  },
+                  child: const Text(
+                    'Remove',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.redAccent,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
               ],
             ),
-            SizedBox(
-              height: 40,
-            ),
+            SizedBox(height: 40),
           ],
         ),
       ),
     );
+  }
+
+  void _showValidationDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Remove Signature'),
+        content: const Text('Are you sure you want to remove the signature'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text('No'),
+          ),
+          TextButton(
+            onPressed: () async {
+              setState(() {
+                _signaturePadKey.currentState?.clear();
+                _isSigned = false;
+                // _signatureData = Uint8List(0);
+              });
+              Navigator.pop(context);
+            },
+            child: const Text('Yes'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _deploymentDetails() {
+    return Card(
+      color: Colors.white,
+      elevation: 5,
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          key: ValueKey(_expandAll),
+          initiallyExpanded: _expandAll,
+          title: Text('Deployment Details'),
+          children: <Widget>[
+            _selectSite(),
+            _selectDesignation(),
+            _selectBranch(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Get Assign Site List
+  SiteListViewModel siteListViewModel = SiteListViewModel();
+  List<Map<String, dynamic>> siteListData = [];
+  List<Map<String, dynamic>> filterSiteListData = [];
+  String selectedSite = '';
+
+  Future<void> fetchSiteListData() async {
+    String? token = await siteListViewModel.sessionManager.getToken();
+    if (token != null) {
+      await siteListViewModel.fetchAssignSiteList(token);
+
+      setState(() {
+        if (siteListViewModel.assignSiteList != null) {
+          siteListData = siteListViewModel.assignSiteList!
+              .map((entry) => {
+                    "siteId": entry.siteId,
+                    "compID": entry.compID,
+                    "clientId": entry.clientId,
+                    "siteName": entry.siteName,
+                    "siteCode": entry.siteCode,
+                    "unitName": entry.unitName,
+                    "clientName": entry.clientName,
+                  })
+              .toList();
+        }
+      });
+      setState(() {
+        filterSiteListData = siteListData;
+      });
+    }
+  }
+
+  // Get Designation List
+  DesignationListViewModel designationListViewModel =
+      DesignationListViewModel();
+  List<Map<String, dynamic>> designationListData = [];
+  List<Map<String, dynamic>> filterDesignationListData = [];
+  String selectedDesignation = '';
+
+  Future<void> fetchDesignationListData() async {
+    String? token = await designationListViewModel.sessionManager.getToken();
+    if (token != null) {
+      await designationListViewModel.fetchAssignDesignationList(token);
+
+      setState(() {
+        if (designationListViewModel.assignDesignationList != null) {
+          designationListData = designationListViewModel.assignDesignationList!
+              .map((entry) => {
+                    "designationId": entry.designationId,
+                    "designationCode": entry.designationCode,
+                    "designationName": entry.designationName,
+                  })
+              .toList();
+        }
+      });
+      setState(() {
+        filterDesignationListData = designationListData;
+      });
+    }
+  }
+
+  //Get Branch List
+  BranchListViewModel branchListViewModel = BranchListViewModel();
+  List<Map<String, dynamic>> branchListData = [];
+  List<Map<String, dynamic>> filterBranchListData = [];
+  String selectedBranch = '';
+
+  Future<void> fetchBranchListData() async {
+    String? token = await branchListViewModel.sessionManager.getToken();
+    if (token != null) {
+      await branchListViewModel.fetchAssignBranchList(token);
+
+      setState(() {
+        if (branchListViewModel.assignBranchList != null) {
+          branchListData = branchListViewModel.assignBranchList!
+              .map((entry) => {
+                    "branchId": entry.branchId,
+                    "compId": entry.compId,
+                    "branchName": entry.branchName,
+                    "branchCode": entry.branchCode,
+                    "branchAddress": entry.branchAddress,
+                    "empBranchCode": entry.empBranchCode,
+                    "createdBy": entry.createdBy,
+                    "createdAt": entry.createdAt,
+                    "modifiedBy": entry.modifiedBy,
+                    "modifiedAt": entry.modifiedAt,
+                    "isVisible": entry.isVisible,
+                  })
+              .toList();
+        }
+      });
+      setState(() {
+        filterBranchListData = branchListData;
+      });
+    }
   }
 }
