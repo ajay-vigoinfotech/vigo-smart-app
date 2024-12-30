@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
 
 class GenderRadioButtons extends StatefulWidget {
-  const GenderRadioButtons({super.key});
+  final Function(int) onGenderSelected;
+
+  const GenderRadioButtons({super.key, required this.onGenderSelected});
 
   @override
   GenderRadioButtonsState createState() => GenderRadioButtonsState();
 }
 
 class GenderRadioButtonsState extends State<GenderRadioButtons> {
-  String? _selectedGender = 'Male';
+  String? _selectedGender = '';
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        // Male Radio Button
-        SizedBox(width: 5),
         Row(
           children: [
             Radio<String>(
@@ -25,13 +25,15 @@ class GenderRadioButtonsState extends State<GenderRadioButtons> {
               onChanged: (String? value) {
                 setState(() {
                   _selectedGender = value;
+                  widget.onGenderSelected(1); // Send 1 for Male
                 });
               },
             ),
             GestureDetector(
               onTap: () {
                 setState(() {
-                  _selectedGender = 'Male'; // Change the state when text is tapped
+                  _selectedGender = 'Male';
+                  widget.onGenderSelected(1);
                 });
               },
               child: const Text(
@@ -41,7 +43,6 @@ class GenderRadioButtonsState extends State<GenderRadioButtons> {
             ),
           ],
         ),
-        // Female Radio Button
         Row(
           children: [
             Radio<String>(
@@ -50,13 +51,15 @@ class GenderRadioButtonsState extends State<GenderRadioButtons> {
               onChanged: (String? value) {
                 setState(() {
                   _selectedGender = value;
+                  widget.onGenderSelected(2);
                 });
               },
             ),
             GestureDetector(
               onTap: () {
                 setState(() {
-                  _selectedGender = 'Female'; // Change the state when text is tapped
+                  _selectedGender = 'Female';
+                  widget.onGenderSelected(2); // Send 2 for Female
                 });
               },
               child: const Text(
@@ -66,8 +69,6 @@ class GenderRadioButtonsState extends State<GenderRadioButtons> {
             ),
           ],
         ),
-        SizedBox(width: 5),
-
       ],
     );
   }

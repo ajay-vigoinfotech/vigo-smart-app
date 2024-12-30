@@ -44,7 +44,7 @@ class CustomTextFormField extends StatelessWidget {
 
                 if (selectedDate != null) {
                   final formattedDate =
-                      "${selectedDate.day}/${selectedDate.month}/${selectedDate.year}";
+                      "${selectedDate.day}-${selectedDate.month}-${selectedDate.year}";
                   onChanged?.call(formattedDate); // Pass formatted date
                 }
               }

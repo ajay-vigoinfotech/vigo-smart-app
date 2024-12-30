@@ -674,9 +674,7 @@ class _MarkdutyPageState extends State<MarkdutyPage> {
                                     String formattedDateTimeIn =
                                         formatDate(punchTimeDateIn!);
 
-                                    Map<String, dynamic> response =
-                                        await markSelfieAttendance
-                                            .markAttendance(
+                                    Map<String, dynamic> response = await markSelfieAttendance.markAttendance(
                                       token!,
                                       PunchDetails(
                                         deviceDetails: '$deviceDetails',

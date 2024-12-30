@@ -7,10 +7,17 @@ import 'package:flutter/services.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
+import 'package:quickalert/models/quickalert_type.dart';
+import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:syncfusion_flutter_signaturepad/signaturepad.dart';
+import 'package:vigo_smart_app/features/auth/session_manager/session_manager.dart';
+import 'package:vigo_smart_app/features/recruitment/model/create_recruitment_model.dart';
+import 'package:vigo_smart_app/features/recruitment/view%20model/create_recruitment_view_model.dart';
 import 'package:vigo_smart_app/features/recruitment/view%20model/designation_list_view_model.dart';
 import 'package:vigo_smart_app/features/recruitment/widget/custom_text_form_field.dart';
 import 'package:vigo_smart_app/features/recruitment/widget/gender_radio_button.dart';
+import '../../home/view/home_page.dart';
 import '../view model/branch_list_view_model.dart';
 import '../view model/duplicate_aadhaar_view_model.dart';
 import '../view model/site_list_view_model.dart';
@@ -27,86 +34,22 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
   String? _selectedStatus;
 
   final ImagePicker _picker = ImagePicker();
-  String _aadhaarImageFront = '';
-  String _aadhaarImageBack = '';
   String _digitalPhoto = '';
 
   final TextEditingController nameController = TextEditingController();
   final TextEditingController dateController = TextEditingController();
 
-  final GlobalKey<SfSignaturePadState> _signaturePadKey =
-      GlobalKey<SfSignaturePadState>();
+  final GlobalKey<SfSignaturePadState> _signaturePadKey = GlobalKey<SfSignaturePadState>();
   bool _isSigned = false;
   late Uint8List _signatureData;
+  late String _base64Signature;
 
-  final TextEditingController aadhaarController = TextEditingController();
-  // Check Duplicate Aadhaar
+  SessionManager sessionManager = SessionManager();
 
-  bool isDuplicate = false;
-  String errorMessage = '';
+  String selectedSiteId = '';
+  String selectedDesignationId = '';
+  String selectedBranchId = '';
 
-  DuplicateAadhaarViewModel duplicateAadhaarViewModel =
-      DuplicateAadhaarViewModel();
-  void validateAadhaarNumber(String aadhaarNo) async {
-    if (aadhaarNo.length == 12) {
-      String? token = await duplicateAadhaarViewModel.sessionManager.getToken();
-      if (token != null) {
-        bool duplicateCheck = await duplicateAadhaarViewModel
-            .fetchDuplicateAadhaarList(token, aadhaarNo);
-
-        setState(() {
-          isDuplicate = duplicateCheck;
-          errorMessage = duplicateCheck ? 'Already exists: $aadhaarNo' : '';
-        });
-
-        if (duplicateCheck) {
-          showDialog(
-            barrierDismissible: false,
-            context: context,
-            builder: (context) => AlertDialog(
-              title: Text('Duplicate Aadhaar Found!'),
-              content: Text('The Aadhaar number $aadhaarNo already exists.'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text('OK'),
-                ),
-              ],
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              backgroundColor: Colors.green.shade700,
-              content: Row(
-                children: [
-                  Icon(
-                    Icons.check_circle,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                  SizedBox(width: 8),
-                  Text(
-                    'The Aadhaar number is valid.',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        }
-      }
-    } else {
-      setState(() {
-        isDuplicate = false;
-        errorMessage = '';
-      });
-    }
-  }
 
   @override
   void initState() {
@@ -135,40 +78,89 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
         ],
       ),
       body: SingleChildScrollView(
-        child: Column(
-          children: [
-            _aadhaarDetails(),
-            _personalDetails(),
-            _personalDocuments(),
-            _deploymentDetails(),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.indigo,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 30, vertical: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.zero,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              _aadhaarDetails(),
+              _personalDetails(),
+              _personalDocuments(),
+              _deploymentDetails(),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.indigo,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 30, vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.zero,
+                      ),
+                      elevation: 5,
                     ),
-                    elevation: 5,
-                  ),
-                  onPressed: () {},
-                  child: Text(
-                    'Submit and Next',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold),
+                    onPressed: () async {
+                      String? token = await sessionManager.getToken();
+                      CreateRecruitmentViewModel createRecruitmentViewModel =
+                          CreateRecruitmentViewModel();
+
+                      Map<String, dynamic> response =
+                          await createRecruitmentViewModel.createRecruitment(
+                        token!,
+                        CreateRecruitmentModel(
+                          fullName: firstName,
+                          lastName: lastName,
+                          fatherName: fatherName,
+                          motherName: motherName,
+                          spouseName: spouseName,
+                          contactNo: mobNo,
+                          dob: dob,
+                          gender: '$selectedGenderCode',
+                          marritalStatus: selectedMaritalCode,
+                          branchId: selectedBranchId,
+                          siteId: selectedSiteId,
+                          designationId: selectedDesignationId,
+                          pan: panNo,
+                          aadharno: aadhaarNo,
+                          userImage: _digitalPhoto,
+                          userSign: _base64Signature,
+                          aadharFront: _aadhaarImageFront,
+                          aadharBack: _aadhaarImageBack,
+                        ),
+                      );
+
+                      if (response['code'] == 200) {
+                        Navigator.of(context).pop();
+                        QuickAlert.show(
+                          confirmBtnText: 'Ok',
+                          context: context,
+                          type: QuickAlertType.success,
+                          text: '${response['status']}',
+                          onConfirmBtnTap: () {
+                            Navigator.pushAndRemoveUntil(
+                              this.context,
+                              MaterialPageRoute(builder: (context) => HomePage()),
+                              (route) => false,
+                            );
+                          },
+                        );
+                      }
+                    },
+                    child: Text(
+                      'Submit and Next',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
               ),
-            ),
-            SizedBox(height: 40),
-          ],
+              SizedBox(height: 40),
+            ],
+          ),
         ),
       ),
     );
@@ -256,8 +248,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                                         title: Text(site['unitName'] ?? ''),
                                         onTap: () {
                                           setState(() {
-                                            selectedSite =
-                                                site['unitName'] ?? '';
+                                            selectedSite = site['unitName'] ?? '';
+                                            selectedSiteId = site['siteId'];
                                           });
                                           Navigator.pop(context);
                                         },
@@ -402,9 +394,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                                                 ''),
                                         onTap: () {
                                           setState(() {
-                                            selectedDesignation = designation[
-                                                    'designationName'] ??
-                                                '';
+                                            selectedDesignation = designation['designationName'] ?? '';
+                                            selectedDesignationId = designation['designationId'];
                                           });
                                           Navigator.pop(context);
                                         },
@@ -448,7 +439,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
             },
             child: Text(
               selectedDesignation.isEmpty
-                  ? 'Select Designation'
+                  ? 'Select Designation.'
                   : selectedDesignation,
               style: TextStyle(
                 color: Colors.white,
@@ -547,8 +538,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                                         title: Text(branch['branchName'] ?? ''),
                                         onTap: () {
                                           setState(() {
-                                            selectedBranch =
-                                                branch['branchName'] ?? '';
+                                            selectedBranch = branch['branchName'] ?? '';
+                                            selectedBranchId = branch[''] ?? '';
                                           });
                                           Navigator.pop(context);
                                         },
@@ -615,20 +606,22 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
     _isSigned = false;
   }
 
+
   Future<void> _handleSaveButtonPressed() async {
     try {
-      final ui.Image image =
-          await _signaturePadKey.currentState!.toImage(pixelRatio: 3.0);
+      final ui.Image image = await _signaturePadKey.currentState!.toImage(pixelRatio: 3.0);
 
-      final ByteData? byteData =
-          await image.toByteData(format: ui.ImageByteFormat.png);
+      final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       if (byteData != null) {
         final Uint8List data = byteData.buffer.asUint8List();
+        final String base64Image = base64Encode(data);
 
         setState(() {
           _signatureData = data;
+          _base64Signature = base64Image;
+          _isSigned = true;
         });
-        debugPrint("Signature saved successfully!");
+        // debugPrint("Signature saved successfully!");
       } else {
         throw Exception("Failed to convert signature to PNG data.");
       }
@@ -636,6 +629,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
       debugPrint("Error saving signature: $e");
     }
   }
+
 
   void _showPopup() {
     showDialog<Widget>(
@@ -741,26 +735,31 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
         _showPopup();
       },
       child: Center(
-        child: Container(
-          width: double.infinity,
-          height: 200,
-          decoration: BoxDecoration(
-            border: Border.all(),
-          ),
-          child: _isSigned
-              ? Image.memory(
-                  _signatureData,
-                  width: 500,
-                  height: 500,
-                  fit: BoxFit.contain,
-                )
-              : Center(
-                  child: Text(
-                    'Tap here to sign',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 20),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Container(
+            width: double.infinity,
+            height: 200,
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: Colors.grey
+              ),
+            ),
+            child: _isSigned
+                ? Image.memory(
+                    _signatureData,
+                    width: 500,
+                    height: 500,
+                    fit: BoxFit.contain,
+                  )
+                : Center(
+                    child: Text(
+                      'Tap here to sign',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 20),
+                    ),
                   ),
-                ),
+          ),
         ),
       ),
     );
@@ -908,6 +907,12 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
     }
   }
 
+  //Aadhaar details
+  String aadhaarNo = '';
+  String panNo = '';
+  String _aadhaarImageFront = '';
+  String _aadhaarImageBack = '';
+
   Widget _aadhaarDetails() {
     return Card(
       color: Colors.white,
@@ -915,7 +920,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15),
       ),
-      margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+      // margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
@@ -968,6 +973,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                           ),
                           onChanged: (value) {
                             validateAadhaarNumber(value);
+                            aadhaarNo = value;
+                            debugPrint(aadhaarNo);
                           },
                         ),
                       ),
@@ -1010,6 +1017,10 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                             }
                             return null;
                           },
+                          onChanged: (value) {
+                            panNo = value;
+                            debugPrint(panNo);
+                          },
                           inputFormatters: [
                             FilteringTextInputFormatter.allow(
                                 RegExp(r'[A-Z0-9]')),
@@ -1030,7 +1041,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                       Column(
                         children: [
                           GestureDetector(
-                            onTap: () => _selectImage('front'), // Front Image
+                            onTap: () => _selectImage('front'),
                             child: _aadhaarImageFront.isEmpty
                                 ? Icon(
                                     Icons.add_photo_alternate_outlined,
@@ -1088,6 +1099,30 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
     );
   }
 
+  // Personal Details
+  String firstName = '';
+  String lastName = '';
+  String fatherName = '';
+  String motherName = '';
+  String spouseName = '';
+  String mobNo = '';
+  String dob = '';
+  int? selectedGenderCode;
+  String selectedMaritalCode = '';
+
+  final Map<String, String> statusCodes = {
+    'Married': '1',
+    'Unmarried': '2',
+    'Separated': '3',
+    'Widow': '4',
+  };
+
+  void handleGenderSelected(int genderCode) {
+    setState(() {
+      selectedGenderCode = genderCode;
+    });
+  }
+
   Widget _personalDetails() {
     return Card(
       color: Colors.white,
@@ -1095,7 +1130,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15),
       ),
-      margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+      // margin: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
@@ -1113,6 +1148,9 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
                     ],
+                    onChanged: (value) {
+                      firstName = value!;
+                    },
                   ),
                   CustomTextFormField(
                     icon: Icons.person,
@@ -1120,6 +1158,9 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
                     ],
+                    onChanged: (value) {
+                      lastName = value!;
+                    },
                   ),
                   CustomTextFormField(
                     icon: Icons.person,
@@ -1127,6 +1168,9 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
                     ],
+                    onChanged: (value) {
+                      fatherName = value!;
+                    },
                   ),
                   CustomTextFormField(
                     icon: Icons.person,
@@ -1134,6 +1178,9 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
                     ],
+                    onChanged: (value) {
+                      motherName = value!;
+                    },
                   ),
                   CustomTextFormField(
                     icon: Icons.person,
@@ -1141,11 +1188,17 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
                     ],
+                    onChanged: (value) {
+                      spouseName = value!;
+                    },
                   ),
                   CustomTextFormField(
                     icon: Icons.call,
                     labelText: "Mobile No",
                     keyboardType: TextInputType.number,
+                    onChanged: (value) {
+                      mobNo = value!;
+                    },
                   ),
                   CustomTextFormField(
                     icon: Icons.calendar_month,
@@ -1154,7 +1207,19 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                     controller: dateController,
                     onChanged: (value) {
                       setState(() {
-                        dateController.text = value ?? "";
+                        if (value != null && value.isNotEmpty) {
+                          try {
+                            final inputFormat = DateFormat('dd-MM-yyyy');
+                            final parsedDate = inputFormat.parse(value);
+
+                            final outputFormat = DateFormat('yyyy-MM-dd');
+                            dob = outputFormat.format(parsedDate);
+
+                            dateController.text = value;
+                          } catch (e) {
+                            print('Error parsing date: $e');
+                          }
+                        }
                       });
                     },
                   ),
@@ -1171,7 +1236,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                       ),
                     ],
                   ),
-                  GenderRadioButtons(),
+                  GenderRadioButtons(onGenderSelected: handleGenderSelected),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -1190,7 +1255,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Container(
-                        padding: EdgeInsets.symmetric(
+                        padding: const EdgeInsets.symmetric(
                             horizontal: 12.0, vertical: 8.0),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(8.0),
@@ -1199,8 +1264,10 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                         child: DropdownButton<String>(
                           isExpanded: true,
                           value: _selectedStatus,
-                          hint: Text('Select Marital Status',
-                              style: TextStyle(color: Colors.black54)),
+                          hint: const Text(
+                            'Select Marital Status',
+                            style: TextStyle(color: Colors.black54),
+                          ),
                           items: <String>[
                             'Married',
                             'Unmarried',
@@ -1215,11 +1282,12 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                           onChanged: (String? newValue) {
                             setState(() {
                               _selectedStatus = newValue;
+                              selectedMaritalCode = statusCodes[newValue] ?? '';
                             });
                           },
-                          underline: SizedBox(),
-                          icon:
-                              Icon(Icons.arrow_drop_down, color: Colors.black),
+                          underline: const SizedBox(),
+                          icon: const Icon(Icons.arrow_drop_down,
+                              color: Colors.black),
                         ),
                       ),
                     ),
@@ -1232,6 +1300,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
       ),
     );
   }
+
+  //Personal Documents
 
   Widget _personalDocuments() {
     return Card(
@@ -1478,6 +1548,74 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
       });
       setState(() {
         filterBranchListData = branchListData;
+      });
+    }
+  }
+
+  // Check Duplicate Aadhaar
+  final TextEditingController aadhaarController = TextEditingController();
+  bool isDuplicate = false;
+  String errorMessage = '';
+
+  DuplicateAadhaarViewModel duplicateAadhaarViewModel =
+      DuplicateAadhaarViewModel();
+  void validateAadhaarNumber(String aadhaarNo) async {
+    if (aadhaarNo.length == 12) {
+      String? token = await duplicateAadhaarViewModel.sessionManager.getToken();
+      if (token != null) {
+        bool duplicateCheck = await duplicateAadhaarViewModel
+            .fetchDuplicateAadhaarList(token, aadhaarNo);
+
+        setState(() {
+          isDuplicate = duplicateCheck;
+          errorMessage = duplicateCheck ? 'Already exists: $aadhaarNo' : '';
+        });
+
+        if (duplicateCheck) {
+          showDialog(
+            barrierDismissible: false,
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text('Duplicate Aadhaar Found!'),
+              content: Text('The Aadhaar number $aadhaarNo already exists.'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('OK'),
+                ),
+              ],
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: Colors.green.shade700,
+              content: Row(
+                children: [
+                  Icon(
+                    Icons.check_circle,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                  SizedBox(width: 8),
+                  Text(
+                    'The Aadhaar number is valid.',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+      }
+    } else {
+      setState(() {
+        isDuplicate = false;
+        errorMessage = '';
       });
     }
   }

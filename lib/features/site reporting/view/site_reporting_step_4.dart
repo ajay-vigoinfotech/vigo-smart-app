@@ -459,9 +459,8 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
                   await _loadCurrentDateTime();
                   punchTimeDateIn = timeDateDisplay;
                   String? token = await sessionManager.getToken();
-                  MarkSiteVisitViewModel markSiteVisitViewModel =
-                      MarkSiteVisitViewModel();
-                  // final String deviceDetails = await Utils.getDeviceDetails(context);
+                  MarkSiteVisitViewModel markSiteVisitViewModel = MarkSiteVisitViewModel();
+                  // final String deviceDetails= await Utils.getDeviceDetails(context);
                   // final String appVersion = await Utils.getAppVersion();
                   // final String ipAddress = await Utils.getIpAddress();
                   // final String uniqueId = await Utils.getUniqueID();
@@ -496,9 +495,7 @@ class _SiteReportingStep4State extends State<SiteReportingStep4> {
 
                   String formattedDateTimeIn = formatDate(punchTimeDateIn);
 
-                  Map<String, dynamic> response =
-                      await markSiteVisitViewModel.markMarkSiteVisit(
-                          token!,
+                  Map<String, dynamic> response = await markSiteVisitViewModel.markMarkSiteVisit(token!,
                           MarkSiteVisitModel(
                               clientSiteId: combinedValue,
                               checkListRes: widget.selectedOptions.join(','),
