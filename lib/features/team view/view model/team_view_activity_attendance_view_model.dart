@@ -1,4 +1,4 @@
-import 'package:dio/dio.dart';
+  import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:vigo_smart_app/core/constants/constants.dart';
 import 'package:vigo_smart_app/features/auth/session_manager/session_manager.dart';

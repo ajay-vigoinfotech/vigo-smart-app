@@ -7,18 +7,24 @@ class CustomTextFormField extends StatelessWidget {
   final TextInputType? keyboardType;
   final List<TextInputFormatter>? inputFormatters;
   final bool isDatePicker;
+  final bool isStatePicker;
   final void Function(String?)? onChanged;
-  final TextEditingController? controller; // Added controller for better control
+  final TextEditingController? controller;
+  final int? maxLength;
+  final Color? iconColor;
 
-  const CustomTextFormField({
+   const CustomTextFormField({
     super.key,
     required this.icon,
     required this.labelText,
     this.keyboardType,
     this.inputFormatters,
     this.isDatePicker = false,
+    this.isStatePicker = false,
     this.onChanged,
-    this.controller, // Accepting controller
+    this.controller,
+    this.maxLength,
+    this.iconColor,
   });
 
   @override
@@ -28,7 +34,7 @@ class CustomTextFormField extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Icon(icon),
+          Icon(icon, color: iconColor, size: 30,),
           const SizedBox(width: 5),
           Expanded(
             child: GestureDetector(
@@ -43,16 +49,16 @@ class CustomTextFormField extends StatelessWidget {
                 );
 
                 if (selectedDate != null) {
-                  final formattedDate =
-                      "${selectedDate.day}-${selectedDate.month}-${selectedDate.year}";
-                  onChanged?.call(formattedDate); // Pass formatted date
+                  final formattedDate = "${selectedDate.day}-${selectedDate.month}-${selectedDate.year}";
+                  onChanged?.call(formattedDate);
                 }
               }
                   : null,
               child: AbsorbPointer(
-                absorbing: isDatePicker, // Absorbs input while date picker is active
+                absorbing: isDatePicker,
                 child: TextFormField(
-                  controller: controller, // Use the controller if provided
+                  maxLength: maxLength,
+                  controller: controller,
                   keyboardType: keyboardType,
                   inputFormatters: inputFormatters,
                   decoration: InputDecoration(
@@ -62,7 +68,7 @@ class CustomTextFormField extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  onChanged: onChanged, // Keeps other changes working
+                  onChanged: onChanged,
                 ),
               ),
             ),

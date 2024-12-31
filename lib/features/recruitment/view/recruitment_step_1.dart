@@ -17,6 +17,7 @@ import 'package:vigo_smart_app/features/recruitment/view%20model/create_recruitm
 import 'package:vigo_smart_app/features/recruitment/view%20model/designation_list_view_model.dart';
 import 'package:vigo_smart_app/features/recruitment/widget/custom_text_form_field.dart';
 import 'package:vigo_smart_app/features/recruitment/widget/gender_radio_button.dart';
+import '../../../helper/toast_helper.dart';
 import '../../home/view/home_page.dart';
 import '../view model/branch_list_view_model.dart';
 import '../view model/duplicate_aadhaar_view_model.dart';
@@ -30,7 +31,7 @@ class RecruitmentStep1 extends StatefulWidget {
 }
 
 class _RecruitmentStep1State extends State<RecruitmentStep1> {
-  bool _expandAll = false;
+  bool _expandAll = true;
   String? _selectedStatus;
 
   final ImagePicker _picker = ImagePicker();
@@ -42,13 +43,15 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
   final GlobalKey<SfSignaturePadState> _signaturePadKey = GlobalKey<SfSignaturePadState>();
   bool _isSigned = false;
   late Uint8List _signatureData;
-  late String _base64Signature;
+  late String _base64Signature = '';
 
   SessionManager sessionManager = SessionManager();
 
   String selectedSiteId = '';
   String selectedDesignationId = '';
   String selectedBranchId = '';
+
+  final panRegex = RegExp(r'^[A-Z]{5}[0-9]{4}[A-Z]$');
 
 
   @override
@@ -67,7 +70,6 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
         actions: [
           IconButton(
             onPressed: () {
-              debugPrint('Icons tapped');
               setState(() {
                 _expandAll = !_expandAll;
               });
@@ -92,7 +94,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                   width: double.infinity,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.indigo,
+                      backgroundColor: Colors.teal.shade400,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(
                           horizontal: 30, vertical: 10),
@@ -102,49 +104,84 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                       elevation: 5,
                     ),
                     onPressed: () async {
-                      String? token = await sessionManager.getToken();
-                      CreateRecruitmentViewModel createRecruitmentViewModel =
-                          CreateRecruitmentViewModel();
-
-                      Map<String, dynamic> response =
-                          await createRecruitmentViewModel.createRecruitment(
-                        token!,
-                        CreateRecruitmentModel(
-                          fullName: firstName,
-                          lastName: lastName,
-                          fatherName: fatherName,
-                          motherName: motherName,
-                          spouseName: spouseName,
-                          contactNo: mobNo,
-                          dob: dob,
-                          gender: '$selectedGenderCode',
-                          marritalStatus: selectedMaritalCode,
-                          branchId: selectedBranchId,
-                          siteId: selectedSiteId,
-                          designationId: selectedDesignationId,
-                          pan: panNo,
-                          aadharno: aadhaarNo,
-                          userImage: _digitalPhoto,
-                          userSign: _base64Signature,
-                          aadharFront: _aadhaarImageFront,
-                          aadharBack: _aadhaarImageBack,
-                        ),
-                      );
-
-                      if (response['code'] == 200) {
-                        Navigator.of(context).pop();
-                        QuickAlert.show(
-                          confirmBtnText: 'Ok',
-                          context: context,
-                          type: QuickAlertType.success,
-                          text: '${response['status']}',
-                          onConfirmBtnTap: () {
-                            Navigator.pushAndRemoveUntil(
-                              this.context,
-                              MaterialPageRoute(builder: (context) => HomePage()),
-                              (route) => false,
-                            );
+                      try {
+                        final validations = [
+                          {aadhaarNo.isEmpty: "Please Enter Aadhaar number"},
+                          {aadhaarNo.length != 12 : "Aadhaar number should be 12 digits"},
+                          {panNo.isNotEmpty && !panRegex.hasMatch(panNo): "Please Enter a Valid Pan number"},
+                          {_aadhaarImageFront.isEmpty: "Please upload Aadhaar proof side 1"},
+                          {_aadhaarImageBack.isEmpty: "Please upload Aadhaar proof side 2"},
+                          {firstName.isEmpty: "Please Enter First name"},
+                          {mobNo.isEmpty: "Please Enter Mobile number"},
+                          {mobNo.length != 10 : "Mobile number should be 10 digits"},
+                          {dob.isEmpty : "Please select a DOB"},
+                          {
+                            dob.isNotEmpty && DateTime.tryParse(dob) != null && DateTime.now().difference(DateTime.parse(dob)).inDays < 6570:
+                            "Employee is Minor"
                           },
+                          {selectedGenderCode.isEmpty : 'Please Select a Gender' },
+                          {selectedMaritalCode.isEmpty : 'Please Select Marital Status'},
+                          {_digitalPhoto.isEmpty : 'Please take Employee Photo'},
+                          {_base64Signature.isEmpty : 'Please insert Employee Signature'},
+                        ];
+
+                        for (var validation in validations) {
+                          if (validation.keys.first) {
+                            ToastHelper.showToast(message: validation.values.first);
+                            return;
+                          }
+                        }
+
+                        String? token = await sessionManager.getToken();
+                        CreateRecruitmentViewModel createRecruitmentViewModel = CreateRecruitmentViewModel();
+
+                        Map<String, dynamic> response =
+                            await createRecruitmentViewModel.createRecruitment(
+                          token!,
+                          CreateRecruitmentModel(
+                            fullName: firstName,
+                            lastName: lastName,
+                            fatherName: fatherName,
+                            motherName: motherName,
+                            spouseName: spouseName,
+                            contactNo: mobNo,
+                            dob: dob,
+                            gender: selectedGenderCode,
+                            marritalStatus: selectedMaritalCode,
+                            branchId: selectedBranchId,
+                            siteId: selectedSiteId,
+                            designationId: selectedDesignationId,
+                            pan: panNo,
+                            aadharno: aadhaarNo,
+                            userImage: _digitalPhoto,
+                            userSign: _base64Signature,
+                            aadharFront: _aadhaarImageFront,
+                            aadharBack: _aadhaarImageBack,
+                          ),
+                        );
+
+                        if (response['code'] == 200) {
+                          Navigator.of(context).pop();
+                          QuickAlert.show(
+                            confirmBtnText: 'Ok',
+                            context: context,
+                            type: QuickAlertType.success,
+                            text: '${response['status']}',
+                            onConfirmBtnTap: () {
+                              Navigator.pushAndRemoveUntil(
+                                this.context,
+                                MaterialPageRoute(
+                                    builder: (context) => HomePage()),
+                                (route) => false,
+                              );
+                            },
+                          );
+                        } else {
+
+                        }
+                      } catch (error) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Error::: $error')),
                         );
                       }
                     },
@@ -248,7 +285,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                                         title: Text(site['unitName'] ?? ''),
                                         onTap: () {
                                           setState(() {
-                                            selectedSite = site['unitName'] ?? '';
+                                            selectedSite =
+                                                site['unitName'] ?? '';
                                             selectedSiteId = site['siteId'];
                                           });
                                           Navigator.pop(context);
@@ -394,8 +432,11 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                                                 ''),
                                         onTap: () {
                                           setState(() {
-                                            selectedDesignation = designation['designationName'] ?? '';
-                                            selectedDesignationId = designation['designationId'];
+                                            selectedDesignation = designation[
+                                                    'designationName'] ??
+                                                '';
+                                            selectedDesignationId =
+                                                designation['designationId'];
                                           });
                                           Navigator.pop(context);
                                         },
@@ -538,7 +579,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                                         title: Text(branch['branchName'] ?? ''),
                                         onTap: () {
                                           setState(() {
-                                            selectedBranch = branch['branchName'] ?? '';
+                                            selectedBranch =
+                                                branch['branchName'] ?? '';
                                             selectedBranchId = branch[''] ?? '';
                                           });
                                           Navigator.pop(context);
@@ -606,12 +648,13 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
     _isSigned = false;
   }
 
-
   Future<void> _handleSaveButtonPressed() async {
     try {
-      final ui.Image image = await _signaturePadKey.currentState!.toImage(pixelRatio: 3.0);
+      final ui.Image image =
+          await _signaturePadKey.currentState!.toImage(pixelRatio: 3.0);
 
-      final ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      final ByteData? byteData =
+          await image.toByteData(format: ui.ImageByteFormat.png);
       if (byteData != null) {
         final Uint8List data = byteData.buffer.asUint8List();
         final String base64Image = base64Encode(data);
@@ -629,7 +672,6 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
       debugPrint("Error saving signature: $e");
     }
   }
-
 
   void _showPopup() {
     showDialog<Widget>(
@@ -741,9 +783,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
             width: double.infinity,
             height: 200,
             decoration: BoxDecoration(
-              border: Border.all(
-                color: Colors.grey
-              ),
+              border: Border.all(color: Colors.grey),
             ),
             child: _isSigned
                 ? Image.memory(
@@ -948,12 +988,15 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                       SizedBox(width: 5),
                       Expanded(
                         child: TextFormField(
+                          onFieldSubmitted: (_) {
+                            FocusScope.of(context).requestFocus(FocusNode());
+                          },
                           controller: aadhaarController,
                           maxLength: 12,
                           keyboardType: TextInputType.number,
+                          textInputAction: TextInputAction.done,
                           decoration: InputDecoration(
-                            contentPadding:
-                                EdgeInsets.symmetric(horizontal: 10),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 10),
                             label: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Text('Aadhaar No*'),
@@ -1001,22 +1044,12 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                                 EdgeInsets.symmetric(horizontal: 10),
                             label: Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: Text('PAN No*'),
+                              child: Text('PAN No'),
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                          validator: (value) {
-                            String pattern = r'^[A-Z]{5}[0-9]{4}[A-Z]$';
-                            RegExp regex = RegExp(pattern);
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter PAN number';
-                            } else if (!regex.hasMatch(value)) {
-                              return 'Please enter a valid PAN number';
-                            }
-                            return null;
-                          },
                           onChanged: (value) {
                             panNo = value;
                             debugPrint(panNo);
@@ -1107,7 +1140,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
   String spouseName = '';
   String mobNo = '';
   String dob = '';
-  int? selectedGenderCode;
+  String selectedGenderCode = '';
   String selectedMaritalCode = '';
 
   final Map<String, String> statusCodes = {
@@ -1119,7 +1152,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
 
   void handleGenderSelected(int genderCode) {
     setState(() {
-      selectedGenderCode = genderCode;
+      selectedGenderCode = genderCode.toString();
     });
   }
 
@@ -1194,6 +1227,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                   ),
                   CustomTextFormField(
                     icon: Icons.call,
+                    maxLength: 10,
                     labelText: "Mobile No",
                     keyboardType: TextInputType.number,
                     onChanged: (value) {
@@ -1217,7 +1251,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
 
                             dateController.text = value;
                           } catch (e) {
-                            print('Error parsing date: $e');
+                            debugPrint('Error parsing date: $e');
                           }
                         }
                       });

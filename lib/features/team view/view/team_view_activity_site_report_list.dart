@@ -219,11 +219,9 @@ class _TeamViewActivitySiteReportListState
         await teamViewActivitySiteReportListViewModel.sessionManager.getToken();
 
     if (token != null) {
-      await teamViewActivitySiteReportListViewModel
-          .fetchTeamViewActivitySiteReportList(token, widget.userId);
+      await teamViewActivitySiteReportListViewModel.fetchTeamViewActivitySiteReportList(token, widget.userId);
 
-      if (teamViewActivitySiteReportListViewModel.teamActivitySiteReportList !=
-          null) {
+      if (teamViewActivitySiteReportListViewModel.teamActivitySiteReportList != null) {
         setState(() {
           teamActivitySieReportListData =
               teamViewActivitySiteReportListViewModel
