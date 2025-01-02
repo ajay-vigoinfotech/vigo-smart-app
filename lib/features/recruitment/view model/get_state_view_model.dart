@@ -19,10 +19,10 @@ class GetStateViewModel {
               contentType: Headers.formUrlEncodedContentType));
 
       if (response.statusCode == 200) {
-        // final List<dynamic> data = response.data;
-        final responseData = response.data;
-        stateList = responseData;
-        // stateList = data.map((e) => GetStateModel.fromJson(e)).toList();
+        final List<dynamic> data = response.data;
+        // final responseData = response.data;
+        // stateList = responseData;
+        stateList = data.map((e) => GetStateModel.fromJson(e)).toList();
       } else {
         throw Exception('Failed to fetch states: ${response.statusCode}');
       }

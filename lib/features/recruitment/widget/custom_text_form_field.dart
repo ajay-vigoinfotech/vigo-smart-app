@@ -10,10 +10,13 @@ class CustomTextFormField extends StatelessWidget {
   final bool isStatePicker;
   final void Function(String?)? onChanged;
   final TextEditingController? controller;
+  final VoidCallback? onTap; // Add this for handling taps
+
   final int? maxLength;
   final Color? iconColor;
+  final bool? enabled;
 
-   const CustomTextFormField({
+  const CustomTextFormField({
     super.key,
     required this.icon,
     required this.labelText,
@@ -25,6 +28,8 @@ class CustomTextFormField extends StatelessWidget {
     this.controller,
     this.maxLength,
     this.iconColor,
+    this.enabled,
+    this.onTap,
   });
 
   @override
@@ -34,25 +39,30 @@ class CustomTextFormField extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Icon(icon, color: iconColor, size: 30,),
+          Icon(
+            icon,
+            color: iconColor,
+            size: 30,
+          ),
           const SizedBox(width: 5),
           Expanded(
             child: GestureDetector(
               onTap: isDatePicker
                   ? () async {
-                // Open Date Picker if isDatePicker is true
-                final DateTime? selectedDate = await showDatePicker(
-                  context: context,
-                  initialDate: DateTime.now(),
-                  firstDate: DateTime(1900),
-                  lastDate: DateTime.now(),
-                );
+                      // Open Date Picker if isDatePicker is true
+                      final DateTime? selectedDate = await showDatePicker(
+                        context: context,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime(1900),
+                        lastDate: DateTime.now(),
+                      );
 
-                if (selectedDate != null) {
-                  final formattedDate = "${selectedDate.day}-${selectedDate.month}-${selectedDate.year}";
-                  onChanged?.call(formattedDate);
-                }
-              }
+                      if (selectedDate != null) {
+                        final formattedDate =
+                            "${selectedDate.day}-${selectedDate.month}-${selectedDate.year}";
+                        onChanged?.call(formattedDate);
+                      }
+                    }
                   : null,
               child: AbsorbPointer(
                 absorbing: isDatePicker,
@@ -69,6 +79,7 @@ class CustomTextFormField extends StatelessWidget {
                     ),
                   ),
                   onChanged: onChanged,
+                  enabled: enabled,
                 ),
               ),
             ),

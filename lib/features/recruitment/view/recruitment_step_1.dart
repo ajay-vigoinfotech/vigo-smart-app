@@ -15,10 +15,10 @@ import 'package:vigo_smart_app/features/auth/session_manager/session_manager.dar
 import 'package:vigo_smart_app/features/recruitment/model/create_recruitment_model.dart';
 import 'package:vigo_smart_app/features/recruitment/view%20model/create_recruitment_view_model.dart';
 import 'package:vigo_smart_app/features/recruitment/view%20model/designation_list_view_model.dart';
+import 'package:vigo_smart_app/features/recruitment/view/recruitment_step_2.dart';
 import 'package:vigo_smart_app/features/recruitment/widget/custom_text_form_field.dart';
 import 'package:vigo_smart_app/features/recruitment/widget/gender_radio_button.dart';
 import '../../../helper/toast_helper.dart';
-import '../../home/view/home_page.dart';
 import '../view model/branch_list_view_model.dart';
 import '../view model/duplicate_aadhaar_view_model.dart';
 import '../view model/site_list_view_model.dart';
@@ -135,8 +135,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                         String? token = await sessionManager.getToken();
                         CreateRecruitmentViewModel createRecruitmentViewModel = CreateRecruitmentViewModel();
 
-                        Map<String, dynamic> response =
-                            await createRecruitmentViewModel.createRecruitment(
+                        Map<String, dynamic> response = await createRecruitmentViewModel.createRecruitment(
                           token!,
                           CreateRecruitmentModel(
                             fullName: firstName,
@@ -161,27 +160,31 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                         );
 
                         if (response['code'] == 200) {
-                          Navigator.of(context).pop();
                           QuickAlert.show(
-                            confirmBtnText: 'Ok',
-                            context: context,
-                            type: QuickAlertType.success,
+                              context: context,
+                              type: QuickAlertType.success,
                             text: '${response['status']}',
-                            onConfirmBtnTap: () {
-                              Navigator.pushAndRemoveUntil(
-                                this.context,
-                                MaterialPageRoute(
-                                    builder: (context) => HomePage()),
-                                (route) => false,
-                              );
-                            },
+                            onConfirmBtnTap: (){
+                                Navigator.push(context,
+                                    MaterialPageRoute(builder: (context) =>
+                                    RecruitmentStep2(userId: response['data'],
+                                    ),
+                                    ),
+                                );
+                            }
                           );
                         } else {
-
+                          QuickAlert.show(
+                            barrierDismissible: false,
+                            confirmBtnText: 'Retry',
+                            context: context,
+                            type: QuickAlertType.error,
+                            text: '${response['message'] ?? 'Something went wrong'}',
+                          );
                         }
                       } catch (error) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Error::: $error')),
+                          SnackBar(content: Text('An error occurred. Please try again later.')),
                         );
                       }
                     },

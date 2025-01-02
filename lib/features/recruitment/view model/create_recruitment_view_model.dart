@@ -17,8 +17,6 @@ class CreateRecruitmentViewModel{
         options: Options(
           headers: {
             'Authorization': 'Bearer $token',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'User-Agent': 'okhttp/4.9.1',
           },
           contentType: Headers.formUrlEncodedContentType,
         ),

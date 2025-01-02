@@ -150,7 +150,7 @@ class _HomePageState extends State<HomePage> {
       'icon': Image.asset('assets/images/ic_recruitment.png'),
       'name': Strings.recruitmentApp,
       'color': Pallete.backgroundColor,
-      'page': const RecruitmentStep2(),
+      'page': const RecruitmentStep1(),
     },
     {
       'code': 'TeamViewApp',
