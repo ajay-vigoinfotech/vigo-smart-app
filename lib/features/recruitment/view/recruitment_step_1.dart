@@ -16,12 +16,15 @@ import 'package:vigo_smart_app/features/recruitment/model/create_recruitment_mod
 import 'package:vigo_smart_app/features/recruitment/view%20model/create_recruitment_view_model.dart';
 import 'package:vigo_smart_app/features/recruitment/view%20model/designation_list_view_model.dart';
 import 'package:vigo_smart_app/features/recruitment/view/recruitment_step_2.dart';
+import 'package:vigo_smart_app/features/recruitment/view/recruitment_step_3.dart';
 import 'package:vigo_smart_app/features/recruitment/widget/custom_text_form_field.dart';
 import 'package:vigo_smart_app/features/recruitment/widget/gender_radio_button.dart';
 import '../../../helper/toast_helper.dart';
+import '../model/update_recruitment01_model.dart';
 import '../view model/branch_list_view_model.dart';
 import '../view model/duplicate_aadhaar_view_model.dart';
 import '../view model/site_list_view_model.dart';
+import '../view model/update_recruitment01_view_model.dart';
 
 class RecruitmentStep1 extends StatefulWidget {
   const RecruitmentStep1({super.key});
@@ -31,6 +34,8 @@ class RecruitmentStep1 extends StatefulWidget {
 }
 
 class _RecruitmentStep1State extends State<RecruitmentStep1> {
+  String? userId;
+
   bool _expandAll = true;
   String? _selectedStatus;
 
@@ -40,7 +45,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController dateController = TextEditingController();
 
-  final GlobalKey<SfSignaturePadState> _signaturePadKey = GlobalKey<SfSignaturePadState>();
+  final GlobalKey<SfSignaturePadState> _signaturePadKey =
+      GlobalKey<SfSignaturePadState>();
   bool _isSigned = false;
   late Uint8List _signatureData;
   late String _base64Signature = '';
@@ -52,7 +58,6 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
   String selectedBranchId = '';
 
   final panRegex = RegExp(r'^[A-Z]{5}[0-9]{4}[A-Z]$');
-
 
   @override
   void initState() {
@@ -107,84 +112,182 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                       try {
                         final validations = [
                           {aadhaarNo.isEmpty: "Please Enter Aadhaar number"},
-                          {aadhaarNo.length != 12 : "Aadhaar number should be 12 digits"},
-                          {panNo.isNotEmpty && !panRegex.hasMatch(panNo): "Please Enter a Valid Pan number"},
-                          {_aadhaarImageFront.isEmpty: "Please upload Aadhaar proof side 1"},
-                          {_aadhaarImageBack.isEmpty: "Please upload Aadhaar proof side 2"},
+                          {
+                            aadhaarNo.length != 12:
+                                "Aadhaar number should be 12 digits"
+                          },
+                          {
+                            panNo.isNotEmpty && !panRegex.hasMatch(panNo):
+                                "Please Enter a Valid Pan number"
+                          },
+                          {
+                            _aadhaarImageFront.isEmpty:
+                                "Please upload Aadhaar proof side 1"
+                          },
+                          {
+                            _aadhaarImageBack.isEmpty:
+                                "Please upload Aadhaar proof side 2"
+                          },
                           {firstName.isEmpty: "Please Enter First name"},
                           {mobNo.isEmpty: "Please Enter Mobile number"},
-                          {mobNo.length != 10 : "Mobile number should be 10 digits"},
-                          {dob.isEmpty : "Please select a DOB"},
                           {
-                            dob.isNotEmpty && DateTime.tryParse(dob) != null && DateTime.now().difference(DateTime.parse(dob)).inDays < 6570:
-                            "Employee is Minor"
+                            mobNo.length != 10:
+                                "Mobile number should be 10 digits"
                           },
-                          {selectedGenderCode.isEmpty : 'Please Select a Gender' },
-                          {selectedMaritalCode.isEmpty : 'Please Select Marital Status'},
-                          {_digitalPhoto.isEmpty : 'Please take Employee Photo'},
-                          {_base64Signature.isEmpty : 'Please insert Employee Signature'},
+                          {dob.isEmpty: "Please select a DOB"},
+                          {
+                            dob.isNotEmpty &&
+                                DateTime.tryParse(dob) != null &&
+                                DateTime.now()
+                                        .difference(DateTime.parse(dob))
+                                        .inDays <
+                                    6570: "Employee is Minor"
+                          },
+                          {
+                            selectedGenderCode.isEmpty: 'Please Select a Gender'
+                          },
+                          {
+                            selectedMaritalCode.isEmpty:
+                                'Please Select Marital Status'
+                          },
+                          {_digitalPhoto.isEmpty: 'Please take Employee Photo'},
+                          {
+                            _base64Signature.isEmpty:
+                                'Please insert Employee Signature'
+                          },
                         ];
 
                         for (var validation in validations) {
                           if (validation.keys.first) {
-                            ToastHelper.showToast(message: validation.values.first);
+                            ToastHelper.showToast(
+                                message: validation.values.first);
                             return;
                           }
                         }
 
                         String? token = await sessionManager.getToken();
-                        CreateRecruitmentViewModel createRecruitmentViewModel = CreateRecruitmentViewModel();
 
-                        Map<String, dynamic> response = await createRecruitmentViewModel.createRecruitment(
-                          token!,
-                          CreateRecruitmentModel(
-                            fullName: firstName,
-                            lastName: lastName,
-                            fatherName: fatherName,
-                            motherName: motherName,
-                            spouseName: spouseName,
-                            contactNo: mobNo,
-                            dob: dob,
-                            gender: selectedGenderCode,
-                            marritalStatus: selectedMaritalCode,
-                            branchId: selectedBranchId,
-                            siteId: selectedSiteId,
-                            designationId: selectedDesignationId,
-                            pan: panNo,
-                            aadharno: aadhaarNo,
-                            userImage: _digitalPhoto,
-                            userSign: _base64Signature,
-                            aadharFront: _aadhaarImageFront,
-                            aadharBack: _aadhaarImageBack,
-                          ),
-                        );
+                        if (userId == null) {
+                          CreateRecruitmentViewModel createRecruitmentViewModel = CreateRecruitmentViewModel();
 
-                        if (response['code'] == 200) {
-                          QuickAlert.show(
+                          Map<String, dynamic> response = await createRecruitmentViewModel.createRecruitment(
+                            token!,
+                            CreateRecruitmentModel(
+                              fullName: firstName,
+                              lastName: lastName,
+                              fatherName: fatherName,
+                              motherName: motherName,
+                              spouseName: spouseName,
+                              contactNo: mobNo,
+                              dob: dob,
+                              gender: selectedGenderCode,
+                              marritalStatus: selectedMaritalCode,
+                              branchId: selectedBranchId,
+                              siteId: selectedSiteId,
+                              designationId: selectedDesignationId,
+                              pan: panNo,
+                              aadharno: aadhaarNo,
+                              userImage: _digitalPhoto,
+                              userSign: _base64Signature,
+                              aadharFront: _aadhaarImageFront,
+                              aadharBack: _aadhaarImageBack,
+                            ),
+                          );
+
+                          if (response['code'] == 200) {
+                            setState(() {
+                              userId = response['data'];
+                            });
+                            QuickAlert.show(
+                                barrierDismissible: false,
+                                context: context,
+                                type: QuickAlertType.success,
+                                text: '${response['status']}',
+                                onConfirmBtnTap: () {
+                                  Navigator.pop(context);
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => RecruitmentStep2(
+                                        userId: response['data'],
+                                      ),
+                                    ),
+                                  );
+                                });
+                          } else {
+                            QuickAlert.show(
+                              barrierDismissible: false,
+                              confirmBtnText: 'Retry',
+                              context: context,
+                              type: QuickAlertType.error,
+                              text:
+                                  '${response['message'] ?? 'Something went wrong'}',
+                            );
+                          }
+                        } else {
+                          UpdateRecruitment01ViewModel
+                              updateRecruitment01ViewModel =
+                              UpdateRecruitment01ViewModel();
+
+                          Map<String, dynamic> response =
+                              await updateRecruitment01ViewModel
+                                  .updateRecruitment01(
+                            token!,
+                            UpdateRecruitment01Model(
+                              userId: userId,
+                              fullName: firstName,
+                              lastName: lastName,
+                              fatherName: fatherName,
+                              motherName: motherName,
+                              spouseName: spouseName,
+                              contactNo: mobNo,
+                              dob: dob,
+                              gender: selectedGenderCode,
+                              marritalStatus: selectedMaritalCode,
+                              branchId: selectedBranchId,
+                              siteId: selectedSiteId,
+                              designationId: selectedDesignationId,
+                              pan: panNo,
+                              aadharno: aadhaarNo,
+                              userImage: _digitalPhoto,
+                              userSign: _base64Signature,
+                              aadharFront: _aadhaarImageFront,
+                              aadharBack: _aadhaarImageBack,
+                            ),
+                          );
+
+                          if (response['code'] == 200) {
+                            QuickAlert.show(
+                              barrierDismissible: false,
                               context: context,
                               type: QuickAlertType.success,
-                            text: '${response['status']}',
-                            onConfirmBtnTap: (){
-                                Navigator.push(context,
-                                    MaterialPageRoute(builder: (context) =>
-                                    RecruitmentStep2(userId: response['data'],
+                              text: response['status'],
+                              onConfirmBtnTap: () {
+                                Navigator.pop(context);
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => RecruitmentStep2(
+                                      userId: userId!,
                                     ),
-                                    ),
+                                  ),
                                 );
-                            }
-                          );
-                        } else {
-                          QuickAlert.show(
-                            barrierDismissible: false,
-                            confirmBtnText: 'Retry',
-                            context: context,
-                            type: QuickAlertType.error,
-                            text: '${response['message'] ?? 'Something went wrong'}',
-                          );
+                              },
+                            );
+                          } else {
+                            QuickAlert.show(
+                              context: context,
+                              type: QuickAlertType.error,
+                              text:
+                                  response['message'] ?? 'Something went wrong',
+                            );
+                          }
                         }
                       } catch (error) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('An error occurred. Please try again later.')),
+                          SnackBar(
+                              content: Text(
+                                  'An error occurred. Please try again later.')),
                         );
                       }
                     },
@@ -999,7 +1102,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                           keyboardType: TextInputType.number,
                           textInputAction: TextInputAction.done,
                           decoration: InputDecoration(
-                            contentPadding: EdgeInsets.symmetric(horizontal: 10),
+                            contentPadding:
+                                EdgeInsets.symmetric(horizontal: 10),
                             label: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Text('Aadhaar No*'),

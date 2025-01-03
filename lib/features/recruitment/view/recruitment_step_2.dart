@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
@@ -8,9 +7,8 @@ import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:vigo_smart_app/core/theme/app_pallete.dart';
 import 'package:vigo_smart_app/features/auth/session_manager/session_manager.dart';
-import 'package:vigo_smart_app/features/recruitment/model/update_recruitment_model.dart';
-import 'package:vigo_smart_app/features/recruitment/view%20model/update_recruitment_view_model.dart';
-import 'package:vigo_smart_app/features/recruitment/view/recruitment_step_1.dart';
+import 'package:vigo_smart_app/features/recruitment/model/update_recruitment02_model.dart';
+import 'package:vigo_smart_app/features/recruitment/view%20model/update_recruitment02_view_model.dart';
 import 'package:vigo_smart_app/features/recruitment/view/recruitment_step_3.dart';
 import 'package:vigo_smart_app/features/recruitment/widget/custom_text_form_field.dart';
 import '../view model/bank_list_view_model.dart';
@@ -29,7 +27,7 @@ class RecruitmentStep2 extends StatefulWidget {
 
 class _RecruitmentStep2State extends State<RecruitmentStep2> {
   SessionManager sessionManager = SessionManager();
-  final bool _expandAll = true;
+  bool _expandAll = true;
   bool isLocalStateSelected = false;
   bool isLocalCitySelected = false;
 
@@ -62,16 +60,11 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
   final TextEditingController localCityController = TextEditingController();
 
   //permanent address
-  final TextEditingController permanentLine1AddressController =
-      TextEditingController();
-  final TextEditingController permanentPincodeController =
-      TextEditingController();
-  final TextEditingController permanentPoliceStationController =
-      TextEditingController();
-  final TextEditingController permanentPostOfficeController =
-      TextEditingController();
-  final TextEditingController permanentStateController =
-      TextEditingController();
+  final TextEditingController permanentLine1AddressController = TextEditingController();
+  final TextEditingController permanentPincodeController = TextEditingController();
+  final TextEditingController permanentPoliceStationController = TextEditingController();
+  final TextEditingController permanentPostOfficeController = TextEditingController();
+  final TextEditingController permanentStateController = TextEditingController();
   final TextEditingController permanentCityController = TextEditingController();
 
   // Checkbox state
@@ -115,11 +108,9 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
         actions: [
           IconButton(
             onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => RecruitmentStep1()));
-              // setState(() {
-              //   _expandAll = !_expandAll;
-              // });
+              setState(() {
+                _expandAll = !_expandAll;
+              });
             },
             icon: Icon(_expandAll ? Icons.unfold_less : Icons.unfold_more),
           ),
@@ -134,17 +125,28 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
               _permanentAddress(),
               _bankDetails(),
               _contactDetails(),
+              SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.teal.shade400,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 30, vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero,
+                        ),
+                        elevation: 5,
+                      ),
                       onPressed: () async {
                         try {
                           String? token = await sessionManager.getToken();
-                          UpdateRecruitmentViewModel updateRecruitmentViewModel = UpdateRecruitmentViewModel();
+                          UpdateRecruitment02ViewModel updateRecruitment02ViewModel = UpdateRecruitment02ViewModel();
 
-                          Map<String,dynamic> response = await updateRecruitmentViewModel.updateRecruitment(token!,
-                              UpdateRecruitmentModel(
+                          Map<String,dynamic> response = await updateRecruitment02ViewModel.updateRecruitment02(token!,
+                              UpdateRecruitment02Model(
                                   userId: widget.userId,
                                   currentAddress: currentAddress,
                                   CPin: pinCode,
@@ -172,33 +174,69 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
                           );
 
                           if (response['code'] == 200) {
-                            Navigator.of(context).pop();
                             QuickAlert.show(
-                              confirmBtnText: 'Ok',
-                              context: context,
-                              type: QuickAlertType.success,
-                              text: '${response['status']}',
-                              onConfirmBtnTap: () {
-                                Navigator.pushReplacement(
-                                  this.context,
-                                  MaterialPageRoute(
-                                      builder: (context) => RecruitmentStep3()),
-                                );
-                              },
-                            );
+                              barrierDismissible: false,
+                                context: context,
+                                type: QuickAlertType.success,
+                                text: '${response['status']}',
+                                onConfirmBtnTap: () {
+                                  Navigator.pop(context);
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => RecruitmentStep3(
+                                        userId: '${widget.userId}',
+                                      ),
+                                    ),
+                                  );
+                                });
                           } else {
-
+                            QuickAlert.show(
+                              barrierDismissible: false,
+                              confirmBtnText: 'Retry',
+                              context: context,
+                              type: QuickAlertType.error,
+                              text:
+                              '${response['message'] ?? 'Something went wrong'}',
+                            );
                           }
                         } catch (error) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error::: $error')),
+                            SnackBar(
+                                content: Text(
+                                    'An error occurred. Please try again later.')),
                           );
                         }
                       },
-                      child: Text('Submit and Next')),
-                  ElevatedButton(onPressed: () {}, child: Text('Next')),
+                      child: Text('Submit and Next',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold),
+                      )),
+
+                  ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.teal.shade400,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 30, vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero,
+                        ),
+                        elevation: 5,
+                      ),
+                      onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => RecruitmentStep3(userId: widget.userId)));
+                  }, child: Text('Next',
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold),
+                  )),
                 ],
               ),
+              SizedBox(height: 30),
             ],
           ),
         ),
@@ -314,8 +352,6 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
       ),
     );
   }
-
-  // final TextEditingController stateController = TextEditingController();
 
   bool isChecked = false;
 

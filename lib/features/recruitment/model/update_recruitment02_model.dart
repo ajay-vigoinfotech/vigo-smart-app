@@ -1,4 +1,4 @@
-class UpdateRecruitmentModel{
+class UpdateRecruitment02Model{
   String? userId;
   String? currentAddress;
   String? CPin;
@@ -23,7 +23,7 @@ class UpdateRecruitmentModel{
   String? responsible_add1;
   String? responsible_Reference1;
 
-  UpdateRecruitmentModel({
+  UpdateRecruitment02Model({
     required this.userId,
     required this.currentAddress,
     required this.CPin,
@@ -49,8 +49,8 @@ class UpdateRecruitmentModel{
     required this.responsible_Reference1,
 });
 
-  factory UpdateRecruitmentModel.fromJson(Map<String, dynamic> json) {
-    return UpdateRecruitmentModel(
+  factory UpdateRecruitment02Model.fromJson(Map<String, dynamic> json) {
+    return UpdateRecruitment02Model(
         userId: json['userId']?.toString() ?? '',
         currentAddress: json['currentAddress']?.toString() ?? '',
         CPin: json['CPin']?.toString() ?? '',
