@@ -16,6 +16,8 @@ class CustomTextFormField extends StatelessWidget {
   final Color? iconColor;
   final bool? enabled;
 
+  final dynamic validator;
+
   const CustomTextFormField({
     super.key,
     required this.icon,
@@ -30,6 +32,7 @@ class CustomTextFormField extends StatelessWidget {
     this.iconColor,
     this.enabled,
     this.onTap,
+    this.validator
   });
 
   @override
@@ -67,6 +70,7 @@ class CustomTextFormField extends StatelessWidget {
               child: AbsorbPointer(
                 absorbing: isDatePicker,
                 child: TextFormField(
+                  validator: validator,
                   maxLength: maxLength,
                   controller: controller,
                   keyboardType: keyboardType,
