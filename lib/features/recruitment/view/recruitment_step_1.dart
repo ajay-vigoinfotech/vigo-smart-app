@@ -4,7 +4,6 @@ import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -15,8 +14,8 @@ import 'package:vigo_smart_app/features/auth/session_manager/session_manager.dar
 import 'package:vigo_smart_app/features/recruitment/model/create_recruitment_model.dart';
 import 'package:vigo_smart_app/features/recruitment/view%20model/create_recruitment_view_model.dart';
 import 'package:vigo_smart_app/features/recruitment/view%20model/designation_list_view_model.dart';
+import 'package:vigo_smart_app/features/recruitment/view/pre_recruitment_list.dart';
 import 'package:vigo_smart_app/features/recruitment/view/recruitment_step_2.dart';
-import 'package:vigo_smart_app/features/recruitment/view/recruitment_step_3.dart';
 import 'package:vigo_smart_app/features/recruitment/widget/custom_text_form_field.dart';
 import 'package:vigo_smart_app/features/recruitment/widget/gender_radio_button.dart';
 import '../../../helper/toast_helper.dart';
@@ -25,6 +24,8 @@ import '../view model/branch_list_view_model.dart';
 import '../view model/duplicate_aadhaar_view_model.dart';
 import '../view model/site_list_view_model.dart';
 import '../view model/update_recruitment01_view_model.dart';
+
+import 'package:image/image.dart' as img;
 
 class RecruitmentStep1 extends StatefulWidget {
   const RecruitmentStep1({super.key});
@@ -81,7 +82,9 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
             },
             icon: Icon(_expandAll ? Icons.unfold_less : Icons.unfold_more),
           ),
-          IconButton(onPressed: () {}, icon: Icon(Icons.article_sharp))
+          IconButton(onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => PreRecruitmentList()));
+          }, icon: Icon(Icons.article_sharp))
         ],
       ),
       body: SingleChildScrollView(
@@ -947,19 +950,20 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
     );
   }
 
+
+
   Future<void> _pickImage(String type, ImageSource source) async {
     final XFile? photo = await _picker.pickImage(source: source);
     if (photo != null) {
       final File selectedFile = File(photo.path);
 
-      final compressedImage = await FlutterImageCompress.compressWithFile(
-        selectedFile.path,
-        minWidth: 300,
-        minHeight: 300,
-        quality: 80,
-      );
+      final imageBytes = await selectedFile.readAsBytes();
 
-      if (compressedImage != null) {
+      final decodedImage = img.decodeImage(imageBytes);
+
+      if (decodedImage != null) {
+        final resizedImage = img.copyResize(decodedImage, width: 300, height: 300);
+        final compressedImage = img.encodeJpg(resizedImage, quality: 80);
         final base64String = base64Encode(compressedImage);
 
         setState(() {
@@ -972,6 +976,33 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
       }
     }
   }
+
+  // Future<void> _pickImage(String type, ImageSource source) async {
+  //   final XFile? photo = await _picker.pickImage(source: source);
+  //   if (photo != null) {
+  //     final File selectedFile = File(photo.path);
+  //
+  //     final compressedImage = await FlutterImageCompress.compressWithFile(
+  //       selectedFile.path,
+  //       minWidth: 300,
+  //       minHeight: 300,
+  //       quality: 80,
+  //     );
+  //
+  //     if (compressedImage != null) {
+  //       final base64String = base64Encode(compressedImage);
+  //
+  //       setState(() {
+  //         if (type == 'front') {
+  //           _aadhaarImageFront = base64String;
+  //         } else if (type == 'back') {
+  //           _aadhaarImageBack = base64String;
+  //         }
+  //       });
+  //     }
+  //   }
+  // }
+
 
   Future<void> _pickAndCropImage(String type, ImageSource source) async {
     // Pick an image using the selected source
@@ -993,14 +1024,15 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
 
       if (croppedFile != null) {
         final File croppedImageFile = File(croppedFile.path);
-        final compressedImage = await FlutterImageCompress.compressWithFile(
-          croppedImageFile.path,
-          minWidth: 300, // Adjust resolution
-          minHeight: 300,
-          quality: 80,
-        );
 
-        if (compressedImage != null) {
+        final imageBytes = await croppedImageFile.readAsBytes();
+
+        final decodedImage = img.decodeImage(imageBytes);
+
+        if (decodedImage != null) {
+          final resizedImage = img.copyResize(decodedImage, width: 300, height: 300);
+          final compressedImage = img.encodeJpg(resizedImage, quality: 80);
+
           final base64String = base64Encode(compressedImage);
 
           setState(() {
@@ -1012,6 +1044,46 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
       }
     }
   }
+
+  // Future<void> _pickAndCropImage(String type, ImageSource source) async {
+  //   // Pick an image using the selected source
+  //   final XFile? photo = await _picker.pickImage(source: source);
+  //   if (photo != null) {
+  //     // Crop the selected image
+  //     CroppedFile? croppedFile = await ImageCropper().cropImage(
+  //       sourcePath: photo.path,
+  //       uiSettings: [
+  //         IOSUiSettings(
+  //           title: 'Edit Photo',
+  //           aspectRatioPresets: [
+  //             CropAspectRatioPreset.original,
+  //             CropAspectRatioPreset.square,
+  //           ],
+  //         ),
+  //       ],
+  //     );
+  //
+  //     if (croppedFile != null) {
+  //       final File croppedImageFile = File(croppedFile.path);
+  //       final compressedImage = await FlutterImageCompress.compressWithFile(
+  //         croppedImageFile.path,
+  //         minWidth: 300, // Adjust resolution
+  //         minHeight: 300,
+  //         quality: 80,
+  //       );
+  //
+  //       if (compressedImage != null) {
+  //         final base64String = base64Encode(compressedImage);
+  //
+  //         setState(() {
+  //           if (type == 'digital_photo') {
+  //             _digitalPhoto = base64String;
+  //           }
+  //         });
+  //       }
+  //     }
+  //   }
+  // }
 
   void _deleteImage(String type) async {
     final shouldDelete = await showDialog<bool>(
@@ -1283,7 +1355,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
               child: Column(
                 children: [
                   CustomTextFormField(
-                    icon: Icons.person,
+                    iconWidget: Icon(Icons.person, color: Colors.blue),
+                    // icon: Icons.person,
                     labelText: 'Name (As Per Aadhaar)',
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
@@ -1293,7 +1366,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                     },
                   ),
                   CustomTextFormField(
-                    icon: Icons.person,
+                    iconWidget: Icon(Icons.person, color: Colors.blue),
+                    // icon: Icons.person,
                     labelText: 'Last Name',
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
@@ -1303,7 +1377,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                     },
                   ),
                   CustomTextFormField(
-                    icon: Icons.person,
+                    iconWidget: Icon(Icons.person, color: Colors.blue),
+                    // icon: Icons.person,
                     labelText: "Father's Name",
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
@@ -1313,7 +1388,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                     },
                   ),
                   CustomTextFormField(
-                    icon: Icons.person,
+                    iconWidget: Icon(Icons.person, color: Colors.blue),
+                    // icon: Icons.person,
                     labelText: "Mother's Name",
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
@@ -1323,7 +1399,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                     },
                   ),
                   CustomTextFormField(
-                    icon: Icons.person,
+                    iconWidget: Icon(Icons.person, color: Colors.blue),
+                    // icon: Icons.person,
                     labelText: "Spouse's Name",
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
@@ -1333,7 +1410,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                     },
                   ),
                   CustomTextFormField(
-                    icon: Icons.call,
+                    iconWidget: Icon(Icons.call, color: Colors.blue),
+                    // icon: Icons.call,
                     maxLength: 10,
                     labelText: "Mobile No",
                     keyboardType: TextInputType.number,
@@ -1342,7 +1420,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                     },
                   ),
                   CustomTextFormField(
-                    icon: Icons.calendar_month,
+                    iconWidget: Icon(Icons.calendar_month, color: Colors.blue),
+                    // icon: Icons.calendar_month,
                     labelText: 'DOB',
                     isDatePicker: true,
                     controller: dateController,

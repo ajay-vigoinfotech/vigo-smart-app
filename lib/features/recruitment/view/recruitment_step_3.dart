@@ -5,7 +5,6 @@ import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:vigo_smart_app/features/recruitment/model/update_recruitment03_model.dart';
 import 'package:vigo_smart_app/features/recruitment/view/recruitment_step_4.dart';
-import '../../../core/theme/app_pallete.dart';
 import '../../../helper/toast_helper.dart';
 import '../../auth/session_manager/session_manager.dart';
 import '../view model/family_relation_view_model.dart';
@@ -208,7 +207,9 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
 
                   },
                       child : Text('Submit and Next')),
-                  ElevatedButton(onPressed: (){},
+                  ElevatedButton(onPressed: (){
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => RecruitmentStep4(userId: '15ccf12f-e6e8-4cfc-8def-61fabfbe2a24')));
+                  },
                       child: Text('Next'))
                 ],
               ),
@@ -239,7 +240,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
               child: Column(
                 children: [
                   CustomTextFormField(
-                    icon: Icons.calendar_month,
+                    iconWidget: Icon(Icons.calendar_month, color: Colors.red, size: 30,),
                     labelText: 'Date of Joining',
                     isDatePicker: true,
                     controller: dateOfJoinController,
@@ -262,35 +263,35 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                     },
                   ),
                   CustomTextFormField(
-                    icon: Pallete.card.icon!,
+                    iconWidget: Icon(Icons.credit_card, color: Colors.green, size: 30,),
                     labelText: "UAN Number",
                     onChanged: (value) {
                       uan = value!;
                     },
                   ),
                   CustomTextFormField(
-                    icon: Pallete.card.icon!,
+                    iconWidget: Icon(Icons.credit_card, color: Colors.green, size: 30,),
                     labelText: "ESIC Number",
                     onChanged: (value) {
                       esic = value!;
                     },
                   ),
                   CustomTextFormField(
-                    icon: Pallete.card.icon!,
+                    iconWidget: Icon(Icons.credit_card, color: Colors.green, size: 30,),
                     labelText: 'PF Number',
                     onChanged: (value) {
                       pf = value!;
                     },
                   ),
                   CustomTextFormField(
-                    icon: Icons.person,
+                    iconWidget: Icon(Icons.person, color: Colors.indigo, size: 30,),
                     labelText: 'Nominee Name',
                     onChanged: (value) {
                       nomineename = value!;
                     },
                   ),
                   CustomTextFormField(
-                    icon: Icons.calendar_month,
+                    iconWidget: Icon(Icons.calendar_month, color: Colors.green, size: 30,),
                     labelText: 'Nominee DOB',
                     isDatePicker: true,
                     controller: nomineeageController,
@@ -313,7 +314,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                     },
                   ),
                   CustomTextFormField(
-                    icon: Pallete.card.icon!,
+                    iconWidget: Icon(Icons.credit_card, color: Colors.green, size: 30,),
                     labelText: 'Relation with Nominee',
                     onChanged: (value) {
                       nomineeRelation = value!;
@@ -348,21 +349,21 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
               child: Column(
                 children: [
                   CustomTextFormField(
-                    icon: Icons.business_sharp,
+                    iconWidget: Icon(Icons.business_sharp, color: Colors.green, size: 30,),
                     labelText: 'Company Name',
                     onChanged: (value) {
                       companyName = value!;
                     },
                   ),
                   CustomTextFormField(
-                    icon: Icons.person,
+                    iconWidget: Icon(Icons.person, color: Colors.green, size: 30,),
                     labelText: 'Designation',
                     onChanged: (value) {
                       designation = value!;
                     },
                   ),
                   CustomTextFormField(
-                    icon: Icons.person,
+                    iconWidget: Icon(Icons.person, color: Colors.green, size: 30,),
                     labelText: 'Year of Experience',
                     keyboardType: TextInputType.number,
                     onChanged: (value) {
@@ -370,7 +371,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                     },
                   ),
                   CustomTextFormField(
-                    icon: Icons.calendar_month,
+                    iconWidget: Icon(Icons.calendar_month, color: Colors.green, size: 30,),
                     labelText: 'Date of Leaving',
                     isDatePicker: true,
                     // controller: dateController,
@@ -464,7 +465,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                               children: [
                                 Expanded(
                                   child: CustomTextFormField(
-                                    icon: Icons.person,
+                                    iconWidget: Icon(Icons.person, color: Colors.green, size: 30,),
                                     labelText: 'Name (As Per Aadhaar)',
                                     onChanged: (value) {
                                       setState(() {
@@ -482,7 +483,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                               ],
                             ),
                             CustomTextFormField(
-                              icon: Icons.calendar_month,
+                              iconWidget: Icon(Icons.calendar_month, color: Colors.green, size: 30,),
                               labelText: 'Date of Birth',
                               isDatePicker: true,
                               onChanged: (formattedDate) {
@@ -631,7 +632,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                   ),
                 ],
               ),
-            )
+            ),
           ],
         ),
       ),

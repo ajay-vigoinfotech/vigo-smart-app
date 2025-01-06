@@ -10,6 +10,7 @@ import 'package:vigo_smart_app/features/punchHistory/view/punch_history.dart';
 import 'package:vigo_smart_app/features/recruitment/view/recruitment_step_1.dart';
 import 'package:vigo_smart_app/features/recruitment/view/recruitment_step_2.dart';
 import 'package:vigo_smart_app/features/recruitment/view/recruitment_step_3.dart';
+import 'package:vigo_smart_app/features/recruitment/view/recruitment_step_4.dart';
 import 'package:vigo_smart_app/features/site%20reporting/view/site_reporting.dart';
 import 'package:vigo_smart_app/features/team%20view/view/team_view.dart';
 import '../../../core/constants/constants.dart';
@@ -151,7 +152,7 @@ class _HomePageState extends State<HomePage> {
       'icon': Image.asset('assets/images/ic_recruitment.png'),
       'name': Strings.recruitmentApp,
       'color': Pallete.backgroundColor,
-      'page': const RecruitmentStep1(),
+      'page': const RecruitmentStep4(userId: 'userId'),
     },
     {
       'code': 'TeamViewApp',

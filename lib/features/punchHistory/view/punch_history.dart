@@ -13,8 +13,7 @@ class PunchHistory extends StatefulWidget {
 }
 
 class _PunchHistoryState extends State<PunchHistory> {
-  GetSelfieAttendanceViewModel getSelfieAttendanceViewModel =
-      GetSelfieAttendanceViewModel();
+  GetSelfieAttendanceViewModel getSelfieAttendanceViewModel = GetSelfieAttendanceViewModel();
   List<Map<String, dynamic>> getSelfieAttendanceData = [];
   List<Map<String, dynamic>> filteredData = [];
   TextEditingController searchController = TextEditingController();

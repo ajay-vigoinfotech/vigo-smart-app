@@ -15,6 +15,8 @@ import '../view model/bank_list_view_model.dart';
 import '../view model/get_city_view_model.dart';
 import '../view model/get_state_view_model.dart';
 
+import 'package:image/image.dart' as img;
+
 class RecruitmentStep2 extends StatefulWidget {
   final dynamic userId;
 
@@ -262,9 +264,8 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
           ),
           children: [
             CustomTextFormField(
+              iconWidget: Icon(Icons.location_on, color: Colors.green, size: 30,),
               controller: localLine1AddressController,
-              iconColor: Pallete.green,
-              icon: Pallete.location.icon!,
               labelText: 'Line 1',
               onChanged: (value) {
                 currentAddress = value!;
@@ -272,8 +273,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
             ),
             CustomTextFormField(
               controller: localPincodeController,
-              iconColor: Pallete.green,
-              icon: Pallete.location.icon!,
+              iconWidget: Icon(Icons.location_on, color: Colors.green, size: 30,),
               labelText: 'Pincode',
               onChanged: (value) {
                 pinCode = value!;
@@ -331,8 +331,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
             ),
             CustomTextFormField(
               controller: localPoliceStationController,
-              iconColor: Pallete.green,
-              icon: Pallete.location.icon!,
+              iconWidget: Icon(Icons.location_on, color: Colors.green, size: 30,),
               labelText: 'Police Station',
               onChanged: (value) {
                 cPoliceStation = value!;
@@ -340,8 +339,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
             ),
             CustomTextFormField(
               controller: localPostOfficeController,
-              iconColor: Pallete.green,
-              icon: Pallete.location.icon!,
+              iconWidget: Icon(Icons.location_on, color: Colors.green, size: 30,),
               labelText: 'Post Office',
               onChanged: (value) {
                 cPostOffice = value!;
@@ -404,8 +402,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
             ),
             CustomTextFormField(
               controller: permanentLine1AddressController,
-              iconColor: Pallete.green,
-              icon: Pallete.location.icon!,
+              iconWidget: Icon(Icons.location_on, color: Colors.green, size: 30,),
               labelText: 'Line 1',
               enabled: !isPermanentSameAsLocal,
               onChanged: (value) {
@@ -414,8 +411,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
             ),
             CustomTextFormField(
               controller: permanentPincodeController,
-              iconColor: Pallete.green,
-              icon: Pallete.location.icon!,
+              iconWidget: Icon(Icons.location_on, color: Colors.green, size: 30,),
               labelText: 'Pincode',
               enabled: !isPermanentSameAsLocal,
               onChanged: (value) {
@@ -476,8 +472,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
             ),
             CustomTextFormField(
               controller: permanentPoliceStationController,
-              iconColor: Pallete.green,
-              icon: Pallete.location.icon!,
+              iconWidget: Icon(Icons.location_on, color: Colors.green, size: 30,),
               labelText: 'Police Station',
               enabled: !isPermanentSameAsLocal,
               onChanged: (value) {
@@ -486,8 +481,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
             ),
             CustomTextFormField(
               controller: permanentPostOfficeController,
-              iconColor: Pallete.green,
-              icon: Pallete.location.icon!,
+              iconWidget: Icon(Icons.location_on, color: Colors.green, size: 30,),
               labelText: 'Post Office',
               enabled: !isPermanentSameAsLocal,
               onChanged: (value) {
@@ -527,8 +521,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
             ),
             CustomTextFormField(
               // controller: permanentLine1AddressController,
-              iconColor: Pallete.teal,
-              icon: Pallete.user.icon!,
+              iconWidget: Icon(Icons.person, color: Colors.green, size: 30,),
               labelText: 'Account holder name',
               onChanged: (value) {
                 accountHolderName = value!;
@@ -536,8 +529,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
             ),
             CustomTextFormField(
               // controller: permanentLine1AddressController,
-              iconColor: Pallete.green,
-              icon: Pallete.card.icon!,
+              iconWidget: Icon(Icons.credit_card, color: Colors.green, size: 30,),
               labelText: 'Account no',
               onChanged: (value) {
                 accountNo = value!;
@@ -545,8 +537,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
             ),
             CustomTextFormField(
               // controller: permanentLine1AddressController,
-              iconColor: Pallete.green,
-              icon: Pallete.card.icon!,
+              iconWidget: Icon(Icons.credit_card, color: Colors.green, size: 30,),
               labelText: 'IFSC Code',
               onChanged: (value) {
                 ifscCode = value!;
@@ -614,8 +605,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
           children: [
             CustomTextFormField(
               controller: localLine1AddressController,
-              iconColor: Pallete.red,
-              icon: Pallete.email.icon!,
+              iconWidget: Icon(Icons.email_sharp, color: Colors.green, size: 30,),
               labelText: 'Email id',
               onChanged: (value) {
                 responsibleEmail1 = value!;
@@ -623,8 +613,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
             ),
             CustomTextFormField(
               // controller: localPoliceStationController,
-              iconColor: Pallete.green,
-              icon: Pallete.user.icon!,
+              iconWidget: Icon(Icons.person, color: Colors.green, size: 30,),
               labelText: 'Emergency Contact Name',
               onChanged: (value) {
                 responsiblePerson1 = value!;
@@ -632,8 +621,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
             ),
             CustomTextFormField(
               // controller: localPostOfficeController,
-              iconColor: Pallete.green,
-              icon: Pallete.alert.icon!,
+              iconWidget: Icon(Icons.add_alert, color: Colors.green, size: 30,),
               labelText: 'Emergency Contact Number',
               onChanged: (value) {
                 responsibleAdd1 = value!;
@@ -641,8 +629,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
             ),
             CustomTextFormField(
               // controller: localPincodeController,
-              iconColor: Pallete.green,
-              icon: Pallete.user.icon!,
+              iconWidget: Icon(Icons.person, color: Colors.green, size: 30,),
               labelText: 'Reference within Company/Org',
               onChanged: (value) {
                 responsibleReference1 = value!;
@@ -684,18 +671,23 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
   }
 
   Future<void> _pickImage(ImageSource source) async {
-    final XFile? photo = await _picker.pickImage(source: source);
+    final XFile? photo = await _picker.pickImage(
+      source: source,
+      maxWidth: 1920,
+      maxHeight: 1080,
+    );
+
     if (photo != null) {
       final File selectedFile = File(photo.path);
 
-      final compressedImage = await FlutterImageCompress.compressWithFile(
-        selectedFile.path,
-        minWidth: 300,
-        minHeight: 300,
-        quality: 80,
-      );
+      final imageBytes = await selectedFile.readAsBytes();
 
-      if (compressedImage != null) {
+      final decodedImage = img.decodeImage(imageBytes);
+
+      if (decodedImage != null) {
+        final resizedImage = img.copyResize(decodedImage, width: 1920, height: 1080);
+        final compressedImage = img.encodeJpg(resizedImage, quality: 80);
+
         final base64String = base64Encode(compressedImage);
 
         setState(() {
@@ -704,6 +696,29 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
       }
     }
   }
+
+  // Future<void> _pickImage(ImageSource source) async {
+  //   final XFile? photo = await _picker.pickImage(source: source,
+  //     maxWidth: 1920,
+  //     maxHeight: 1080,
+  //   );
+  //
+  //   if (photo != null) {
+  //     final File selectedFile = File(photo.path);
+  //
+  //     final compressedImage = await FlutterImageCompress.compressWithFile(
+  //       selectedFile.path, quality: 80,
+  //     );
+  //
+  //     if (compressedImage != null) {
+  //       final base64String = base64Encode(compressedImage);
+  //
+  //       setState(() {
+  //         _passBookImage = base64String;
+  //       });
+  //     }
+  //   }
+  // }
 
   void _deleteImage() async {
     final shouldDelete = await showDialog<bool>(
