@@ -2,32 +2,34 @@ import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:vigo_smart_app/core/constants/constants.dart';
 import 'package:vigo_smart_app/features/auth/session_manager/session_manager.dart';
-import 'package:vigo_smart_app/features/recruitment/model/pre_recruitment_list_model.dart';
 
-class PreRecruitmentListViewModel {
+import '../model/pre_recruitment_by_id_model.dart';
+
+class PreRecruitmentByIdViewModel {
   final Dio _dio = Dio();
   SessionManager sessionManager = SessionManager();
-  List<PreRecruitmentListModel>? getPreRecruitmentList;
+  List<PreRecruitmentByIdModel>? getPreRecruitmentByIdList;
 
-  Future<void> fetchPreRecruitmentList(String token) async{
-    const url = '${AppConstants.baseUrl}/API/ManageUser/GetPreRecruitmentListApp';
+  Future<void> fetchPreRecruitmentByIdList(String token, String userId) async {
+    const url = '${AppConstants.baseUrl}/API/ManageUser/GetPreRecruitmentByIdApp';
     try {
-      final response = await _dio.get(
+      final response = await _dio.post(
         url,
         options: Options(
           headers: {'Authorization': 'Bearer $token'},
           contentType: Headers.formUrlEncodedContentType,
         ),
+        data: {'EmployeeId': userId },
       );
 
       if (response.statusCode == 200) {
-        final responseData = PreRecruitmentListResponse.fromJson(response.data);
+        final responseData = PreRecruitmentByIdResponse.fromJson(response.data);
 
-        if(responseData.table.isNotEmpty) {
-          getPreRecruitmentList = responseData.table;
+        if (responseData.table.isNotEmpty) {
+          getPreRecruitmentByIdList = responseData.table;
           debugPrint('$response');
         } else {
-          debugPrint('teamActivityAttendanceList is empty');
+          debugPrint('getPreRecruitmentByIdList is empty');
         }
       } else {
         debugPrint('Error :: ${response.statusCode} - ${response.statusMessage}');

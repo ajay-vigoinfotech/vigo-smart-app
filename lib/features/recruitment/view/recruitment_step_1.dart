@@ -10,6 +10,7 @@ import 'package:intl/intl.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:syncfusion_flutter_signaturepad/signaturepad.dart';
+import 'package:vigo_smart_app/core/constants/constants.dart';
 import 'package:vigo_smart_app/features/auth/session_manager/session_manager.dart';
 import 'package:vigo_smart_app/features/recruitment/model/create_recruitment_model.dart';
 import 'package:vigo_smart_app/features/recruitment/view%20model/create_recruitment_view_model.dart';
@@ -22,13 +23,15 @@ import '../../../helper/toast_helper.dart';
 import '../model/update_recruitment01_model.dart';
 import '../view model/branch_list_view_model.dart';
 import '../view model/duplicate_aadhaar_view_model.dart';
+import '../view model/pre_recruitment_by_id_view_model.dart';
 import '../view model/site_list_view_model.dart';
 import '../view model/update_recruitment01_view_model.dart';
 
 import 'package:image/image.dart' as img;
 
 class RecruitmentStep1 extends StatefulWidget {
-  const RecruitmentStep1({super.key});
+  final dynamic userId;
+  const RecruitmentStep1({super.key, required this.userId});
 
   @override
   State<RecruitmentStep1> createState() => _RecruitmentStep1State();
@@ -46,8 +49,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController dateController = TextEditingController();
 
-  final GlobalKey<SfSignaturePadState> _signaturePadKey =
-      GlobalKey<SfSignaturePadState>();
+  final GlobalKey<SfSignaturePadState> _signaturePadKey = GlobalKey<SfSignaturePadState>();
   bool _isSigned = false;
   late Uint8List _signatureData;
   late String _base64Signature = '';
@@ -60,11 +62,71 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
 
   final panRegex = RegExp(r'^[A-Z]{5}[0-9]{4}[A-Z]$');
 
+  TextEditingController firstNameController = TextEditingController();
+  TextEditingController mobileNoController = TextEditingController();
+  TextEditingController aadharNumController = TextEditingController();
+  TextEditingController imageController = TextEditingController();
+  TextEditingController signatureController = TextEditingController();
+  TextEditingController aadhaar1DocController = TextEditingController();
+  TextEditingController aadhaar2DocController = TextEditingController();
+  TextEditingController panController = TextEditingController();
+  TextEditingController dobController = TextEditingController();
+
+  //PreRecruitment By ID
+  PreRecruitmentByIdViewModel preRecruitmentByIdViewModel = PreRecruitmentByIdViewModel();
+  List<Map<String, dynamic>> preRecruitmentByIdData = [];
+
+  Future<void> fetchPreRecruitmentByIdData() async {
+    String? token = await preRecruitmentByIdViewModel.sessionManager.getToken();
+
+    if (token != null) {
+      await preRecruitmentByIdViewModel.fetchPreRecruitmentByIdList(token, widget.userId);
+
+      if (preRecruitmentByIdViewModel.getPreRecruitmentByIdList != null) {
+        setState(() {
+          preRecruitmentByIdData = preRecruitmentByIdViewModel
+              .getPreRecruitmentByIdList!
+              .map((entry) => {
+            "userId": entry.userId,
+            "aadharNum": entry.aadharNum,
+            "pan": entry.pan,
+            "mobilePIN": entry.mobilePIN,
+            "fullName": entry.fullName,
+            "firstName": entry.firstName,
+            "image": entry.image,
+            "signature": entry.signature,
+            "aadhaarDocs": entry.aadhaarDocs,
+            "dob": entry.dob,
+          })
+              .toList();
+
+          if (preRecruitmentByIdData.isNotEmpty) {
+            aadharNumController.text = preRecruitmentByIdData[0]["aadharNum"] ?? "";
+            firstNameController.text = preRecruitmentByIdData[0]["fullName"] ?? "";
+            mobileNoController.text = preRecruitmentByIdData[0]["mobilePIN"] ?? "";
+            imageController.text = preRecruitmentByIdData[0]["image"] ?? "";
+            signatureController.text = preRecruitmentByIdData[0]["signature"] ?? "";
+            dobController.text = preRecruitmentByIdData[0]["dob"] ?? "";
+            panController.text = preRecruitmentByIdData[0]["pan"] ?? "";
+
+            String aadhaarDocs = preRecruitmentByIdData[0]["aadhaarDocs"] ?? "";
+            List<String> aadhaarDocsList = aadhaarDocs.split('#*#');
+            String aadhar1 = aadhaarDocsList.isNotEmpty ? aadhaarDocsList[0] : "";
+            String aadhar2 = aadhaarDocsList.isNotEmpty ? aadhaarDocsList[1] : "";
+            aadhaar1DocController.text = aadhar1;
+            aadhaar2DocController.text = aadhar2;
+          }
+        });
+      }
+    }
+  }
+
   @override
   void initState() {
     fetchSiteListData();
     fetchDesignationListData();
     fetchBranchListData();
+    fetchPreRecruitmentByIdData();
     super.initState();
   }
 
@@ -104,8 +166,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.teal.shade400,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 30, vertical: 10),
+                      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.zero,
                       ),
@@ -115,28 +176,13 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                       try {
                         final validations = [
                           {aadhaarNo.isEmpty: "Please Enter Aadhaar number"},
-                          {
-                            aadhaarNo.length != 12:
-                                "Aadhaar number should be 12 digits"
-                          },
-                          {
-                            panNo.isNotEmpty && !panRegex.hasMatch(panNo):
-                                "Please Enter a Valid Pan number"
-                          },
-                          {
-                            _aadhaarImageFront.isEmpty:
-                                "Please upload Aadhaar proof side 1"
-                          },
-                          {
-                            _aadhaarImageBack.isEmpty:
-                                "Please upload Aadhaar proof side 2"
-                          },
+                          {aadhaarNo.length != 12: "Aadhaar number should be 12 digits"},
+                          {panNo.isNotEmpty && !panRegex.hasMatch(panNo): "Please Enter a Valid Pan number"},
+                          {_aadhaarImageFront.isEmpty: "Please upload Aadhaar proof side 1"},
+                          {_aadhaarImageBack.isEmpty: "Please upload Aadhaar proof side 2"},
                           {firstName.isEmpty: "Please Enter First name"},
                           {mobNo.isEmpty: "Please Enter Mobile number"},
-                          {
-                            mobNo.length != 10:
-                                "Mobile number should be 10 digits"
-                          },
+                          {mobNo.length != 10: "Mobile number should be 10 digits"},
                           {dob.isEmpty: "Please select a DOB"},
                           {
                             dob.isNotEmpty &&
@@ -169,7 +215,6 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                         }
 
                         String? token = await sessionManager.getToken();
-
                         if (userId == null) {
                           CreateRecruitmentViewModel createRecruitmentViewModel = CreateRecruitmentViewModel();
 
@@ -228,13 +273,9 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                             );
                           }
                         } else {
-                          UpdateRecruitment01ViewModel
-                              updateRecruitment01ViewModel =
-                              UpdateRecruitment01ViewModel();
+                          UpdateRecruitment01ViewModel updateRecruitment01ViewModel = UpdateRecruitment01ViewModel();
 
-                          Map<String, dynamic> response =
-                              await updateRecruitment01ViewModel
-                                  .updateRecruitment01(
+                          Map<String, dynamic> response = await updateRecruitment01ViewModel.updateRecruitment01(
                             token!,
                             UpdateRecruitment01Model(
                               userId: userId,
@@ -878,7 +919,10 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
     );
   }
 
-  Widget _getBottomView() {
+
+  Widget _digitalSignature() {
+    String signatureUrl = signatureController.text.isNotEmpty ? '${AppConstants.baseUrl}/${signatureController.text}' : '';
+
     return InkWell(
       splashColor: Colors.transparent,
       highlightColor: Colors.transparent,
@@ -896,23 +940,87 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
             ),
             child: _isSigned
                 ? Image.memory(
-                    _signatureData,
-                    width: 500,
-                    height: 500,
-                    fit: BoxFit.contain,
-                  )
-                : Center(
-                    child: Text(
-                      'Tap here to sign',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 20),
-                    ),
+              _signatureData,
+              width: 500,
+              height: 500,
+              fit: BoxFit.contain,
+            )
+                : (signatureUrl.isNotEmpty
+                ? Image.network(
+              signatureUrl,
+              width: double.infinity,
+              height: 200,
+              fit: BoxFit.contain,
+              loadingBuilder: (context, child, loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Center(
+                  child: CircularProgressIndicator(
+                    value: loadingProgress.expectedTotalBytes != null
+                        ? loadingProgress.cumulativeBytesLoaded /
+                        (loadingProgress.expectedTotalBytes ?? 1)
+                        : null,
                   ),
+                );
+              },
+              errorBuilder: (context, error, stackTrace) {
+                return Center(
+                  child: Text(
+                    'Tap here to sign',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 20),
+                  ),
+                );
+              },
+            )
+                : Center(
+              child: Text(
+                'Tap here to sign',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 20),
+              ),
+            )),
           ),
         ),
       ),
     );
   }
+
+
+  // Widget _digitalSignature() {
+  //   return InkWell(
+  //     splashColor: Colors.transparent,
+  //     highlightColor: Colors.transparent,
+  //     onTap: () {
+  //       _showPopup();
+  //     },
+  //     child: Center(
+  //       child: Padding(
+  //         padding: const EdgeInsets.all(8.0),
+  //         child: Container(
+  //           width: double.infinity,
+  //           height: 200,
+  //           decoration: BoxDecoration(
+  //             border: Border.all(color: Colors.grey),
+  //           ),
+  //           child: _isSigned
+  //               ? Image.memory(
+  //                   _signatureData,
+  //                   width: 500,
+  //                   height: 500,
+  //                   fit: BoxFit.contain,
+  //                 )
+  //               : Center(
+  //                   child: Text(
+  //                     'Tap here to sign',
+  //                     textAlign: TextAlign.center,
+  //                     style: TextStyle(fontSize: 20),
+  //                   ),
+  //                 ),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Future<void> _selectImage(String type) async {
     showDialog(
@@ -1169,7 +1277,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                           onFieldSubmitted: (_) {
                             FocusScope.of(context).requestFocus(FocusNode());
                           },
-                          controller: aadhaarController,
+                          controller: aadharNumController,
                           maxLength: 12,
                           keyboardType: TextInputType.number,
                           textInputAction: TextInputAction.done,
@@ -1215,6 +1323,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                       SizedBox(width: 10),
                       Expanded(
                         child: TextFormField(
+                          controller: panController,
                           maxLength: 10,
                           keyboardType: TextInputType.text,
                           textCapitalization: TextCapitalization.characters,
@@ -1242,7 +1351,6 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                     ],
                   ),
                   SizedBox(height: 20),
-                  // Aadhaar Proof (Front/Back)
                   Text(
                     'Aadhaar Proof (Front/Back)',
                   ),
@@ -1255,17 +1363,43 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                           GestureDetector(
                             onTap: () => _selectImage('front'),
                             child: _aadhaarImageFront.isEmpty
-                                ? Icon(
-                                    Icons.add_photo_alternate_outlined,
-                                    size: 50,
-                                  )
-                                : Image.memory(
-                                    base64Decode(_aadhaarImageFront),
-                                    height: 100,
-                                    width: 100,
-                                    fit: BoxFit.cover,
+                                ? (aadhaar1DocController.text.isNotEmpty
+                                ? Image.network(
+                              '${AppConstants.baseUrl}/${aadhaar1DocController.text}',
+                              height: 100,
+                              width: 100,
+                              fit: BoxFit.cover,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes != null
+                                        ? loadingProgress.cumulativeBytesLoaded /
+                                        (loadingProgress.expectedTotalBytes ?? 1)
+                                        : null,
                                   ),
+                                );
+                              },
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(
+                                  Icons.error_outline,
+                                  size: 50,
+                                  color: Colors.red,
+                                );
+                              },
+                            )
+                                : Icon(
+                              Icons.add_photo_alternate_outlined,
+                              size: 50,
+                            ))
+                                : Image.memory(
+                              base64Decode(_aadhaarImageFront),
+                              height: 100,
+                              width: 100,
+                              fit: BoxFit.cover,
+                            ),
                           ),
+
                           GestureDetector(
                             onTap: () => _deleteImage('front'),
                             child: Text(
@@ -1280,17 +1414,42 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                           GestureDetector(
                             onTap: () => _selectImage('back'), // Back Image
                             child: _aadhaarImageBack.isEmpty
-                                ? Icon(
-                                    Icons.add_photo_alternate_outlined,
-                                    size: 50,
-                                  )
-                                : Image.memory(
-                                    base64Decode(_aadhaarImageBack),
-                                    height: 100,
-                                    width: 100,
-                                    fit: BoxFit.cover,
+                              ? (aadhaar2DocController.text.isNotEmpty
+                                ? Image.network('${AppConstants.baseUrl}/${aadhaar2DocController.text}',
+                                height: 100,
+                                width: 100,
+                              fit: BoxFit.cover,
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes != null
+                                        ? loadingProgress.cumulativeBytesLoaded /
+                                        (loadingProgress.expectedTotalBytes ?? 1)
+                                        : null,
                                   ),
+                                );
+                              },
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(
+                                  Icons.error_outline,
+                                  size: 50,
+                                  color: Colors.red,
+                                );
+                              },
+                            )
+                                : Icon(
+                              Icons.add_photo_alternate_outlined,
+                              size: 50,
+                            ))
+                                : Image.memory(
+                              base64Decode(_aadhaarImageBack),
+                              height: 100,
+                              width: 100,
+                              fit: BoxFit.cover,
+                            ),
                           ),
+
                           GestureDetector(
                             onTap: () => _deleteImage('back'),
                             child: Text(
@@ -1356,7 +1515,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                 children: [
                   CustomTextFormField(
                     iconWidget: Icon(Icons.person, color: Colors.blue),
-                    // icon: Icons.person,
+                    controller: firstNameController,
                     labelText: 'Name (As Per Aadhaar)',
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
@@ -1410,8 +1569,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                     },
                   ),
                   CustomTextFormField(
+                    controller: mobileNoController,
                     iconWidget: Icon(Icons.call, color: Colors.blue),
-                    // icon: Icons.call,
                     maxLength: 10,
                     labelText: "Mobile No",
                     keyboardType: TextInputType.number,
@@ -1419,6 +1578,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                       mobNo = value!;
                     },
                   ),
+
                   CustomTextFormField(
                     iconWidget: Icon(Icons.calendar_month, color: Colors.blue),
                     // icon: Icons.calendar_month,
@@ -1554,31 +1714,51 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                     children: [
                       GestureDetector(
                         onTap: () => _selectImage('digital_photo'),
-                        child: _digitalPhoto.isEmpty
-                            ? CircleAvatar(
-                                backgroundColor: Colors.transparent,
-                                radius: 100,
-                                child: ClipOval(
-                                  child: Image.asset(
-                                    'assets/images/user_camera.png',
-                                    fit: BoxFit.cover,
-                                    height: 200,
-                                    width: 200,
-                                  ),
-                                ),
-                              )
-                            : CircleAvatar(
-                                backgroundColor: Colors.transparent,
-                                radius: 100,
-                                child: ClipOval(
-                                  child: Image.memory(
-                                    base64Decode(_digitalPhoto),
-                                    fit: BoxFit.cover,
-                                    height: 200,
-                                    width: 200,
-                                  ),
-                                ),
-                              ),
+                        child: CircleAvatar(
+                          backgroundColor: Colors.transparent,
+                          radius: 100,
+                          child: ClipOval(
+                            child: _digitalPhoto.isEmpty
+                                ? (imageController.text.isNotEmpty
+                                ? Image.network(
+                              '${AppConstants.baseUrl}/${imageController.text}',
+                              fit: BoxFit.cover,
+                              height: 200,
+                              width: 200,
+                              // loadingBuilder: (context, child, loadingProgress) {
+                              //   if (loadingProgress == null) return child;
+                              //   return Center(
+                              //     child: CircularProgressIndicator(
+                              //       value: loadingProgress.expectedTotalBytes != null
+                              //           ? loadingProgress.cumulativeBytesLoaded /
+                              //           (loadingProgress.expectedTotalBytes ?? 1)
+                              //           : null,
+                              //     ),
+                              //   );
+                              // },
+                              errorBuilder: (context, error, stackTrace) {
+                                return Image.asset(
+                                  'assets/images/user_camera.png',
+                                  fit: BoxFit.cover,
+                                  height: 200,
+                                  width: 200,
+                                );
+                              },
+                            )
+                                : Image.asset(
+                              'assets/images/user_camera.png',
+                              fit: BoxFit.cover,
+                              height: 200,
+                              width: 200,
+                            ))
+                                : Image.memory(
+                              base64Decode(_digitalPhoto),
+                              fit: BoxFit.cover,
+                              height: 200,
+                              width: 200,
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -1602,7 +1782,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                 SizedBox(
                     height: 200,
                     width: double.infinity,
-                    child: _getBottomView()),
+                    child: _digitalSignature()),
                 TextButton(
                   onPressed: () {
                     _showValidationDialog();
@@ -1773,7 +1953,6 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
   }
 
   // Check Duplicate Aadhaar
-  final TextEditingController aadhaarController = TextEditingController();
   bool isDuplicate = false;
   String errorMessage = '';
 

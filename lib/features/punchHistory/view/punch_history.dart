@@ -73,8 +73,7 @@ class _PunchHistoryState extends State<PunchHistory> {
                                     children: [
                                       _buildColumn(
                                           heading: 'Check In',
-                                          imageUrl:
-                                              '${AppConstants.baseUrl}/${data["inPhoto"]}',
+                                          imageUrl: '${AppConstants.baseUrl}/${data["inPhoto"]}',
                                           dateTime: data["dateTimeIn"],
                                           borderColor: Colors.green,
                                           location: data["location"],
