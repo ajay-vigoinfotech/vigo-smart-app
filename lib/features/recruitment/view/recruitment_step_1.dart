@@ -38,7 +38,7 @@ class RecruitmentStep1 extends StatefulWidget {
 }
 
 class _RecruitmentStep1State extends State<RecruitmentStep1> {
-  String? userId;
+  String userId = '';
 
   bool _expandAll = true;
   String? _selectedStatus;
@@ -47,9 +47,9 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
   String _digitalPhoto = '';
 
   final TextEditingController nameController = TextEditingController();
-  final TextEditingController dateController = TextEditingController();
 
-  final GlobalKey<SfSignaturePadState> _signaturePadKey = GlobalKey<SfSignaturePadState>();
+  final GlobalKey<SfSignaturePadState> _signaturePadKey =
+      GlobalKey<SfSignaturePadState>();
   bool _isSigned = false;
   late Uint8List _signatureData;
   late String _base64Signature = '';
@@ -59,7 +59,6 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
   String selectedSiteId = '';
   String selectedDesignationId = '';
   String selectedBranchId = '';
-
   final panRegex = RegExp(r'^[A-Z]{5}[0-9]{4}[A-Z]$');
 
   TextEditingController firstNameController = TextEditingController();
@@ -71,6 +70,17 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
   TextEditingController aadhaar2DocController = TextEditingController();
   TextEditingController panController = TextEditingController();
   TextEditingController dobController = TextEditingController();
+  TextEditingController lastNameController = TextEditingController();
+  TextEditingController fatherNameController = TextEditingController();
+  TextEditingController motherNameController = TextEditingController();
+  TextEditingController spouseNameController = TextEditingController();
+  TextEditingController genderController = TextEditingController();
+  TextEditingController marritalStatusController = TextEditingController();
+  TextEditingController siteIdController = TextEditingController();
+  TextEditingController siteNameController = TextEditingController();
+  TextEditingController designationNameController = TextEditingController();
+  TextEditingController branchController = TextEditingController();
+  TextEditingController userIdController = TextEditingController();
 
   //PreRecruitment By ID
   PreRecruitmentByIdViewModel preRecruitmentByIdViewModel = PreRecruitmentByIdViewModel();
@@ -84,21 +94,31 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
 
       if (preRecruitmentByIdViewModel.getPreRecruitmentByIdList != null) {
         setState(() {
-          preRecruitmentByIdData = preRecruitmentByIdViewModel
-              .getPreRecruitmentByIdList!
-              .map((entry) => {
-            "userId": entry.userId,
-            "aadharNum": entry.aadharNum,
-            "pan": entry.pan,
-            "mobilePIN": entry.mobilePIN,
-            "fullName": entry.fullName,
-            "firstName": entry.firstName,
-            "image": entry.image,
-            "signature": entry.signature,
-            "aadhaarDocs": entry.aadhaarDocs,
-            "dob": entry.dob,
-          })
-              .toList();
+          preRecruitmentByIdData = preRecruitmentByIdViewModel.getPreRecruitmentByIdList!
+                  .map((entry) => {
+                        "userId": entry.userId,
+                        "aadharNum": entry.aadharNum,
+                        "pan": entry.pan,
+                        "mobilePIN": entry.mobilePIN,
+                        "fullName": entry.fullName,
+                        "firstName": entry.firstName,
+                        "image": entry.image,
+                        "signature": entry.signature,
+                        "aadhaarDocs": entry.aadhaarDocs,
+                        "dob": entry.dob,
+                        "lastName": entry.lastName,
+                        "fatherName": entry.fatherName,
+                        "motherName": entry.motherName,
+                        "spouseName": entry.spouseName,
+                        "gender": entry.gender,
+                        "marritalStatus": entry.marritalStatus,
+                        "siteId": entry.siteId,
+                        "siteCode": entry.siteCode,
+                        "siteName": entry.siteName,
+                        "designationName": entry.designationName,
+                        "branch": entry.branch,
+                      })
+                  .toList();
 
           if (preRecruitmentByIdData.isNotEmpty) {
             aadharNumController.text = preRecruitmentByIdData[0]["aadharNum"] ?? "";
@@ -108,13 +128,39 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
             signatureController.text = preRecruitmentByIdData[0]["signature"] ?? "";
             dobController.text = preRecruitmentByIdData[0]["dob"] ?? "";
             panController.text = preRecruitmentByIdData[0]["pan"] ?? "";
+            lastNameController.text = preRecruitmentByIdData[0]["lastName"] ?? "";
+            fatherNameController.text = preRecruitmentByIdData[0]["fatherName"] ?? "";
+            motherNameController.text = preRecruitmentByIdData[0]["motherName"] ?? "";
+            spouseNameController.text = preRecruitmentByIdData[0]["spouseName"] ?? "";
+            genderController.text = preRecruitmentByIdData[0]["gender"] ?? "";
+            marritalStatusController.text = preRecruitmentByIdData[0]["marritalStatus"] ?? "";
+            siteIdController.text = preRecruitmentByIdData[0]["siteId"] ?? "";
+            siteNameController.text = preRecruitmentByIdData[0]["siteName"] ?? "";
+            designationNameController.text = preRecruitmentByIdData[0]["designationName"] ?? "";
+            branchController.text = preRecruitmentByIdData[0]["branch"] ?? "";
+            userIdController.text = preRecruitmentByIdData[0]["userId"] ?? "";
+            userId = preRecruitmentByIdData[0]["userId"] ?? "";
 
+            //Aadhaar Images(Font/Back)
             String aadhaarDocs = preRecruitmentByIdData[0]["aadhaarDocs"] ?? "";
             List<String> aadhaarDocsList = aadhaarDocs.split('#*#');
             String aadhar1 = aadhaarDocsList.isNotEmpty ? aadhaarDocsList[0] : "";
             String aadhar2 = aadhaarDocsList.isNotEmpty ? aadhaarDocsList[1] : "";
             aadhaar1DocController.text = aadhar1;
             aadhaar2DocController.text = aadhar2;
+
+            //Gender Status
+            genderController.text = preRecruitmentByIdData[0]["gender"] == "1" ? "Male" : "Female";
+
+            //Marital Status
+            marritalStatusController.text = preRecruitmentByIdData[0]["marritalStatus"] ?? "";
+            String apiMaritalCode = preRecruitmentByIdData[0]["marritalStatus"] ?? "";
+            _selectedStatus = statusCodes.entries
+                .firstWhere(
+                  (entry) => entry.value == apiMaritalCode,
+                  orElse: () => const MapEntry('', ''),
+                )
+                .key;
           }
         });
       }
@@ -144,9 +190,19 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
             },
             icon: Icon(_expandAll ? Icons.unfold_less : Icons.unfold_more),
           ),
-          IconButton(onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => PreRecruitmentList()));
-          }, icon: Icon(Icons.article_sharp))
+          if (widget.userId == null || widget.userId.isEmpty)
+            IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => PreRecruitmentList()),
+                );
+              },
+              icon: Icon(Icons.article_sharp),
+            ),
+          // IconButton(onPressed: () {
+          //   Navigator.push(context, MaterialPageRoute(builder: (context) => PreRecruitmentList()));
+          // }, icon: Icon(Icons.article_sharp))
         ],
       ),
       body: SingleChildScrollView(
@@ -166,7 +222,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.teal.shade400,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 30, vertical: 10),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.zero,
                       ),
@@ -176,13 +233,28 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                       try {
                         final validations = [
                           {aadhaarNo.isEmpty: "Please Enter Aadhaar number"},
-                          {aadhaarNo.length != 12: "Aadhaar number should be 12 digits"},
-                          {panNo.isNotEmpty && !panRegex.hasMatch(panNo): "Please Enter a Valid Pan number"},
-                          {_aadhaarImageFront.isEmpty: "Please upload Aadhaar proof side 1"},
-                          {_aadhaarImageBack.isEmpty: "Please upload Aadhaar proof side 2"},
+                          {
+                            aadhaarNo.length != 12:
+                                "Aadhaar number should be 12 digits"
+                          },
+                          {
+                            panNo.isNotEmpty && !panRegex.hasMatch(panNo):
+                                "Please Enter a Valid Pan number"
+                          },
+                          {
+                            _aadhaarImageFront.isEmpty:
+                                "Please upload Aadhaar proof side 1"
+                          },
+                          {
+                            _aadhaarImageBack.isEmpty:
+                                "Please upload Aadhaar proof side 2"
+                          },
                           {firstName.isEmpty: "Please Enter First name"},
                           {mobNo.isEmpty: "Please Enter Mobile number"},
-                          {mobNo.length != 10: "Mobile number should be 10 digits"},
+                          {
+                            mobNo.length != 10:
+                                "Mobile number should be 10 digits"
+                          },
                           {dob.isEmpty: "Please select a DOB"},
                           {
                             dob.isNotEmpty &&
@@ -208,8 +280,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
 
                         for (var validation in validations) {
                           if (validation.keys.first) {
-                            ToastHelper.showToast(
-                                message: validation.values.first);
+                            ToastHelper.showToast(message: validation.values.first);
                             return;
                           }
                         }
@@ -272,7 +343,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                                   '${response['message'] ?? 'Something went wrong'}',
                             );
                           }
-                        } else {
+                        } if(userId != null) {
                           UpdateRecruitment01ViewModel updateRecruitment01ViewModel = UpdateRecruitment01ViewModel();
 
                           Map<String, dynamic> response = await updateRecruitment01ViewModel.updateRecruitment01(
@@ -330,8 +401,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                       } catch (error) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                              content: Text(
-                                  'An error occurred. Please try again later.')),
+                              content: Text('An error occurred. Please try again later.')),
                         );
                       }
                     },
@@ -480,14 +550,29 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
               );
             },
             child: Text(
-              selectedSite.isEmpty ? 'Select Site' : selectedSite,
-              style: TextStyle(
+              selectedSite.isNotEmpty
+                  ? selectedSite
+                  : (siteNameController.text.isNotEmpty
+                      ? siteNameController.text
+                      : 'Select Site'),
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.w500,
               ),
               maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
+
+            // child: Text(
+            //   selectedSite.isEmpty ? 'Select Site' : selectedSite,
+            //   style: TextStyle(
+            //     color: Colors.white,
+            //     fontSize: 16,
+            //     fontWeight: FontWeight.w500,
+            //   ),
+            //   maxLines: 1,
+            // ),
           ),
         ),
       ),
@@ -629,16 +714,30 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
               );
             },
             child: Text(
-              selectedDesignation.isEmpty
-                  ? 'Select Designation.'
-                  : selectedDesignation,
+              selectedDesignation.isNotEmpty
+                  ? selectedDesignation
+                  : (designationNameController.text.isNotEmpty
+                      ? designationNameController.text
+                      : 'Select Designation'),
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 16,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.bold,
               ),
               maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
+            // child: Text(
+            //   selectedDesignation.isEmpty
+            //       ? 'Select Designation.'
+            //       : selectedDesignation,
+            //   style: TextStyle(
+            //     color: Colors.white,
+            //     fontSize: 16,
+            //     fontWeight: FontWeight.w500,
+            //   ),
+            //   maxLines: 1,
+            // ),
           ),
         ),
       ),
@@ -774,14 +873,28 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
               );
             },
             child: Text(
-              selectedBranch.isEmpty ? 'Select Branch' : selectedBranch,
+              selectedBranch.isNotEmpty
+                  ? selectedBranch
+                  : (branchController.text.isNotEmpty
+                      ? branchController.text
+                      : 'Select Branch'),
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 16,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.bold,
               ),
               maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
+            // child: Text(
+            //   selectedBranch.isEmpty ? 'Select Branch' : selectedBranch,
+            //   style: TextStyle(
+            //     color: Colors.white,
+            //     fontSize: 16,
+            //     fontWeight: FontWeight.w500,
+            //   ),
+            //   maxLines: 1,
+            // ),
           ),
         ),
       ),
@@ -919,9 +1032,10 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
     );
   }
 
-
   Widget _digitalSignature() {
-    String signatureUrl = signatureController.text.isNotEmpty ? '${AppConstants.baseUrl}/${signatureController.text}' : '';
+    String signatureUrl = signatureController.text.isNotEmpty
+        ? '${AppConstants.baseUrl}/${signatureController.text}'
+        : '';
 
     return InkWell(
       splashColor: Colors.transparent,
@@ -940,51 +1054,50 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
             ),
             child: _isSigned
                 ? Image.memory(
-              _signatureData,
-              width: 500,
-              height: 500,
-              fit: BoxFit.contain,
-            )
+                    _signatureData,
+                    width: 500,
+                    height: 500,
+                    fit: BoxFit.contain,
+                  )
                 : (signatureUrl.isNotEmpty
-                ? Image.network(
-              signatureUrl,
-              width: double.infinity,
-              height: 200,
-              fit: BoxFit.contain,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) return child;
-                return Center(
-                  child: CircularProgressIndicator(
-                    value: loadingProgress.expectedTotalBytes != null
-                        ? loadingProgress.cumulativeBytesLoaded /
-                        (loadingProgress.expectedTotalBytes ?? 1)
-                        : null,
-                  ),
-                );
-              },
-              errorBuilder: (context, error, stackTrace) {
-                return Center(
-                  child: Text(
-                    'Tap here to sign',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 20),
-                  ),
-                );
-              },
-            )
-                : Center(
-              child: Text(
-                'Tap here to sign',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 20),
-              ),
-            )),
+                    ? Image.network(
+                        signatureUrl,
+                        width: double.infinity,
+                        height: 200,
+                        fit: BoxFit.contain,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(
+                            child: CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                      (loadingProgress.expectedTotalBytes ?? 1)
+                                  : null,
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Center(
+                            child: Text(
+                              'Tap here to sign',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 20),
+                            ),
+                          );
+                        },
+                      )
+                    : Center(
+                        child: Text(
+                          'Tap here to sign',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: 20),
+                        ),
+                      )),
           ),
         ),
       ),
     );
   }
-
 
   // Widget _digitalSignature() {
   //   return InkWell(
@@ -1058,8 +1171,6 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
     );
   }
 
-
-
   Future<void> _pickImage(String type, ImageSource source) async {
     final XFile? photo = await _picker.pickImage(source: source);
     if (photo != null) {
@@ -1070,7 +1181,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
       final decodedImage = img.decodeImage(imageBytes);
 
       if (decodedImage != null) {
-        final resizedImage = img.copyResize(decodedImage, width: 300, height: 300);
+        final resizedImage =
+            img.copyResize(decodedImage, width: 300, height: 300);
         final compressedImage = img.encodeJpg(resizedImage, quality: 80);
         final base64String = base64Encode(compressedImage);
 
@@ -1111,7 +1223,6 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
   //   }
   // }
 
-
   Future<void> _pickAndCropImage(String type, ImageSource source) async {
     // Pick an image using the selected source
     final XFile? photo = await _picker.pickImage(source: source);
@@ -1138,7 +1249,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
         final decodedImage = img.decodeImage(imageBytes);
 
         if (decodedImage != null) {
-          final resizedImage = img.copyResize(decodedImage, width: 300, height: 300);
+          final resizedImage =
+              img.copyResize(decodedImage, width: 300, height: 300);
           final compressedImage = img.encodeJpg(resizedImage, quality: 80);
 
           final base64String = base64Encode(compressedImage);
@@ -1223,11 +1335,14 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
     if (shouldDelete ?? false) {
       setState(() {
         if (type == 'front') {
+          aadhaar1DocController.text = '';
           _aadhaarImageFront = '';
         } else if (type == 'back') {
           _aadhaarImageBack = '';
+          aadhaar2DocController.text = '';
         } else if (type == 'digital_photo') {
           _digitalPhoto = '';
+          imageController.text = '';
         }
       });
     }
@@ -1364,42 +1479,49 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                             onTap: () => _selectImage('front'),
                             child: _aadhaarImageFront.isEmpty
                                 ? (aadhaar1DocController.text.isNotEmpty
-                                ? Image.network(
-                              '${AppConstants.baseUrl}/${aadhaar1DocController.text}',
-                              height: 100,
-                              width: 100,
-                              fit: BoxFit.cover,
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    value: loadingProgress.expectedTotalBytes != null
-                                        ? loadingProgress.cumulativeBytesLoaded /
-                                        (loadingProgress.expectedTotalBytes ?? 1)
-                                        : null,
-                                  ),
-                                );
-                              },
-                              errorBuilder: (context, error, stackTrace) {
-                                return Icon(
-                                  Icons.error_outline,
-                                  size: 50,
-                                  color: Colors.red,
-                                );
-                              },
-                            )
-                                : Icon(
-                              Icons.add_photo_alternate_outlined,
-                              size: 50,
-                            ))
+                                    ? Image.network(
+                                        '${AppConstants.baseUrl}/${aadhaar1DocController.text}',
+                                        height: 100,
+                                        width: 100,
+                                        fit: BoxFit.cover,
+                                        loadingBuilder:
+                                            (context, child, loadingProgress) {
+                                          if (loadingProgress == null)
+                                            return child;
+                                          return Center(
+                                            child: CircularProgressIndicator(
+                                              value: loadingProgress
+                                                          .expectedTotalBytes !=
+                                                      null
+                                                  ? loadingProgress
+                                                          .cumulativeBytesLoaded /
+                                                      (loadingProgress
+                                                              .expectedTotalBytes ??
+                                                          1)
+                                                  : null,
+                                            ),
+                                          );
+                                        },
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
+                                          return Icon(
+                                            Icons.error_outline,
+                                            size: 50,
+                                            color: Colors.red,
+                                          );
+                                        },
+                                      )
+                                    : Icon(
+                                        Icons.add_photo_alternate_outlined,
+                                        size: 50,
+                                      ))
                                 : Image.memory(
-                              base64Decode(_aadhaarImageFront),
-                              height: 100,
-                              width: 100,
-                              fit: BoxFit.cover,
-                            ),
+                                    base64Decode(_aadhaarImageFront),
+                                    height: 100,
+                                    width: 100,
+                                    fit: BoxFit.cover,
+                                  ),
                           ),
-
                           GestureDetector(
                             onTap: () => _deleteImage('front'),
                             child: Text(
@@ -1414,42 +1536,43 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                           GestureDetector(
                             onTap: () => _selectImage('back'), // Back Image
                             child: _aadhaarImageBack.isEmpty
-                              ? (aadhaar2DocController.text.isNotEmpty
-                                ? Image.network('${AppConstants.baseUrl}/${aadhaar2DocController.text}',
-                                height: 100,
-                                width: 100,
-                              fit: BoxFit.cover,
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    value: loadingProgress.expectedTotalBytes != null
-                                        ? loadingProgress.cumulativeBytesLoaded /
-                                        (loadingProgress.expectedTotalBytes ?? 1)
-                                        : null,
-                                  ),
-                                );
-                              },
-                              errorBuilder: (context, error, stackTrace) {
-                                return Icon(
-                                  Icons.error_outline,
-                                  size: 50,
-                                  color: Colors.red,
-                                );
-                              },
-                            )
-                                : Icon(
-                              Icons.add_photo_alternate_outlined,
-                              size: 50,
-                            ))
+                                ? (aadhaar2DocController.text.isNotEmpty
+                                    ? Image.network(
+                                        '${AppConstants.baseUrl}/${aadhaar2DocController.text}',
+                                        height: 100,
+                                        width: 100,
+                                        fit: BoxFit.cover,
+                                        // loadingBuilder: (context, child, loadingProgress) {
+                                        //   if (loadingProgress == null) return child;
+                                        //   return Center(
+                                        //     child: CircularProgressIndicator(
+                                        //       value: loadingProgress.expectedTotalBytes != null
+                                        //           ? loadingProgress.cumulativeBytesLoaded /
+                                        //           (loadingProgress.expectedTotalBytes ?? 1)
+                                        //           : null,
+                                        //     ),
+                                        //   );
+                                        // },
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
+                                          return Icon(
+                                            Icons.error_outline,
+                                            size: 50,
+                                            color: Colors.red,
+                                          );
+                                        },
+                                      )
+                                    : Icon(
+                                        Icons.add_photo_alternate_outlined,
+                                        size: 50,
+                                      ))
                                 : Image.memory(
-                              base64Decode(_aadhaarImageBack),
-                              height: 100,
-                              width: 100,
-                              fit: BoxFit.cover,
-                            ),
+                                    base64Decode(_aadhaarImageBack),
+                                    height: 100,
+                                    width: 100,
+                                    fit: BoxFit.cover,
+                                  ),
                           ),
-
                           GestureDetector(
                             onTap: () => _deleteImage('back'),
                             child: Text(
@@ -1488,11 +1611,15 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
     'Widow': '4',
   };
 
-  void handleGenderSelected(int genderCode) {
-    setState(() {
-      selectedGenderCode = genderCode.toString();
-    });
+  void handleGenderSelected(int gender) {
+    genderController.text = gender == 1 ? 'Male' : 'Female';
   }
+
+  // void handleGenderSelected(int genderCode) {
+  //   setState(() {
+  //     selectedGenderCode = genderCode.toString();
+  //   });
+  // }
 
   Widget _personalDetails() {
     return Card(
@@ -1525,6 +1652,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                     },
                   ),
                   CustomTextFormField(
+                    controller: lastNameController,
                     iconWidget: Icon(Icons.person, color: Colors.blue),
                     // icon: Icons.person,
                     labelText: 'Last Name',
@@ -1536,6 +1664,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                     },
                   ),
                   CustomTextFormField(
+                    controller: fatherNameController,
                     iconWidget: Icon(Icons.person, color: Colors.blue),
                     // icon: Icons.person,
                     labelText: "Father's Name",
@@ -1547,6 +1676,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                     },
                   ),
                   CustomTextFormField(
+                    controller: motherNameController,
                     iconWidget: Icon(Icons.person, color: Colors.blue),
                     // icon: Icons.person,
                     labelText: "Mother's Name",
@@ -1558,6 +1688,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                     },
                   ),
                   CustomTextFormField(
+                    controller: spouseNameController,
                     iconWidget: Icon(Icons.person, color: Colors.blue),
                     // icon: Icons.person,
                     labelText: "Spouse's Name",
@@ -1584,7 +1715,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                     // icon: Icons.calendar_month,
                     labelText: 'DOB',
                     isDatePicker: true,
-                    controller: dateController,
+                    controller: dobController,
                     onChanged: (value) {
                       setState(() {
                         if (value != null && value.isNotEmpty) {
@@ -1595,7 +1726,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                             final outputFormat = DateFormat('yyyy-MM-dd');
                             dob = outputFormat.format(parsedDate);
 
-                            dateController.text = value;
+                            dobController.text = value;
                           } catch (e) {
                             debugPrint('Error parsing date: $e');
                           }
@@ -1616,7 +1747,12 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                       ),
                     ],
                   ),
-                  GenderRadioButtons(onGenderSelected: handleGenderSelected),
+                  GenderRadioButtons(
+                    initialGender: genderController.text,
+                    onGenderSelected: handleGenderSelected,
+                  ),
+
+                  // GenderRadioButtons(onGenderSelected: handleGenderSelected),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -1720,43 +1856,44 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                           child: ClipOval(
                             child: _digitalPhoto.isEmpty
                                 ? (imageController.text.isNotEmpty
-                                ? Image.network(
-                              '${AppConstants.baseUrl}/${imageController.text}',
-                              fit: BoxFit.cover,
-                              height: 200,
-                              width: 200,
-                              // loadingBuilder: (context, child, loadingProgress) {
-                              //   if (loadingProgress == null) return child;
-                              //   return Center(
-                              //     child: CircularProgressIndicator(
-                              //       value: loadingProgress.expectedTotalBytes != null
-                              //           ? loadingProgress.cumulativeBytesLoaded /
-                              //           (loadingProgress.expectedTotalBytes ?? 1)
-                              //           : null,
-                              //     ),
-                              //   );
-                              // },
-                              errorBuilder: (context, error, stackTrace) {
-                                return Image.asset(
-                                  'assets/images/user_camera.png',
-                                  fit: BoxFit.cover,
-                                  height: 200,
-                                  width: 200,
-                                );
-                              },
-                            )
-                                : Image.asset(
-                              'assets/images/user_camera.png',
-                              fit: BoxFit.cover,
-                              height: 200,
-                              width: 200,
-                            ))
+                                    ? Image.network(
+                                        '${AppConstants.baseUrl}/${imageController.text}',
+                                        fit: BoxFit.cover,
+                                        height: 200,
+                                        width: 200,
+                                        // loadingBuilder: (context, child, loadingProgress) {
+                                        //   if (loadingProgress == null) return child;
+                                        //   return Center(
+                                        //     child: CircularProgressIndicator(
+                                        //       value: loadingProgress.expectedTotalBytes != null
+                                        //           ? loadingProgress.cumulativeBytesLoaded /
+                                        //           (loadingProgress.expectedTotalBytes ?? 1)
+                                        //           : null,
+                                        //     ),
+                                        //   );
+                                        // },
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
+                                          return Image.asset(
+                                            'assets/images/user_camera.png',
+                                            fit: BoxFit.cover,
+                                            height: 200,
+                                            width: 200,
+                                          );
+                                        },
+                                      )
+                                    : Image.asset(
+                                        'assets/images/user_camera.png',
+                                        fit: BoxFit.cover,
+                                        height: 200,
+                                        width: 200,
+                                      ))
                                 : Image.memory(
-                              base64Decode(_digitalPhoto),
-                              fit: BoxFit.cover,
-                              height: 200,
-                              width: 200,
-                            ),
+                                    base64Decode(_digitalPhoto),
+                                    fit: BoxFit.cover,
+                                    height: 200,
+                                    width: 200,
+                                  ),
                           ),
                         ),
                       ),
@@ -1822,6 +1959,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
           TextButton(
             onPressed: () async {
               setState(() {
+                signatureController.text = '';
                 _signaturePadKey.currentState?.clear();
                 _isSigned = false;
                 // _signatureData = Uint8List(0);

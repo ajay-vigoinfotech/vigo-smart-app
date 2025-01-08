@@ -47,7 +47,7 @@ class PreRecruitmentByIdModel {
   String? esicNo;
   String? uanNo;
   String? doj;
-  String? maritalStatus;
+  String? marritalStatus;
   String? spouseName;
   String? spouseAge;
   String? nomineeName;
@@ -128,7 +128,7 @@ class PreRecruitmentByIdModel {
     this.esicNo,
     this.uanNo,
     this.doj,
-    this.maritalStatus,
+    this.marritalStatus,
     this.spouseName,
     this.spouseAge,
     this.nomineeName,
@@ -211,7 +211,7 @@ class PreRecruitmentByIdModel {
       esicNo: json['esicNo']?.toString() ?? '',
       uanNo: json['uanNo']?.toString() ?? '',
       doj: json['doj']?.toString() ?? '',
-      maritalStatus: json['maritalStatus']?.toString() ?? '',
+      marritalStatus: json['marritalStatus']?.toString() ?? '',
       spouseName: json['spouseName']?.toString() ?? '',
       spouseAge: json['spouseAge']?.toString() ?? '',
       nomineeName: json['nomineeName']?.toString() ?? '',
@@ -295,7 +295,7 @@ class PreRecruitmentByIdModel {
       'esicNo': esicNo,
       'uanNo': uanNo,
       'doj': doj,
-      'maritalStatus': maritalStatus,
+      'marritalStatus': marritalStatus,
       'spouseName': spouseName,
       'spouseAge': spouseAge,
       'nomineeName': nomineeName,

@@ -19,8 +19,6 @@ class _PreRecruitmentListState extends State<PreRecruitmentList> {
 
   bool isLoading = true;
 
-
-
   @override
   void initState() {
     fetchPreRecruitmentListData();
@@ -275,6 +273,4 @@ class _PreRecruitmentListState extends State<PreRecruitmentList> {
       ),
     );
   }
-
-
 }
