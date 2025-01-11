@@ -26,7 +26,6 @@ import '../view model/duplicate_aadhaar_view_model.dart';
 import '../view model/pre_recruitment_by_id_view_model.dart';
 import '../view model/site_list_view_model.dart';
 import '../view model/update_recruitment01_view_model.dart';
-
 import 'package:image/image.dart' as img;
 
 class RecruitmentStep1 extends StatefulWidget {
@@ -38,9 +37,9 @@ class RecruitmentStep1 extends StatefulWidget {
 }
 
 class _RecruitmentStep1State extends State<RecruitmentStep1> {
-  String userId = '';
+  String? userId;
 
-  bool _expandAll = true;
+  bool _expandAll = false;
   String? _selectedStatus;
 
   final ImagePicker _picker = ImagePicker();
@@ -48,8 +47,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
 
   final TextEditingController nameController = TextEditingController();
 
-  final GlobalKey<SfSignaturePadState> _signaturePadKey =
-      GlobalKey<SfSignaturePadState>();
+  final GlobalKey<SfSignaturePadState> _signaturePadKey = GlobalKey<SfSignaturePadState>();
   bool _isSigned = false;
   late Uint8List _signatureData;
   late String _base64Signature = '';
@@ -132,7 +130,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
             fatherNameController.text = preRecruitmentByIdData[0]["fatherName"] ?? "";
             motherNameController.text = preRecruitmentByIdData[0]["motherName"] ?? "";
             spouseNameController.text = preRecruitmentByIdData[0]["spouseName"] ?? "";
-            genderController.text = preRecruitmentByIdData[0]["gender"] ?? "";
+            // genderController.text = preRecruitmentByIdData[0]["gender"] ?? "";
             marritalStatusController.text = preRecruitmentByIdData[0]["marritalStatus"] ?? "";
             siteIdController.text = preRecruitmentByIdData[0]["siteId"] ?? "";
             siteNameController.text = preRecruitmentByIdData[0]["siteName"] ?? "";
@@ -150,7 +148,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
             aadhaar2DocController.text = aadhar2;
 
             //Gender Status
-            genderController.text = preRecruitmentByIdData[0]["gender"] == "1" ? "Male" : "Female";
+            // genderController.text = preRecruitmentByIdData[0]["gender"] == "1" ? "Male" : "Female";
 
             //Marital Status
             marritalStatusController.text = preRecruitmentByIdData[0]["marritalStatus"] ?? "";
@@ -200,9 +198,6 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
               },
               icon: Icon(Icons.article_sharp),
             ),
-          // IconButton(onPressed: () {
-          //   Navigator.push(context, MaterialPageRoute(builder: (context) => PreRecruitmentList()));
-          // }, icon: Icon(Icons.article_sharp))
         ],
       ),
       body: SingleChildScrollView(
@@ -214,206 +209,211 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
               _personalDetails(),
               _personalDocuments(),
               _deploymentDetails(),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal.shade400,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 30, vertical: 10),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero,
-                      ),
-                      elevation: 5,
-                    ),
-                    onPressed: () async {
-                      try {
-                        final validations = [
-                          {aadhaarNo.isEmpty: "Please Enter Aadhaar number"},
-                          {
-                            aadhaarNo.length != 12:
-                                "Aadhaar number should be 12 digits"
-                          },
-                          {
-                            panNo.isNotEmpty && !panRegex.hasMatch(panNo):
-                                "Please Enter a Valid Pan number"
-                          },
-                          {
-                            _aadhaarImageFront.isEmpty:
-                                "Please upload Aadhaar proof side 1"
-                          },
-                          {
-                            _aadhaarImageBack.isEmpty:
-                                "Please upload Aadhaar proof side 2"
-                          },
-                          {firstName.isEmpty: "Please Enter First name"},
-                          {mobNo.isEmpty: "Please Enter Mobile number"},
-                          {
-                            mobNo.length != 10:
-                                "Mobile number should be 10 digits"
-                          },
-                          {dob.isEmpty: "Please select a DOB"},
-                          {
-                            dob.isNotEmpty &&
-                                DateTime.tryParse(dob) != null &&
-                                DateTime.now()
-                                        .difference(DateTime.parse(dob))
-                                        .inDays <
-                                    6570: "Employee is Minor"
-                          },
-                          {
-                            selectedGenderCode.isEmpty: 'Please Select a Gender'
-                          },
-                          {
-                            selectedMaritalCode.isEmpty:
-                                'Please Select Marital Status'
-                          },
-                          {_digitalPhoto.isEmpty: 'Please take Employee Photo'},
-                          {
-                            _base64Signature.isEmpty:
-                                'Please insert Employee Signature'
-                          },
-                        ];
+              Text('${widget.userId}'),
+              Text('$userId'),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal.shade400,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 30, vertical: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.zero,
+                          ),
+                          elevation: 5,
+                        ),
+                        onPressed: () async {
+                          try {
+                            final validations = [
+                              {aadhaarNo.isEmpty: "Please Enter Aadhaar number"},
+                              {aadhaarNo.length != 12: "Aadhaar number should be 12 digits"},
+                              {panNo.isNotEmpty && !panRegex.hasMatch(panNo): "Please Enter a Valid Pan number"},
+                              {_aadhaarImageFront.isEmpty: "Please upload Aadhaar proof side 1"},
+                              {_aadhaarImageBack.isEmpty: "Please upload Aadhaar proof side 2"},
+                              {firstName.isEmpty: "Please Enter First name"},
+                              {mobNo.isEmpty: "Please Enter Mobile number"},
+                              {mobNo.length != 10: "Mobile number should be 10 digits"},
+                              {dob.isEmpty: "Please select a DOB"},
+                              {dob.isNotEmpty &&
+                                    DateTime.tryParse(dob) != null &&
+                                    DateTime.now().difference(DateTime.parse(dob)).inDays < 6570: "Employee is Minor"},
+                              {selectedGenderCode.isEmpty: 'Please Select a Gender'},
+                              {selectedMaritalCode.isEmpty: 'Please Select Marital Status'},
+                              {_digitalPhoto.isEmpty: 'Please take Employee Photo'},
+                              {_base64Signature.isEmpty: 'Please insert Employee Signature'},
+                            ];
 
-                        for (var validation in validations) {
-                          if (validation.keys.first) {
-                            ToastHelper.showToast(message: validation.values.first);
-                            return;
-                          }
-                        }
+                            for (var validation in validations) {
+                              if (validation.keys.first) {
+                                ToastHelper.showToast(message: validation.values.first);
+                                return;
+                              }
+                            }
 
-                        String? token = await sessionManager.getToken();
-                        if (userId == null) {
-                          CreateRecruitmentViewModel createRecruitmentViewModel = CreateRecruitmentViewModel();
+                            String? token = await sessionManager.getToken();
+                            if (userId == null) {
+                              CreateRecruitmentViewModel createRecruitmentViewModel = CreateRecruitmentViewModel();
 
-                          Map<String, dynamic> response = await createRecruitmentViewModel.createRecruitment(
-                            token!,
-                            CreateRecruitmentModel(
-                              fullName: firstName,
-                              lastName: lastName,
-                              fatherName: fatherName,
-                              motherName: motherName,
-                              spouseName: spouseName,
-                              contactNo: mobNo,
-                              dob: dob,
-                              gender: selectedGenderCode,
-                              marritalStatus: selectedMaritalCode,
-                              branchId: selectedBranchId,
-                              siteId: selectedSiteId,
-                              designationId: selectedDesignationId,
-                              pan: panNo,
-                              aadharno: aadhaarNo,
-                              userImage: _digitalPhoto,
-                              userSign: _base64Signature,
-                              aadharFront: _aadhaarImageFront,
-                              aadharBack: _aadhaarImageBack,
-                            ),
-                          );
+                              Map<String, dynamic> response = await createRecruitmentViewModel.createRecruitment(
+                                token!,
+                                CreateRecruitmentModel(
+                                  fullName: firstName,
+                                  lastName: lastName,
+                                  fatherName: fatherName,
+                                  motherName: motherName,
+                                  spouseName: spouseName,
+                                  contactNo: mobNo,
+                                  dob: dob,
+                                  gender: selectedGenderCode,
+                                  marritalStatus: selectedMaritalCode,
+                                  branchId: selectedBranchId,
+                                  siteId: selectedSiteId,
+                                  designationId: selectedDesignationId,
+                                  pan: panNo,
+                                  aadharno: aadhaarNo,
+                                  userImage: _digitalPhoto,
+                                  userSign: _base64Signature,
+                                  aadharFront: _aadhaarImageFront,
+                                  aadharBack: _aadhaarImageBack,
+                                ),
+                              );
 
-                          if (response['code'] == 200) {
-                            setState(() {
-                              userId = response['data'];
-                            });
-                            QuickAlert.show(
-                                barrierDismissible: false,
-                                context: context,
-                                type: QuickAlertType.success,
-                                text: '${response['status']}',
-                                onConfirmBtnTap: () {
-                                  Navigator.pop(context);
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => RecruitmentStep2(
-                                        userId: response['data'],
-                                      ),
-                                    ),
-                                  );
+                              if (response['code'] == 200) {
+                                setState(() {
+                                  userId = response['data'];
                                 });
-                          } else {
-                            QuickAlert.show(
-                              barrierDismissible: false,
-                              confirmBtnText: 'Retry',
-                              context: context,
-                              type: QuickAlertType.error,
-                              text:
-                                  '${response['message'] ?? 'Something went wrong'}',
-                            );
-                          }
-                        } if(userId != null) {
-                          UpdateRecruitment01ViewModel updateRecruitment01ViewModel = UpdateRecruitment01ViewModel();
-
-                          Map<String, dynamic> response = await updateRecruitment01ViewModel.updateRecruitment01(
-                            token!,
-                            UpdateRecruitment01Model(
-                              userId: userId,
-                              fullName: firstName,
-                              lastName: lastName,
-                              fatherName: fatherName,
-                              motherName: motherName,
-                              spouseName: spouseName,
-                              contactNo: mobNo,
-                              dob: dob,
-                              gender: selectedGenderCode,
-                              marritalStatus: selectedMaritalCode,
-                              branchId: selectedBranchId,
-                              siteId: selectedSiteId,
-                              designationId: selectedDesignationId,
-                              pan: panNo,
-                              aadharno: aadhaarNo,
-                              userImage: _digitalPhoto,
-                              userSign: _base64Signature,
-                              aadharFront: _aadhaarImageFront,
-                              aadharBack: _aadhaarImageBack,
-                            ),
-                          );
-
-                          if (response['code'] == 200) {
-                            QuickAlert.show(
-                              barrierDismissible: false,
-                              context: context,
-                              type: QuickAlertType.success,
-                              text: response['status'],
-                              onConfirmBtnTap: () {
-                                Navigator.pop(context);
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => RecruitmentStep2(
-                                      userId: userId!,
-                                    ),
-                                  ),
+                                QuickAlert.show(
+                                    barrierDismissible: false,
+                                    context: context,
+                                    type: QuickAlertType.success,
+                                    text: '${response['status']}',
+                                    onConfirmBtnTap: () {
+                                      Navigator.pop(context);
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => RecruitmentStep2(
+                                            userId: response['data'],
+                                          ),
+                                        ),
+                                      );
+                                    });
+                              } else {
+                                QuickAlert.show(
+                                  barrierDismissible: false,
+                                  confirmBtnText: 'Retry',
+                                  context: context,
+                                  type: QuickAlertType.error,
+                                  text: '${response['message'] ?? 'Something went wrong'}',
                                 );
-                              },
-                            );
-                          } else {
-                            QuickAlert.show(
-                              context: context,
-                              type: QuickAlertType.error,
-                              text:
-                                  response['message'] ?? 'Something went wrong',
+                              }
+                            } else {
+                              UpdateRecruitment01ViewModel updateRecruitment01ViewModel = UpdateRecruitment01ViewModel();
+                              Map<String, dynamic> response = await updateRecruitment01ViewModel.updateRecruitment01(
+                                token!,
+                                UpdateRecruitment01Model(
+                                  userId: userId ?? widget.userId,
+                                  fullName: firstName,
+                                  lastName: lastName,
+                                  fatherName: fatherName,
+                                  motherName: motherName,
+                                  spouseName: spouseName,
+                                  contactNo: mobNo,
+                                  dob: dob,
+                                  gender: selectedGenderCode,
+                                  marritalStatus: selectedMaritalCode,
+                                  branchId: selectedBranchId,
+                                  siteId: selectedSiteId,
+                                  designationId: selectedDesignationId,
+                                  pan: panNo,
+                                  aadharno: aadhaarNo,
+                                  userImage: _digitalPhoto,
+                                  userSign: _base64Signature,
+                                  aadharFront: _aadhaarImageFront,
+                                  aadharBack: _aadhaarImageBack,
+                                ),
+                              );
+
+                              if (response['code'] == 200) {
+                                QuickAlert.show(
+                                  barrierDismissible: false,
+                                  context: context,
+                                  type: QuickAlertType.success,
+                                  text: response['status'],
+                                  onConfirmBtnTap: () {
+                                    Navigator.pop(context);
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => RecruitmentStep2(
+                                          userId: userId ?? widget.userId,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              } else {
+                                QuickAlert.show(
+                                  context: context,
+                                  type: QuickAlertType.error,
+                                  text: response['message'] ?? 'Something went wrong',
+                                );
+                              }
+                            }
+                          } catch (error) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content: Text('An error occurred. Please try again later.')),
                             );
                           }
-                        }
-                      } catch (error) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text('An error occurred. Please try again later.')),
-                        );
-                      }
-                    },
-                    child: Text(
-                      'Submit and Next',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold),
+                        },
+                        child: Text(
+                          'Submit and Next',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  if (widget.userId != null && widget.userId.isNotEmpty) SizedBox(width: 10),
+                  if (widget.userId != null && widget.userId.isNotEmpty)
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.teal.shade400,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 30, vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero,
+                        ),
+                        elevation: 5,
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => RecruitmentStep2(
+                              userId: userId ?? widget.userId,
+                            ),
+                          ),
+                        );
+                      },
+                      child: Text('Next',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                ],
               ),
               SizedBox(height: 40),
             ],
@@ -1419,6 +1419,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                           onChanged: (value) {
                             validateAadhaarNumber(value);
                             aadhaarNo = value;
+                            aadhaarNo = aadharNumController.text;
                             debugPrint(aadhaarNo);
                           },
                         ),
@@ -1484,20 +1485,16 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                                         height: 100,
                                         width: 100,
                                         fit: BoxFit.cover,
-                                        loadingBuilder:
-                                            (context, child, loadingProgress) {
-                                          if (loadingProgress == null)
+                                        loadingBuilder: (context, child, loadingProgress) {
+                                          if (loadingProgress == null) {
                                             return child;
+                                          }
                                           return Center(
                                             child: CircularProgressIndicator(
-                                              value: loadingProgress
-                                                          .expectedTotalBytes !=
+                                              value: loadingProgress.expectedTotalBytes !=
                                                       null
-                                                  ? loadingProgress
-                                                          .cumulativeBytesLoaded /
-                                                      (loadingProgress
-                                                              .expectedTotalBytes ??
-                                                          1)
+                                                  ? loadingProgress.cumulativeBytesLoaded /
+                                                      (loadingProgress.expectedTotalBytes ?? 1)
                                                   : null,
                                             ),
                                           );
@@ -1611,8 +1608,16 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
     'Widow': '4',
   };
 
+  // void handleGenderSelected(int gender) {
+  //   genderController.text = gender == 1 ? 'Male' : 'Female';
+  // }
+  /// Handle the selected gender number
   void handleGenderSelected(int gender) {
+    // Update the TextEditingController with gender name and save the code
     genderController.text = gender == 1 ? 'Male' : 'Female';
+    selectedGenderCode = gender.toString(); // Store the selected gender code (1 or 2)
+    print('Selected Gender Code: $selectedGenderCode'); // For debugging
+    print('Selected Gender Name: ${genderController.text}');
   }
 
   // void handleGenderSelected(int genderCode) {
@@ -1747,12 +1752,17 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                       ),
                     ],
                   ),
-                  GenderRadioButtons(
-                    initialGender: genderController.text,
-                    onGenderSelected: handleGenderSelected,
-                  ),
+                  // GenderRadioButtons(
+                  //   initialGender: genderController.text,
+                  //   onGenderSelected: handleGenderSelected,
+                  // ),
 
-                  // GenderRadioButtons(onGenderSelected: handleGenderSelected),
+                    GenderRadioButtons(onGenderSelected: handleGenderSelected, initialGender: '',),
+                  // GenderRadioButtons(
+                  //   onGenderSelected: handleGenderSelected,
+                  //   initialGender: '', // Pass initial gender (if any, e.g., 'Male' or 'Female')
+                  // ),
+
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

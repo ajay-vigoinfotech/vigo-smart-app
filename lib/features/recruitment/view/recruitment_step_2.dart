@@ -29,7 +29,7 @@ class RecruitmentStep2 extends StatefulWidget {
 
 class _RecruitmentStep2State extends State<RecruitmentStep2> {
   SessionManager sessionManager = SessionManager();
-  bool _expandAll = true;
+  bool _expandAll = false;
   bool isLocalStateSelected = false;
   bool isLocalCitySelected = false;
 
