@@ -29,8 +29,8 @@ import '../view model/update_recruitment01_view_model.dart';
 import 'package:image/image.dart' as img;
 
 class RecruitmentStep1 extends StatefulWidget {
-  final dynamic userId;
-  const RecruitmentStep1({super.key, required this.userId});
+  final dynamic recruitedUserId;
+  const RecruitmentStep1({super.key, required this.recruitedUserId});
 
   @override
   State<RecruitmentStep1> createState() => _RecruitmentStep1State();
@@ -38,8 +38,9 @@ class RecruitmentStep1 extends StatefulWidget {
 
 class _RecruitmentStep1State extends State<RecruitmentStep1> {
   String? userId;
+  String? recruitedUserId;
 
-  bool _expandAll = false;
+  bool _expandAll = true;
   String? _selectedStatus;
 
   final ImagePicker _picker = ImagePicker();
@@ -55,25 +56,27 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
   SessionManager sessionManager = SessionManager();
 
   String selectedSiteId = '';
+  String selectedSiteName = '';
   String selectedDesignationId = '';
   String selectedBranchId = '';
+
   final panRegex = RegExp(r'^[A-Z]{5}[0-9]{4}[A-Z]$');
 
-  TextEditingController firstNameController = TextEditingController();
-  TextEditingController mobileNoController = TextEditingController();
   TextEditingController aadharNumController = TextEditingController();
+  TextEditingController firstNameController = TextEditingController();
+  TextEditingController lastNameController = TextEditingController();
+  TextEditingController fatherNameController = TextEditingController();
+  TextEditingController motherNameController = TextEditingController();
+  TextEditingController spouseNameController = TextEditingController();
+  TextEditingController mobileNoController = TextEditingController();
+  TextEditingController dobController = TextEditingController();
+  TextEditingController genderController = TextEditingController();
+  TextEditingController marritalStatusController = TextEditingController();
   TextEditingController imageController = TextEditingController();
   TextEditingController signatureController = TextEditingController();
   TextEditingController aadhaar1DocController = TextEditingController();
   TextEditingController aadhaar2DocController = TextEditingController();
   TextEditingController panController = TextEditingController();
-  TextEditingController dobController = TextEditingController();
-  TextEditingController lastNameController = TextEditingController();
-  TextEditingController fatherNameController = TextEditingController();
-  TextEditingController motherNameController = TextEditingController();
-  TextEditingController spouseNameController = TextEditingController();
-  TextEditingController genderController = TextEditingController();
-  TextEditingController marritalStatusController = TextEditingController();
   TextEditingController siteIdController = TextEditingController();
   TextEditingController siteNameController = TextEditingController();
   TextEditingController designationNameController = TextEditingController();
@@ -88,7 +91,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
     String? token = await preRecruitmentByIdViewModel.sessionManager.getToken();
 
     if (token != null) {
-      await preRecruitmentByIdViewModel.fetchPreRecruitmentByIdList(token, widget.userId);
+      await preRecruitmentByIdViewModel.fetchPreRecruitmentByIdList(token, widget.recruitedUserId);
 
       if (preRecruitmentByIdViewModel.getPreRecruitmentByIdList != null) {
         setState(() {
@@ -97,17 +100,17 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                         "userId": entry.userId,
                         "aadharNum": entry.aadharNum,
                         "pan": entry.pan,
-                        "mobilePIN": entry.mobilePIN,
+                        "aadhaarDocs": entry.aadhaarDocs,
                         "fullName": entry.fullName,
                         "firstName": entry.firstName,
-                        "image": entry.image,
-                        "signature": entry.signature,
-                        "aadhaarDocs": entry.aadhaarDocs,
-                        "dob": entry.dob,
                         "lastName": entry.lastName,
                         "fatherName": entry.fatherName,
                         "motherName": entry.motherName,
                         "spouseName": entry.spouseName,
+                        "mobilePIN": entry.mobilePIN,
+                        "image": entry.image,
+                        "signature": entry.signature,
+                        "dob": entry.dob,
                         "gender": entry.gender,
                         "marritalStatus": entry.marritalStatus,
                         "siteId": entry.siteId,
@@ -119,25 +122,11 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                   .toList();
 
           if (preRecruitmentByIdData.isNotEmpty) {
-            aadharNumController.text = preRecruitmentByIdData[0]["aadharNum"] ?? "";
-            firstNameController.text = preRecruitmentByIdData[0]["fullName"] ?? "";
-            mobileNoController.text = preRecruitmentByIdData[0]["mobilePIN"] ?? "";
-            imageController.text = preRecruitmentByIdData[0]["image"] ?? "";
-            signatureController.text = preRecruitmentByIdData[0]["signature"] ?? "";
-            dobController.text = preRecruitmentByIdData[0]["dob"] ?? "";
-            panController.text = preRecruitmentByIdData[0]["pan"] ?? "";
-            lastNameController.text = preRecruitmentByIdData[0]["lastName"] ?? "";
-            fatherNameController.text = preRecruitmentByIdData[0]["fatherName"] ?? "";
-            motherNameController.text = preRecruitmentByIdData[0]["motherName"] ?? "";
-            spouseNameController.text = preRecruitmentByIdData[0]["spouseName"] ?? "";
-            // genderController.text = preRecruitmentByIdData[0]["gender"] ?? "";
-            marritalStatusController.text = preRecruitmentByIdData[0]["marritalStatus"] ?? "";
-            siteIdController.text = preRecruitmentByIdData[0]["siteId"] ?? "";
-            siteNameController.text = preRecruitmentByIdData[0]["siteName"] ?? "";
-            designationNameController.text = preRecruitmentByIdData[0]["designationName"] ?? "";
-            branchController.text = preRecruitmentByIdData[0]["branch"] ?? "";
-            userIdController.text = preRecruitmentByIdData[0]["userId"] ?? "";
-            userId = preRecruitmentByIdData[0]["userId"] ?? "";
+            //aadhaar details
+            aadhaarNo = preRecruitmentByIdData[0]["aadharNum"] ?? "";
+            aadharNumController.text = aadhaarNo;
+            panNo = preRecruitmentByIdData[0]["pan"];
+            panController.text = panNo;
 
             //Aadhaar Images(Font/Back)
             String aadhaarDocs = preRecruitmentByIdData[0]["aadhaarDocs"] ?? "";
@@ -146,32 +135,80 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
             String aadhar2 = aadhaarDocsList.isNotEmpty ? aadhaarDocsList[1] : "";
             aadhaar1DocController.text = aadhar1;
             aadhaar2DocController.text = aadhar2;
+            aadhar1 = _aadhaarImageFront;
+            aadhar2 = _aadhaarImageBack;
 
-            //Gender Status
-            // genderController.text = preRecruitmentByIdData[0]["gender"] == "1" ? "Male" : "Female";
-
-            //Marital Status
+            //personal information
+            firstName = preRecruitmentByIdData[0]["fullName"];
+            firstNameController.text = firstName;
+            lastName = preRecruitmentByIdData[0]["lastName"];
+            lastNameController.text = lastName;
+            fatherName = preRecruitmentByIdData[0]["fatherName"];
+            fatherNameController.text = fatherName;
+            motherName = preRecruitmentByIdData[0]["motherName"];
+            motherNameController.text = motherName;
+            spouseName = preRecruitmentByIdData[0]["spouseName"];
+            spouseNameController.text = spouseName;
+            mobNo = preRecruitmentByIdData[0]["mobilePIN"] ?? "";
+            mobileNoController.text = mobNo;
+            dob = preRecruitmentByIdData[0]["dob"] ?? "";
+            dobController.text = dob;
+            selectedGenderCode = preRecruitmentByIdData[0]["gender"] ?? "";
+            genderController.text = selectedGenderCode;
+            selectedGenderCode == '1' ? 'Male' : 'Female';
+            selectedMaritalCode = preRecruitmentByIdData[0]["marritalStatus"] ?? "";
+            marritalStatusController.text = selectedMaritalCode;
             marritalStatusController.text = preRecruitmentByIdData[0]["marritalStatus"] ?? "";
             String apiMaritalCode = preRecruitmentByIdData[0]["marritalStatus"] ?? "";
             _selectedStatus = statusCodes.entries
                 .firstWhere(
                   (entry) => entry.value == apiMaritalCode,
-                  orElse: () => const MapEntry('', ''),
-                )
+              orElse: () => const MapEntry('', ''),
+            )
                 .key;
+
+            //personal documents
+            imageController.text = preRecruitmentByIdData[0]["image"] ?? "";
+            _base64Signature = preRecruitmentByIdData[0]["signature"] ?? "";
+            signatureController.text = _base64Signature;
+
+
           }
         });
       }
     }
   }
 
+  // @override
+  // void initState() {
+  //   fetchSiteListData();
+  //   fetchDesignationListData();
+  //   fetchBranchListData();
+  //   fetchPreRecruitmentByIdData();
+  //   super.initState();
+  // }
+
   @override
   void initState() {
-    fetchSiteListData();
-    fetchDesignationListData();
-    fetchBranchListData();
-    fetchPreRecruitmentByIdData();
     super.initState();
+    fetchPreRecruitmentByIdData().then((_) {
+      fetchSiteListData().then((_) {
+        fetchDesignationListData().then((_) {
+          fetchBranchListData().then((_) {
+            setState(() {
+              //deployment details
+              siteIdController.text = preRecruitmentByIdData[0]["siteId"] ?? "";
+              selectedSiteName = preRecruitmentByIdData[0]["siteName"] ?? "";
+              siteNameController.text = selectedSiteName;
+              designationNameController.text = preRecruitmentByIdData[0]["designationName"] ?? "";
+              branchController.text = preRecruitmentByIdData[0]["branch"] ?? "";
+              userIdController.text = preRecruitmentByIdData[0]["userId"] ?? "";
+              recruitedUserId = preRecruitmentByIdData[0]["userId"] ?? "";
+            });
+          });
+        });
+      });
+    });
   }
 
   @override
@@ -188,7 +225,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
             },
             icon: Icon(_expandAll ? Icons.unfold_less : Icons.unfold_more),
           ),
-          if (widget.userId == null || widget.userId.isEmpty)
+          if (widget.recruitedUserId == null || widget.recruitedUserId.isEmpty)
             IconButton(
               onPressed: () {
                 Navigator.push(
@@ -209,8 +246,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
               _personalDetails(),
               _personalDocuments(),
               _deploymentDetails(),
-              Text('${widget.userId}'),
-              Text('$userId'),
+              // Text('${widget.recruitedUserId}'),
+              // Text(''),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -234,19 +271,19 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                               {aadhaarNo.isEmpty: "Please Enter Aadhaar number"},
                               {aadhaarNo.length != 12: "Aadhaar number should be 12 digits"},
                               {panNo.isNotEmpty && !panRegex.hasMatch(panNo): "Please Enter a Valid Pan number"},
-                              {_aadhaarImageFront.isEmpty: "Please upload Aadhaar proof side 1"},
-                              {_aadhaarImageBack.isEmpty: "Please upload Aadhaar proof side 2"},
+                              {_aadhaarImageFront.isEmpty && aadhaar1DocController.text.isEmpty: "Please upload Aadhaar proof side 1"},
+                              {_aadhaarImageBack.isEmpty && aadhaar2DocController.text.isEmpty: "Please upload Aadhaar proof side 2"},
                               {firstName.isEmpty: "Please Enter First name"},
                               {mobNo.isEmpty: "Please Enter Mobile number"},
                               {mobNo.length != 10: "Mobile number should be 10 digits"},
                               {dob.isEmpty: "Please select a DOB"},
                               {dob.isNotEmpty &&
-                                    DateTime.tryParse(dob) != null &&
-                                    DateTime.now().difference(DateTime.parse(dob)).inDays < 6570: "Employee is Minor"},
+                                  DateTime.tryParse(dob) != null &&
+                                  DateTime.now().difference(DateTime.parse(dob)).inDays < 6570: "Employee is Minor"},
                               {selectedGenderCode.isEmpty: 'Please Select a Gender'},
                               {selectedMaritalCode.isEmpty: 'Please Select Marital Status'},
-                              {_digitalPhoto.isEmpty: 'Please take Employee Photo'},
-                              {_base64Signature.isEmpty: 'Please insert Employee Signature'},
+                              {_digitalPhoto.isEmpty && imageController.text.isEmpty: 'Please take Employee Photo'},
+                              {_base64Signature.isEmpty && signatureController.text.isEmpty: 'Please insert Employee Signature'},
                             ];
 
                             for (var validation in validations) {
@@ -257,7 +294,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                             }
 
                             String? token = await sessionManager.getToken();
-                            if (userId == null) {
+
+                            if ((userId == null || userId!.isEmpty) && (widget.recruitedUserId == null || widget.recruitedUserId.isEmpty)) {
                               CreateRecruitmentViewModel createRecruitmentViewModel = CreateRecruitmentViewModel();
 
                               Map<String, dynamic> response = await createRecruitmentViewModel.createRecruitment(
@@ -289,21 +327,22 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                                   userId = response['data'];
                                 });
                                 QuickAlert.show(
-                                    barrierDismissible: false,
-                                    context: context,
-                                    type: QuickAlertType.success,
-                                    text: '${response['status']}',
-                                    onConfirmBtnTap: () {
-                                      Navigator.pop(context);
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => RecruitmentStep2(
-                                            userId: response['data'],
-                                          ),
+                                  barrierDismissible: false,
+                                  context: context,
+                                  type: QuickAlertType.success,
+                                  text: '${response['status']}',
+                                  onConfirmBtnTap: () {
+                                    Navigator.pop(context);
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => RecruitmentStep2(
+                                          userId: response['data'],
                                         ),
-                                      );
-                                    });
+                                      ),
+                                    );
+                                  },
+                                );
                               } else {
                                 QuickAlert.show(
                                   barrierDismissible: false,
@@ -315,10 +354,11 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                               }
                             } else {
                               UpdateRecruitment01ViewModel updateRecruitment01ViewModel = UpdateRecruitment01ViewModel();
+
                               Map<String, dynamic> response = await updateRecruitment01ViewModel.updateRecruitment01(
                                 token!,
                                 UpdateRecruitment01Model(
-                                  userId: userId ?? widget.userId,
+                                  userId: userId ?? widget.recruitedUserId,
                                   fullName: firstName,
                                   lastName: lastName,
                                   fatherName: fatherName,
@@ -352,7 +392,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                                       context,
                                       MaterialPageRoute(
                                         builder: (context) => RecruitmentStep2(
-                                          userId: userId ?? widget.userId,
+                                          userId: userId ,
+                                          recruitedUserId : widget.recruitedUserId,
                                         ),
                                       ),
                                     );
@@ -368,8 +409,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                             }
                           } catch (error) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content: Text('An error occurred. Please try again later.')),
+                              SnackBar(content: Text('An error occurred. Please try again later.')),
                             );
                           }
                         },
@@ -383,8 +423,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                       ),
                     ),
                   ),
-                  if (widget.userId != null && widget.userId.isNotEmpty) SizedBox(width: 10),
-                  if (widget.userId != null && widget.userId.isNotEmpty)
+                  if (widget.recruitedUserId != null && widget.recruitedUserId.isNotEmpty) SizedBox(width: 10),
+                  if (widget.recruitedUserId != null && widget.recruitedUserId.isNotEmpty)
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.teal.shade400,
@@ -401,7 +441,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => RecruitmentStep2(
-                              userId: userId ?? widget.userId,
+                              userId: userId,
+                              recruitedUserId : widget.recruitedUserId,
                             ),
                           ),
                         );
@@ -410,7 +451,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                         style: TextStyle(
                             color: Colors.white,
                             fontSize: 18,
-                            fontWeight: FontWeight.bold),
+                            fontWeight: FontWeight.bold
+                        ),
                       ),
                     ),
                 ],
@@ -505,8 +547,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                                         title: Text(site['unitName'] ?? ''),
                                         onTap: () {
                                           setState(() {
-                                            selectedSite =
-                                                site['unitName'] ?? '';
+                                            selectedSite = site['unitName'] ?? '';
                                             selectedSiteId = site['siteId'];
                                           });
                                           Navigator.pop(context);
@@ -552,8 +593,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
             child: Text(
               selectedSite.isNotEmpty
                   ? selectedSite
-                  : (siteNameController.text.isNotEmpty
-                      ? siteNameController.text
+                  : (selectedSiteName.isNotEmpty
+                      ? selectedSiteName
                       : 'Select Site'),
               style: const TextStyle(
                 color: Colors.white,
@@ -1181,8 +1222,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
       final decodedImage = img.decodeImage(imageBytes);
 
       if (decodedImage != null) {
-        final resizedImage =
-            img.copyResize(decodedImage, width: 300, height: 300);
+        final resizedImage = img.copyResize(decodedImage, width: 300, height: 300);
         final compressedImage = img.encodeJpg(resizedImage, quality: 80);
         final base64String = base64Encode(compressedImage);
 
@@ -1335,8 +1375,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
     if (shouldDelete ?? false) {
       setState(() {
         if (type == 'front') {
-          aadhaar1DocController.text = '';
           _aadhaarImageFront = '';
+          aadhaar1DocController.text = '';
         } else if (type == 'back') {
           _aadhaarImageBack = '';
           aadhaar2DocController.text = '';
@@ -1397,8 +1437,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                           keyboardType: TextInputType.number,
                           textInputAction: TextInputAction.done,
                           decoration: InputDecoration(
-                            contentPadding:
-                                EdgeInsets.symmetric(horizontal: 10),
+                            contentPadding: EdgeInsets.symmetric(horizontal: 10),
                             label: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Text('Aadhaar No*'),
@@ -1419,8 +1458,6 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                           onChanged: (value) {
                             validateAadhaarNumber(value);
                             aadhaarNo = value;
-                            aadhaarNo = aadharNumController.text;
-                            debugPrint(aadhaarNo);
                           },
                         ),
                       ),
@@ -1467,9 +1504,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                     ],
                   ),
                   SizedBox(height: 20),
-                  Text(
-                    'Aadhaar Proof (Front/Back)',
-                  ),
+                  Text('Aadhaar Proof (Front/Back)',),
                   SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -1485,20 +1520,18 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                                         height: 100,
                                         width: 100,
                                         fit: BoxFit.cover,
-                                        loadingBuilder: (context, child, loadingProgress) {
-                                          if (loadingProgress == null) {
-                                            return child;
-                                          }
-                                          return Center(
-                                            child: CircularProgressIndicator(
-                                              value: loadingProgress.expectedTotalBytes !=
-                                                      null
-                                                  ? loadingProgress.cumulativeBytesLoaded /
-                                                      (loadingProgress.expectedTotalBytes ?? 1)
-                                                  : null,
-                                            ),
-                                          );
-                                        },
+                                        // loadingBuilder: (context, child, loadingProgress) {
+                                        //   if (loadingProgress == null) {
+                                        //     return child;
+                                        //   }
+                                        //   return Center(
+                                        //     child: CircularProgressIndicator(
+                                        //       value: loadingProgress.expectedTotalBytes != null
+                                        //           ? loadingProgress.cumulativeBytesLoaded / (loadingProgress.expectedTotalBytes ?? 1)
+                                        //           : null,
+                                        //     ),
+                                        //   );
+                                        // },
                                         errorBuilder:
                                             (context, error, stackTrace) {
                                           return Icon(
@@ -1598,7 +1631,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
   String spouseName = '';
   String mobNo = '';
   String dob = '';
-  String selectedGenderCode = '';
+  String selectedGenderCode = '1';
   String selectedMaritalCode = '';
 
   final Map<String, String> statusCodes = {
@@ -1608,23 +1641,12 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
     'Widow': '4',
   };
 
-  // void handleGenderSelected(int gender) {
-  //   genderController.text = gender == 1 ? 'Male' : 'Female';
-  // }
-  /// Handle the selected gender number
   void handleGenderSelected(int gender) {
-    // Update the TextEditingController with gender name and save the code
     genderController.text = gender == 1 ? 'Male' : 'Female';
-    selectedGenderCode = gender.toString(); // Store the selected gender code (1 or 2)
-    print('Selected Gender Code: $selectedGenderCode'); // For debugging
-    print('Selected Gender Name: ${genderController.text}');
+    selectedGenderCode = gender.toString();
+    debugPrint('Selected Gender Code: $selectedGenderCode');
+    debugPrint('Selected Gender Name: ${genderController.text}');
   }
-
-  // void handleGenderSelected(int genderCode) {
-  //   setState(() {
-  //     selectedGenderCode = genderCode.toString();
-  //   });
-  // }
 
   Widget _personalDetails() {
     return Card(
@@ -1757,7 +1779,12 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                   //   onGenderSelected: handleGenderSelected,
                   // ),
 
-                    GenderRadioButtons(onGenderSelected: handleGenderSelected, initialGender: '',),
+                    // GenderRadioButtons(onGenderSelected: handleGenderSelected, initialGender: '',),
+                  GenderRadioButtons(
+                    onGenderSelected: handleGenderSelected,
+                    initialGender: selectedGenderCode,
+                  ),
+
                   // GenderRadioButtons(
                   //   onGenderSelected: handleGenderSelected,
                   //   initialGender: '', // Pass initial gender (if any, e.g., 'Male' or 'Female')
@@ -1882,8 +1909,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                                         //     ),
                                         //   );
                                         // },
-                                        errorBuilder:
-                                            (context, error, stackTrace) {
+                                        errorBuilder: (context, error, stackTrace) {
                                           return Image.asset(
                                             'assets/images/user_camera.png',
                                             fit: BoxFit.cover,
@@ -2036,8 +2062,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
   }
 
   // Get Designation List
-  DesignationListViewModel designationListViewModel =
-      DesignationListViewModel();
+  DesignationListViewModel designationListViewModel = DesignationListViewModel();
   List<Map<String, dynamic>> designationListData = [];
   List<Map<String, dynamic>> filterDesignationListData = [];
   String selectedDesignation = '';

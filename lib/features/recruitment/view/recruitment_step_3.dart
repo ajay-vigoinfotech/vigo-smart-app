@@ -8,15 +8,17 @@ import 'package:vigo_smart_app/features/recruitment/view/recruitment_step_4.dart
 import '../../../helper/toast_helper.dart';
 import '../../auth/session_manager/session_manager.dart';
 import '../view model/family_relation_view_model.dart';
+import '../view model/pre_recruitment_by_id_view_model.dart';
 import '../view model/update_recruitment03_view_model.dart';
 import '../widget/custom_text_form_field.dart';
 
 class RecruitmentStep3 extends StatefulWidget {
   final dynamic userId;
+  final dynamic recruitedUserId;
 
   const RecruitmentStep3({
     super.key,
-    required this.userId,
+    required this.userId, this.recruitedUserId,
   });
 
   @override
@@ -25,9 +27,112 @@ class RecruitmentStep3 extends StatefulWidget {
 
 class _RecruitmentStep3State extends State<RecruitmentStep3> {
 
+  TextEditingController dojController = TextEditingController();
+  TextEditingController uanNoController = TextEditingController();
+  TextEditingController pfController = TextEditingController();
+  TextEditingController nomineenameController = TextEditingController();
+  TextEditingController nomineeRelationController = TextEditingController();
+  TextEditingController companyNameController = TextEditingController();
+  TextEditingController designationController = TextEditingController();
+  TextEditingController experienceController = TextEditingController();
+  TextEditingController userIdController = TextEditingController();
+
+  //PreRecruitment By ID
+  PreRecruitmentByIdViewModel preRecruitmentByIdViewModel = PreRecruitmentByIdViewModel();
+  List<Map<String, dynamic>> preRecruitmentByIdData = [];
+
+  Future<void> fetchPreRecruitmentByIdData() async {
+    String? token = await preRecruitmentByIdViewModel.sessionManager.getToken();
+
+    if (token != null) {
+      await preRecruitmentByIdViewModel.fetchPreRecruitmentByIdList(token, widget.recruitedUserId);
+
+      if (preRecruitmentByIdViewModel.getPreRecruitmentByIdList != null) {
+        setState(() {
+          preRecruitmentByIdData = preRecruitmentByIdViewModel.getPreRecruitmentByIdList!
+              .map((entry) => {
+            "userId": entry.userId,
+            "doj" : entry.doj,
+            "uanNo" : entry.uanNo,
+            "esicNo" : entry.esicNo,
+            "pfNo" : entry.pfNo,
+            "nomineeName" : entry.nomineeName,
+            "nomineeAge" : entry.nomineeAge,
+            "nomineeRelation" : entry.nomineeRelation,
+            "oldCompany" : entry.oldCompany,
+            "oldDesignation" : entry.oldDesignation,
+            "oldExperiance" : entry.oldExperiance,
+            "oldCompanyLeavingDate" : entry.oldCompanyLeavingDate,
+          })
+              .toList();
+          if (preRecruitmentByIdData.isNotEmpty) {
+            userIdController.text = preRecruitmentByIdData[0]["userId"] ?? "";
+            // recruitedUserId = preRecruitmentByIdData[0]["userId"];
+            // debugPrint("Assigned userId: ${userIdController.text}");
+            // debugPrint("Assigned recruitedUserId: $recruitedUserId");
+
+            dateOfJoin = preRecruitmentByIdData[0]["doj"] ?? "";
+            dojController.text = dateOfJoin;
+
+            uan = preRecruitmentByIdData[0]["uanNo"];
+            uanController.text = uan;
+
+            esic = preRecruitmentByIdData[0]["esicNo"];
+            esicController.text = esic;
+
+            pf = preRecruitmentByIdData[0]["pfNo"];
+            pfController.text = pf;
+
+            nomineename = preRecruitmentByIdData[0]["nomineeName"];
+            nomineenameController.text = nomineename;
+
+            nomineeage = preRecruitmentByIdData[0]["nomineeAge"] ?? "";
+            nomineeageController.text = nomineeage;
+
+            nomineeRelation = preRecruitmentByIdData[0]["nomineeRelation"] ?? "";
+            nomineeRelationController.text = nomineeRelation;
+
+            //previous job details
+            companyName = preRecruitmentByIdData[0]["oldCompany"] ?? "";
+            companyNameController.text = companyName;
+
+            designation = preRecruitmentByIdData[0]["oldDesignation"] ?? "";
+            designationController.text = designation;
+
+            experience = preRecruitmentByIdData[0]["oldExperiance"] ?? "";
+            experienceController.text = experience;
+
+            companyLeavingDate = preRecruitmentByIdData[0]["oldCompanyLeavingDate"] ?? "";
+            companyLeavingDateController.text = companyLeavingDate;
+          }
+        });
+      }
+    }
+  }
+
+
   List<Map<String, dynamic>> familyDetails = [
     {"dob": "", "name": "", "relation": "", "relationId": ""},
   ];
+
+  // Map<String, dynamic> getFamilyDetailsJson() {
+  //   List<Map<String, dynamic>> filteredDetails = familyDetails
+  //       .map((entry) {
+  //     // Create a copy of the map excluding 'displayDob'
+  //     Map<String, dynamic> sanitizedEntry = Map.of(entry);
+  //     sanitizedEntry.remove('displayDob');
+  //
+  //     // Replace empty strings with null
+  //     return sanitizedEntry.map((key, value) => MapEntry(key, value.isEmpty ? null : value));
+  //   })
+  //       .where((entry) => entry.values.any((value) => value != null))
+  //       .toList();
+  //
+  //   if (filteredDetails.isNotEmpty) {
+  //     return {"familyDetails": filteredDetails};
+  //   }
+  //   return {};
+  // }
 
   Map<String, dynamic> getFamilyDetailsJson() {
     List<Map<String, dynamic>> filteredDetails = familyDetails
@@ -45,8 +150,9 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
     if (filteredDetails.isNotEmpty) {
       return {"familyDetails": filteredDetails};
     }
-    return {};
+    return {};  // Return an empty map instead of null
   }
+
 
 
   // Map<String, dynamic> getFamilyDetailsJson() {
@@ -55,30 +161,36 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  final TextEditingController dateOfJoinController = TextEditingController();
   final TextEditingController uanController = TextEditingController();
+  final TextEditingController esicController = TextEditingController();
   final TextEditingController nomineeageController = TextEditingController();
   final TextEditingController companyLeavingDateController = TextEditingController();
 
 
   String dateOfJoin = '';
+  String formattedDateOfJoin = '';
+
   String uan = '';
   String esic = '';
   String pf = '';
   String nomineename = '';
+
   String nomineeage = '';
+  String formattednomineeage = '';
+
   String nomineeRelation = '';
   String companyName = '';
   String designation = '';
   String experience = '';
   String companyLeavingDate = '';
+  String formattedcompanyLeavingDate = '';
 
   SessionManager sessionManager = SessionManager();
-
 
   @override
   void initState() {
     fetchBankListData();
+    fetchPreRecruitmentByIdData();
     super.initState();
   }
 
@@ -109,6 +221,19 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
     }
   }
 
+  String formatDate(String? date) {
+    if (date == null || date.isEmpty) return '';
+    try {
+      DateTime parsedDate = DateTime.parse(date);
+      String formattedDate = DateFormat('yyyy-MM-dd').format(parsedDate);
+      debugPrint('Successfully formatted date: $formattedDate');
+      return formattedDate;
+    } catch (e) {
+      debugPrint('Error parsing date: $e');
+      return '';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -133,6 +258,8 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
               _contactDetails(),
               _previousJobDetails(),
               _familyDetails(),
+              Text('${widget.recruitedUserId}'),
+              Text('${widget.userId}'),
               SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -141,26 +268,35 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                     if (_formKey.currentState!.validate()) {
                       String jsonOutput = jsonEncode(getFamilyDetailsJson());
                       debugPrint(jsonOutput);
+                      if (jsonOutput == '{}' || jsonOutput.isEmpty) {
+                        jsonOutput = '';
+                      }
 
                       try{
                         String? token = await sessionManager.getToken();
                         UpdateRecruitment03ViewModel updateRecruitment03ViewModel = UpdateRecruitment03ViewModel();
 
+                        String formattedDateOfJoin = formatDate(dateOfJoin);
+                        String formattednomineeage = formatDate(nomineeage);
+                        String formattedcompanyLeavingDate = formatDate(companyLeavingDate);
+
+                        debugPrint('${widget.recruitedUserId}');
+
                         Map<String,dynamic> response = await updateRecruitment03ViewModel.updateRecruitment03(token!,
                             UpdateRecruitment03Model(
-                              userId: widget.userId,
-                              dateOfJoin: dateOfJoin,
+                              userId: widget.recruitedUserId ?? widget.userId,
+                              dateOfJoin: formattedDateOfJoin,
                               UAN: uan,
                               ESIC: esic,
                               PF: pf,
                               nomineename: nomineename,
-                              nomineeage: nomineeage,
+                              nomineeage: formattednomineeage,
                               nomineeRelation: nomineeRelation,
                               company_name: companyName,
                               Designation: designation,
                               experience: experience,
                               company_address: '',
-                              company_leavingDate: companyLeavingDate,
+                              company_leavingDate: formattedcompanyLeavingDate,
                               familyDetails: jsonOutput,
                             )
                         );
@@ -178,6 +314,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                                   MaterialPageRoute(
                                     builder: (context) => RecruitmentStep4(
                                       userId: '${widget.userId}',
+                                        recruitedUserId :'${widget.recruitedUserId}'
                                     ),
                                   ),
                                 );
@@ -188,15 +325,13 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                             confirmBtnText: 'Retry',
                             context: context,
                             type: QuickAlertType.error,
-                            text:
-                            '${response['message'] ?? 'Something went wrong'}',
+                            text: '${response['message'] ?? 'Something went wrong'}',
                           );
                         }
                       } catch (error) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                              content: Text(
-                                  'An error occurred. Please try again later.')),
+                              content: Text('An error occurred. Please try again later.')),
                         );
                       }
                     } else {
@@ -204,13 +339,18 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                         message: "Please correct the errors in the form.",
                       );
                     }
-
                   },
                       child : Text('Submit and Next')),
                   ElevatedButton(onPressed: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => RecruitmentStep4(userId: '15ccf12f-e6e8-4cfc-8def-61fabfbe2a24')));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                        RecruitmentStep4(
+                            userId: widget.userId,
+                            recruitedUserId : widget.recruitedUserId
+                        ),
+                    ),
+                    );
                   },
-                      child: Text('Next'))
+                      child: Text('Next',))
                 ],
               ),
             ],
@@ -241,9 +381,10 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                 children: [
                   CustomTextFormField(
                     iconWidget: Icon(Icons.calendar_month, color: Colors.red, size: 30,),
-                    labelText: 'Date of Joining',
+                    // icon: Icons.calendar_month,
+                    labelText: 'Date of Join',
                     isDatePicker: true,
-                    controller: dateOfJoinController,
+                    controller: dojController,
                     onChanged: (value) {
                       setState(() {
                         if (value != null && value.isNotEmpty) {
@@ -254,7 +395,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                             final outputFormat = DateFormat('yyyy-MM-dd');
                             dateOfJoin = outputFormat.format(parsedDate);
 
-                            dateOfJoinController.text = value;
+                            dojController.text = value;
                           } catch (e) {
                             debugPrint('Error parsing date: $e');
                           }
@@ -262,7 +403,31 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                       });
                     },
                   ),
+                  // CustomTextFormField(
+                  //   iconWidget: Icon(Icons.calendar_month, color: Colors.red, size: 30,),
+                  //   labelText: 'Date of Joining',
+                  //   isDatePicker: true,
+                  //   controller: dojController,
+                  //   onChanged: (value) {
+                  //     setState(() {
+                  //       if (value != null && value.isNotEmpty) {
+                  //         try {
+                  //           final inputFormat = DateFormat('dd-MM-yyyy');
+                  //           final parsedDate = inputFormat.parse(value);
+                  //
+                  //           final outputFormat = DateFormat('yyyy-MM-dd');
+                  //           dateOfJoin = outputFormat.format(parsedDate);
+                  //
+                  //           dojController.text = value;
+                  //         } catch (e) {
+                  //           debugPrint('Error parsing date: $e');
+                  //         }
+                  //       }
+                  //     });
+                  //   },
+                  // ),
                   CustomTextFormField(
+                    controller: uanController,
                     iconWidget: Icon(Icons.credit_card, color: Colors.green, size: 30,),
                     labelText: "UAN Number",
                     onChanged: (value) {
@@ -270,6 +435,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                     },
                   ),
                   CustomTextFormField(
+                    controller: esicController,
                     iconWidget: Icon(Icons.credit_card, color: Colors.green, size: 30,),
                     labelText: "ESIC Number",
                     onChanged: (value) {
@@ -277,6 +443,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                     },
                   ),
                   CustomTextFormField(
+                    controller: pfController,
                     iconWidget: Icon(Icons.credit_card, color: Colors.green, size: 30,),
                     labelText: 'PF Number',
                     onChanged: (value) {
@@ -284,6 +451,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                     },
                   ),
                   CustomTextFormField(
+                    controller: nomineenameController,
                     iconWidget: Icon(Icons.person, color: Colors.indigo, size: 30,),
                     labelText: 'Nominee Name',
                     onChanged: (value) {
@@ -316,6 +484,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                   CustomTextFormField(
                     iconWidget: Icon(Icons.credit_card, color: Colors.green, size: 30,),
                     labelText: 'Relation with Nominee',
+                    controller: nomineeRelationController,
                     onChanged: (value) {
                       nomineeRelation = value!;
                     },
@@ -351,6 +520,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                   CustomTextFormField(
                     iconWidget: Icon(Icons.business_sharp, color: Colors.green, size: 30,),
                     labelText: 'Company Name',
+                    controller: companyNameController,
                     onChanged: (value) {
                       companyName = value!;
                     },
@@ -358,6 +528,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                   CustomTextFormField(
                     iconWidget: Icon(Icons.person, color: Colors.green, size: 30,),
                     labelText: 'Designation',
+                    controller: designationController,
                     onChanged: (value) {
                       designation = value!;
                     },
@@ -365,6 +536,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                   CustomTextFormField(
                     iconWidget: Icon(Icons.person, color: Colors.green, size: 30,),
                     labelText: 'Year of Experience',
+                    controller: experienceController,
                     keyboardType: TextInputType.number,
                     onChanged: (value) {
                       experience = value!;
@@ -374,7 +546,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                     iconWidget: Icon(Icons.calendar_month, color: Colors.green, size: 30,),
                     labelText: 'Date of Leaving',
                     isDatePicker: true,
-                    // controller: dateController,
+                    controller: companyLeavingDateController,
                     onChanged: (value) {
                       setState(() {
                         if (value != null && value.isNotEmpty) {

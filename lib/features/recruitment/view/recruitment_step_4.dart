@@ -5,10 +5,11 @@ import 'package:image_picker/image_picker.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
 import 'package:vigo_smart_app/features/recruitment/model/update_recruitment04_model.dart';
-import 'package:vigo_smart_app/features/recruitment/view/pre_recruitment_list.dart';
 import '../../../helper/toast_helper.dart';
 import '../../auth/session_manager/session_manager.dart';
+import '../../home/view/home_page.dart';
 import '../view model/document_type_view_model.dart';
+import '../view model/pre_recruitment_by_id_view_model.dart';
 import '../view model/update_recruitment04_view_model.dart';
 import '../widget/custom_text_form_field.dart';
 
@@ -16,8 +17,9 @@ import 'package:image/image.dart' as img;
 
 class RecruitmentStep4 extends StatefulWidget {
   final dynamic userId;
+  final dynamic recruitedUserId;
 
-  const RecruitmentStep4({super.key, required this.userId});
+  const RecruitmentStep4({super.key, required this.userId,this.recruitedUserId});
 
   @override
   State<RecruitmentStep4> createState() => _RecruitmentStep4State();
@@ -49,7 +51,67 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
   @override
   void initState() {
     fetchBankListData();
+    fetchPreRecruitmentByIdData();
     super.initState();
+  }
+
+  TextEditingController heightController = TextEditingController();
+  TextEditingController weightController = TextEditingController();
+  TextEditingController waistController = TextEditingController();
+  TextEditingController chestController = TextEditingController();
+  TextEditingController identificationMarkController = TextEditingController();
+  TextEditingController bloodGroupController = TextEditingController();
+
+  //PreRecruitment By ID
+  PreRecruitmentByIdViewModel preRecruitmentByIdViewModel = PreRecruitmentByIdViewModel();
+  List<Map<String, dynamic>> preRecruitmentByIdData = [];
+
+  Future<void> fetchPreRecruitmentByIdData() async {
+    String? token = await preRecruitmentByIdViewModel.sessionManager.getToken();
+
+    if (token != null) {
+      await preRecruitmentByIdViewModel.fetchPreRecruitmentByIdList(token, widget.recruitedUserId);
+
+      if (preRecruitmentByIdViewModel.getPreRecruitmentByIdList != null) {
+        setState(() {
+          preRecruitmentByIdData = preRecruitmentByIdViewModel.getPreRecruitmentByIdList!
+              .map((entry) => {
+                "userId" : entry.userId,
+                "height" : entry.height,
+                "weight" : entry.weight,
+                "waist" : entry.waist,
+                "chest" : entry.chest,
+                "identificationMark" : entry.identificationMark,
+                "bloodGroup" : entry.bloodGroup,
+          })
+              .toList();
+          if (preRecruitmentByIdData.isNotEmpty) {
+            // userIdController.text = preRecruitmentByIdData[0]["userId"] ?? "";
+            // recruitedUserId = preRecruitmentByIdData[0]["userId"];
+            // debugPrint("Assigned userId: ${userIdController.text}");
+            // debugPrint("Assigned recruitedUserId: $recruitedUserId");
+
+            height = preRecruitmentByIdData[0]["height"] ?? "";
+            heightController.text = height;
+
+            weight = preRecruitmentByIdData[0]["weight"] ?? "";
+            weightController.text = weight;
+
+            waist = preRecruitmentByIdData[0]["waist"] ?? "";
+            waistController.text = waist;
+
+            chest = preRecruitmentByIdData[0]["chest"] ?? "";
+            chestController.text = chest;
+
+            identificationMark = preRecruitmentByIdData[0]["identificationMark"] ?? "";
+            identificationMarkController.text = identificationMark;
+
+            bloodGroup = preRecruitmentByIdData[0]["bloodGroup"] ?? "";
+            bloodGroupController.text = bloodGroup;
+          }
+        });
+      }
+    }
   }
 
   @override
@@ -58,11 +120,10 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
       appBar: AppBar(
         title: Text('Recruitment Step 4'),
         actions: [
-          IconButton(onPressed: (){
-            Navigator.push(context, MaterialPageRoute(builder: (context) => PreRecruitmentList()));
-            // setState(() {
-            //   _expandAll = !_expandAll;
-            // });
+          IconButton(onPressed: () {
+            setState(() {
+              _expandAll = !_expandAll;
+            });
           },
               icon: Icon(_expandAll ? Icons.unfold_less : Icons.unfold_more))
         ],
@@ -74,12 +135,16 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
             children: [
               _physicalDetails(),
               _otherDocuments(),
+              Text('${widget.recruitedUserId}'),
               SizedBox(height: 10,),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   ElevatedButton(onPressed: () async {
                     String jsonOutput = jsonEncode(otherDocxJson());
+                    if (jsonOutput == '{}' || jsonOutput.isEmpty) {
+                      jsonOutput = '';
+                    }
                     // debugPrint(jsonOutput);
                     try{
                       String? token = await sessionManager.getToken();
@@ -87,7 +152,7 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
 
                       Map<String, dynamic> response = await updateRecruitment04ViewModel.updateRecruitment04(token!,
                           UpdateRecruitment04Model(
-                              userId: widget.userId,
+                              userId: widget.recruitedUserId ?? widget.userId,
                               Height: height,
                               Weight: weight,
                               physical_waist: waist,
@@ -105,14 +170,6 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
                             text: '${response['status']}',
                             onConfirmBtnTap: () {
                               Navigator.pop(context);
-                              // Navigator.push(
-                              //   context,
-                              //   MaterialPageRoute(
-                              //     builder: (context) => RecruitmentStep4(
-                              //       userId: '${widget.userId}',
-                              //     ),
-                              //   ),
-                              // );
                             });
                       } else {
                         QuickAlert.show(
@@ -133,6 +190,14 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
                     }
                   },
                       child: Text('Save and Submit'), ),
+
+                  ElevatedButton(onPressed: () {
+                    Navigator.pushAndRemoveUntil(this.context,
+                      MaterialPageRoute(builder: (context) => HomePage()),
+                          (route) => false,
+                    );
+                  },
+                      child: Text('Finish',))
                 ],
               ),
             ],
@@ -141,6 +206,13 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
       ),
     );
   }
+
+//   onConfirmBtnTap: () {
+//   Navigator.pushAndRemoveUntil(this.context,
+//   MaterialPageRoute(builder: (context) => HomePage()),
+//   (route) => false,
+//   );
+// },
 
   Widget _physicalDetails() {
     return Card(
@@ -166,6 +238,7 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
                     keyboardType: TextInputType.numberWithOptions(
                       decimal: true
                     ),
+                    controller: heightController,
                     labelText: "Height (in CMs)",
                     onChanged: (value) {
                       height = value!;
@@ -176,6 +249,7 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
                     keyboardType: TextInputType.numberWithOptions(
                         decimal: true
                     ),
+                    controller: weightController,
                     labelText: "Weight (in KGs)",
                     onChanged: (value) {
                       weight = value!;
@@ -189,6 +263,7 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
                     keyboardType: TextInputType.numberWithOptions(
                         decimal: true
                     ),
+                    controller: waistController,
                     // icon: Icons.fitness_center,
                     labelText: "Waist (in inches)",
                     onChanged: (value) {
@@ -201,6 +276,7 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
                     keyboardType: TextInputType.numberWithOptions(
                         decimal: true
                     ),
+                    controller: chestController,
                     // icon: Icons.archive,
                     labelText: "Chest (in inches)",
                     onChanged: (value) {
@@ -210,6 +286,7 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
                   CustomTextFormField(
                     iconWidget: Icon(Icons.accessibility_new, color: Colors.indigo.shade900, size: 30,),
                     labelText: 'Identification Mark',
+                    controller: identificationMarkController,
                     onChanged: (value) {
                       identificationMark = value!;
                     },
@@ -217,6 +294,7 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
                   CustomTextFormField(
                     iconWidget: Icon(Icons.bloodtype, color: Colors.red, size: 30,),
                     labelText: 'Blood Group',
+                    controller: bloodGroupController,
                     onChanged: (value) {
                       bloodGroup = value!;
                     },

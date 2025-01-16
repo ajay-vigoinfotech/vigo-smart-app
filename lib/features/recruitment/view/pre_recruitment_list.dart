@@ -69,7 +69,7 @@ class _PreRecruitmentListState extends State<PreRecruitmentList> {
                                     MaterialPageRoute(
                                       builder: (context) =>
                                           RecruitmentStep1(
-                                            userId: filteredData[index]['userId'],
+                                            recruitedUserId: filteredData[index]['userId'],
                                           ),
                                     ),
                                   );
@@ -106,30 +106,67 @@ class _PreRecruitmentListState extends State<PreRecruitmentList> {
       await preRecruitmentListViewModel.fetchPreRecruitmentList(token);
 
       if (preRecruitmentListViewModel.getPreRecruitmentList != null) {
-        setState(() {
-          preRecruitmentListData =
-              preRecruitmentListViewModel.getPreRecruitmentList!
-                  .map((entry) => {
-                "userId": entry.userId,
-                "employeeCode": entry.employeeCode,
-                "fullName": entry.fullName,
-                "mobilePIN": entry.mobilePIN,
-                "image": entry.image,
-                "createDate": entry.createDate,
-                "statusId": entry.statusId,
-                "statusCode": entry.statusCode,
-                "statusName": entry.statusName,
-                "designationName": entry.designationName,
-              })
-                  .toList();
-          filteredData = preRecruitmentListData;
-        });
+        if (mounted) {
+          setState(() {
+            preRecruitmentListData =
+                preRecruitmentListViewModel.getPreRecruitmentList!
+                    .map((entry) => {
+                  "userId": entry.userId,
+                  "employeeCode": entry.employeeCode,
+                  "fullName": entry.fullName,
+                  "mobilePIN": entry.mobilePIN,
+                  "image": entry.image,
+                  "createDate": entry.createDate,
+                  "statusId": entry.statusId,
+                  "statusCode": entry.statusCode,
+                  "statusName": entry.statusName,
+                  "designationName": entry.designationName,
+                })
+                    .toList();
+            filteredData = preRecruitmentListData;
+          });
+        }
       }
     }
-    setState(() {
-      isLoading = false;
-    });
+
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
+
+  // Future<void> fetchPreRecruitmentListData() async {
+  //   String? token = await preRecruitmentListViewModel.sessionManager.getToken();
+  //
+  //   if (token != null) {
+  //     await preRecruitmentListViewModel.fetchPreRecruitmentList(token);
+  //
+  //     if (preRecruitmentListViewModel.getPreRecruitmentList != null) {
+  //       setState(() {
+  //         preRecruitmentListData =
+  //             preRecruitmentListViewModel.getPreRecruitmentList!
+  //                 .map((entry) => {
+  //               "userId": entry.userId,
+  //               "employeeCode": entry.employeeCode,
+  //               "fullName": entry.fullName,
+  //               "mobilePIN": entry.mobilePIN,
+  //               "image": entry.image,
+  //               "createDate": entry.createDate,
+  //               "statusId": entry.statusId,
+  //               "statusCode": entry.statusCode,
+  //               "statusName": entry.statusName,
+  //               "designationName": entry.designationName,
+  //             })
+  //                 .toList();
+  //         filteredData = preRecruitmentListData;
+  //       });
+  //     }
+  //   }
+  //   setState(() {
+  //     isLoading = false;
+  //   });
+  // }
 
   void filterSearchResults(String query) {
     if (query.isEmpty) {

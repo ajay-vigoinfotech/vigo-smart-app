@@ -436,11 +436,8 @@ class _FieldReportingState extends State<FieldReporting>
                                               type: QuickAlertType.success,
                                               text: '${response['status']}',
                                               onConfirmBtnTap: () {
-                                                Navigator.pushAndRemoveUntil(
-                                                  this.context,
-                                                  MaterialPageRoute(
-                                                      builder: (context) =>
-                                                          HomePage()),
+                                                Navigator.pushAndRemoveUntil(this.context,
+                                                  MaterialPageRoute(builder: (context) => HomePage()),
                                                   (route) => false,
                                                 );
                                               },

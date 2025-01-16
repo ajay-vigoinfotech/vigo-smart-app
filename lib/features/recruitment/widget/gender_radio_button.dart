@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 class GenderRadioButtons extends StatefulWidget {
   final Function(int) onGenderSelected;
-  final String initialGender;
+  final String initialGender; // '1' for Male, '2' for Female
+
   const GenderRadioButtons({
     super.key,
     required this.onGenderSelected,
@@ -19,8 +20,18 @@ class GenderRadioButtonsState extends State<GenderRadioButtons> {
   @override
   void initState() {
     super.initState();
-    // Set the initial gender based on the passed value
-    _selectedGender = widget.initialGender;
+    // Convert initial gender code to gender name
+    _selectedGender = widget.initialGender == '1' ? 'Male' : 'Female';
+  }
+
+  @override
+  void didUpdateWidget(GenderRadioButtons oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialGender != widget.initialGender) {
+      setState(() {
+        _selectedGender = widget.initialGender == '1' ? 'Male' : 'Female';
+      });
+    }
   }
 
   @override
@@ -84,11 +95,6 @@ class GenderRadioButtonsState extends State<GenderRadioButtons> {
     );
   }
 }
-
-
-
-
-
 
 // import 'package:flutter/material.dart';
 //

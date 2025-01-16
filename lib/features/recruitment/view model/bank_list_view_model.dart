@@ -23,7 +23,7 @@ class BankListViewModel{
       if (response.statusCode == 200) {
         final responseData = BankListResponse.fromJson(response.data);
         assignBankList = responseData.table;
-        debugPrint('$response');
+        // debugPrint('$response');
       } else {
         debugPrint(
             'Error :: ${response.statusCode} - ${response.statusMessage}');

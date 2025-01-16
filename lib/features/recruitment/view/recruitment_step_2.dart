@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
+import 'package:vigo_smart_app/core/constants/constants.dart';
 import 'package:vigo_smart_app/core/theme/app_pallete.dart';
 import 'package:vigo_smart_app/features/auth/session_manager/session_manager.dart';
 import 'package:vigo_smart_app/features/recruitment/model/update_recruitment02_model.dart';
@@ -17,11 +17,14 @@ import '../view model/get_state_view_model.dart';
 
 import 'package:image/image.dart' as img;
 
+import '../view model/pre_recruitment_by_id_view_model.dart';
+
 class RecruitmentStep2 extends StatefulWidget {
   final dynamic userId;
+  final dynamic recruitedUserId;
 
   const RecruitmentStep2({super.key,
-    required this.userId});
+    required this.userId, this.recruitedUserId});
 
   @override
   State<RecruitmentStep2> createState() => _RecruitmentStep2State();
@@ -29,7 +32,8 @@ class RecruitmentStep2 extends StatefulWidget {
 
 class _RecruitmentStep2State extends State<RecruitmentStep2> {
   SessionManager sessionManager = SessionManager();
-  bool _expandAll = false;
+  String? recruitedUserId;
+  bool _expandAll = true;
   bool isLocalStateSelected = false;
   bool isLocalCitySelected = false;
 
@@ -42,6 +46,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
   String pPoliceStation = '';
   String pPostOffice = '';
   String bankName = '';
+  String selectedBankName = '';
   String accountHolderName = '';
   String accountNo = '';
   String ifscCode = '';
@@ -51,15 +56,12 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
   String responsibleReference1 = '';
 
   //local address
-  final TextEditingController localLine1AddressController =
-      TextEditingController();
+  final TextEditingController localLine1AddressController = TextEditingController();
   final TextEditingController localPincodeController = TextEditingController();
-  final TextEditingController localPoliceStationController =
-      TextEditingController();
-  final TextEditingController localPostOfficeController =
-      TextEditingController();
   final TextEditingController localStateController = TextEditingController();
   final TextEditingController localCityController = TextEditingController();
+  final TextEditingController localPoliceStationController = TextEditingController();
+  final TextEditingController localPostOfficeController = TextEditingController();
 
   //permanent address
   final TextEditingController permanentLine1AddressController = TextEditingController();
@@ -69,38 +71,196 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
   final TextEditingController permanentStateController = TextEditingController();
   final TextEditingController permanentCityController = TextEditingController();
 
+  //user id
+  TextEditingController userIdController = TextEditingController();
+  //bank details
+  TextEditingController bankNameController = TextEditingController();
+  TextEditingController accHolderNameController = TextEditingController();
+  TextEditingController accNumController = TextEditingController();
+  TextEditingController ifscCodeController = TextEditingController();
+  TextEditingController bankDocsController = TextEditingController();
+
+  //contact details
+  TextEditingController responsibleEmail1Controller = TextEditingController();
+  TextEditingController responsiblePerson1Controller = TextEditingController();
+  TextEditingController responsibleAdd1Controller = TextEditingController();
+  TextEditingController responsibleReference1Controller = TextEditingController();
+
   // Checkbox state
   bool isPermanentSameAsLocal = false;
 
   // Tracks whether the checkbox was previously checked
   bool wasCheckboxPreviouslyChecked = false;
 
-  @override
-  void dispose() {
-    // Dispose controllers to free resources
-    localLine1AddressController.dispose();
-    localPincodeController.dispose();
-    localPoliceStationController.dispose();
-    localPostOfficeController.dispose();
-    localStateController.dispose();
-    localCityController.dispose();
+  //PreRecruitment By ID
+  PreRecruitmentByIdViewModel preRecruitmentByIdViewModel = PreRecruitmentByIdViewModel();
+  List<Map<String, dynamic>> preRecruitmentByIdData = [];
 
-    permanentLine1AddressController.dispose();
-    permanentPincodeController.dispose();
-    permanentPoliceStationController.dispose();
-    permanentPostOfficeController.dispose();
-    permanentStateController.dispose();
-    permanentCityController.dispose();
-    super.dispose();
+  String localSelectedStateText = '';
+  String localSelectedCityText = '';
+  String permanentSelectedStateText = '';
+  String permanentSelectedCityText = '';
+
+  Future<void> fetchPreRecruitmentByIdData() async {
+    String? token = await preRecruitmentByIdViewModel.sessionManager.getToken();
+
+    if (token != null) {
+      await preRecruitmentByIdViewModel.fetchPreRecruitmentByIdList(token, widget.recruitedUserId);
+
+      if (preRecruitmentByIdViewModel.getPreRecruitmentByIdList != null) {
+        setState(() {
+          preRecruitmentByIdData = preRecruitmentByIdViewModel.getPreRecruitmentByIdList!
+              .map((entry) => {
+            "userId": entry.userId,
+            "currentAddress" : entry.currentAddress,
+            "currentPin" : entry.currentPin,
+            "currentStateId" : entry.currentStateId,
+            "currentCityid" : entry.currentCityid,
+            "currentPoliceStation" : entry.currentPoliceStation,
+            "currentPostOffice" : entry.currentPostOffice,
+
+            "permanentAddress" : entry.permanentAddress,
+            "permanentPin" : entry.permanentPin,
+            "permanentStateId" : entry.permanentStateId,
+            "permanentCityId" : entry.permanentCityId,
+            "permanentPoliceStation" : entry.permanentPoliceStation,
+            "permanentPostOffice" : entry.permanentPostOffice,
+            "bankName" : entry.bankName,
+            "accountHolderName" : entry.accountHolderName,
+            "accntNo" : entry.accntNo,
+            "ifscCode" : entry.ifscCode,
+            "bankDocs" : entry.bankDocs,
+            "emergencyEmail1" : entry.emergencyEmail1,
+            "emergencyName1" : entry.emergencyName1,
+            "emergencyContactDetails1" : entry.emergencyContactDetails1,
+            "emergencyContactReferenceDetails1" : entry.emergencyContactReferenceDetails1,
+          })
+              .toList();
+          if (preRecruitmentByIdData.isNotEmpty) {
+            userIdController.text = preRecruitmentByIdData[0]["userId"] ?? "";
+            recruitedUserId = preRecruitmentByIdData[0]["userId"] ?? "";
+
+            //local address
+            currentAddress = preRecruitmentByIdData[0]["currentAddress"] ?? "";
+            localLine1AddressController.text = currentAddress;
+            pinCode = preRecruitmentByIdData[0]["currentPin"] ?? "";
+            localPincodeController.text = pinCode;
+
+            cPoliceStation = preRecruitmentByIdData[0]["currentPoliceStation"];
+            localPoliceStationController.text = cPoliceStation;
+            cPostOffice = preRecruitmentByIdData[0]["currentPostOffice"];
+            localPostOfficeController.text = cPostOffice;
+
+            //permanent address
+            permanentAddress = preRecruitmentByIdData[0]["permanentAddress"] ?? "";
+            permanentLine1AddressController.text = permanentAddress;
+            pPIN = preRecruitmentByIdData[0]["permanentPin"] ?? "";
+            permanentPincodeController.text = pPIN;
+
+            pPoliceStation = preRecruitmentByIdData[0]["permanentPoliceStation"];
+            permanentPoliceStationController.text = pPoliceStation;
+            pPostOffice = preRecruitmentByIdData[0]["permanentPostOffice"];
+            permanentPostOfficeController.text = pPostOffice;
+
+            //contact details
+            responsibleEmail1 = preRecruitmentByIdData[0]["emergencyEmail1"];
+            responsibleEmail1Controller.text = responsibleEmail1;
+            responsiblePerson1 = preRecruitmentByIdData[0]["emergencyName1"];
+            responsiblePerson1Controller.text = responsiblePerson1;
+            responsibleAdd1 = preRecruitmentByIdData[0]["emergencyContactDetails1"];
+            responsibleAdd1Controller.text = responsibleAdd1;
+            responsibleReference1 = preRecruitmentByIdData[0]["emergencyContactReferenceDetails1"];
+            responsibleReference1Controller.text = responsibleReference1;
+          }
+        });
+      }
+    }
+  }
+
+  String getCityTextFromId(String cityId) {
+    var city = filterCityListData.firstWhere(
+          (city) => city['value'] == cityId,
+      orElse: () => {'text': 'Unknown City'},
+    );
+    return city['text'] ?? 'Unknown City';
+  }
+
+  String getStateTextFromId(String stateId) {
+    var state = filterStateListData.firstWhere(
+          (state) => state['value'] == stateId,
+      orElse: () => {'text': 'Unknown State'},
+    );
+    return state['text'] ?? 'Unknown State';
   }
 
   @override
   void initState() {
-    fetchStateData();
-    fetchCityData();
-    fetchBankListData();
     super.initState();
+    fetchPreRecruitmentByIdData().then((_) {
+      fetchCityData().then((_) {
+        fetchStateData().then((_) {
+          fetchBankListData().then((_) {
+            setState(() {
+              localSelectedStateId =
+              preRecruitmentByIdData[0]["currentStateId"];
+              Map<String, String> stateMap = {
+                for (var state in stateListData) state['value']: state['text'],
+              };
+              localSelectedStateText = stateMap[localSelectedStateId] ?? 'Unknown State';
+              localStateController.text = stateMap[localSelectedStateId] ?? '';
+
+              localSelectedCityId = preRecruitmentByIdData[0]["currentCityid"];
+              Map<String, String> cityMap = {
+                for (var city in cityListData) city['value']: city['text'],
+              };
+              localSelectedCityText = cityMap[localSelectedCityId] ?? 'Unknown City';
+              localCityController.text = cityMap[localSelectedCityId] ?? '';
+
+              //permanent state
+              permanentSelectedStateId = preRecruitmentByIdData[0]["permanentStateId"];
+              Map<String, String> permanentStateMap = {
+                for (var permanentState in stateListData ) permanentState['value']: permanentState['text'],
+              };
+              permanentSelectedStateText = permanentStateMap[permanentSelectedStateId] ?? '';
+              permanentStateController.text = permanentStateMap[permanentSelectedStateId] ?? '';
+
+              //permanent city
+              permanentSelectedCityId =
+              preRecruitmentByIdData[0]["permanentCityId"];
+              Map<String, String> permanentCityMap = {
+                for (var permanentCity in cityListData ) permanentCity['value']: permanentCity['text'],
+              };
+              permanentSelectedCityText = permanentCityMap[permanentSelectedCityId] ?? '';
+              permanentCityController.text = permanentCityMap[permanentSelectedCityId] ?? '';
+
+              //bank
+              selectedBankName = preRecruitmentByIdData[0]["bankName"] ?? "";
+              bankNameController.text = selectedBankName;
+
+              accountHolderName = preRecruitmentByIdData[0]["accountHolderName"];
+              accHolderNameController.text = accountHolderName;
+              accountNo = preRecruitmentByIdData[0]["accntNo"];
+              accNumController.text = accountNo;
+              ifscCode = preRecruitmentByIdData[0]["ifscCode"];
+              ifscCodeController.text = ifscCode;
+              bankDocsController.text = preRecruitmentByIdData[0]["bankDocs"] ?? "";
+            });
+          });
+        });
+      });
+    });
   }
+
+
+
+  // @override
+  // void initState() {
+  //   fetchPreRecruitmentByIdData();
+  //   fetchStateData();
+  //   fetchCityData();
+  //   fetchBankListData();
+  //   super.initState();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -127,6 +287,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
               _permanentAddress(),
               _bankDetails(),
               _contactDetails(),
+              // Text(localSelectedCityId),
               SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -149,7 +310,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
 
                           Map<String,dynamic> response = await updateRecruitment02ViewModel.updateRecruitment02(token!,
                               UpdateRecruitment02Model(
-                                  userId: widget.userId,
+                                  userId: widget.userId ?? widget.recruitedUserId,
                                   currentAddress: currentAddress,
                                   CPin: pinCode,
                                   CState: localSelectedStateId,
@@ -188,6 +349,8 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
                                     MaterialPageRoute(
                                       builder: (context) => RecruitmentStep3(
                                         userId: '${widget.userId}',
+                                        recruitedUserId : widget.recruitedUserId,
+
                                       ),
                                     ),
                                   );
@@ -205,8 +368,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
                         } catch (error) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                                content: Text(
-                                    'An error occurred. Please try again later.')),
+                                content: Text('An error occurred. Please try again later.')),
                           );
                         }
                       },
@@ -229,7 +391,12 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
                         elevation: 5,
                       ),
                       onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => RecruitmentStep3(userId: widget.userId)));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                        RecruitmentStep3(
+                          userId: widget.userId,
+                            recruitedUserId : widget.recruitedUserId,),
+                    ),
+                    );
                   }, child: Text('Next',
                     style: TextStyle(
                         color: Colors.white,
@@ -520,7 +687,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
               ),
             ),
             CustomTextFormField(
-              // controller: permanentLine1AddressController,
+              controller: accHolderNameController,
               iconWidget: Icon(Icons.person, color: Colors.green, size: 30,),
               labelText: 'Account holder name',
               onChanged: (value) {
@@ -528,7 +695,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
               },
             ),
             CustomTextFormField(
-              // controller: permanentLine1AddressController,
+              controller: accNumController,
               iconWidget: Icon(Icons.credit_card, color: Colors.green, size: 30,),
               labelText: 'Account no',
               onChanged: (value) {
@@ -536,7 +703,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
               },
             ),
             CustomTextFormField(
-              // controller: permanentLine1AddressController,
+              controller: ifscCodeController,
               iconWidget: Icon(Icons.credit_card, color: Colors.green, size: 30,),
               labelText: 'IFSC Code',
               onChanged: (value) {
@@ -545,9 +712,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
             ),
 
             SizedBox(height: 20),
-            Text(
-              'Click to Upload PassBook Image',
-            ),
+            Text('Click to Upload PassBook Image',),
             SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -557,17 +722,25 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
                     GestureDetector(
                       onTap: () => _selectImage(),
                       child: _passBookImage.isEmpty
-                          ? Icon(
-                              Icons.add_photo_alternate_outlined,
-                              size: 50,
-                            )
+                          ? (bankDocsController.text.isNotEmpty
+                          ? Image.network(
+                        '${AppConstants.baseUrl}/${bankDocsController.text}',
+                        fit: BoxFit.cover,
+                        height: 100,
+                        width: 100,
+                      )
+                          : Icon(
+                        Icons.add_photo_alternate_outlined,
+                        size: 50,
+                      ))
                           : Image.memory(
-                              base64Decode(_passBookImage),
-                              height: 100,
-                              width: 100,
-                              fit: BoxFit.cover,
-                            ),
+                        base64Decode(_passBookImage),
+                        height: 100,
+                        width: 100,
+                        fit: BoxFit.cover,
+                      ),
                     ),
+
                     SizedBox(height: 5),
                     GestureDetector(
                       onTap: () => _deleteImage(),
@@ -604,7 +777,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
           ),
           children: [
             CustomTextFormField(
-              controller: localLine1AddressController,
+              controller: responsibleEmail1Controller,
               iconWidget: Icon(Icons.email_sharp, color: Colors.green, size: 30,),
               labelText: 'Email id',
               onChanged: (value) {
@@ -612,7 +785,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
               },
             ),
             CustomTextFormField(
-              // controller: localPoliceStationController,
+              controller: responsiblePerson1Controller,
               iconWidget: Icon(Icons.person, color: Colors.green, size: 30,),
               labelText: 'Emergency Contact Name',
               onChanged: (value) {
@@ -620,7 +793,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
               },
             ),
             CustomTextFormField(
-              // controller: localPostOfficeController,
+              controller: responsibleAdd1Controller,
               iconWidget: Icon(Icons.add_alert, color: Colors.green, size: 30,),
               labelText: 'Emergency Contact Number',
               onChanged: (value) {
@@ -628,7 +801,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
               },
             ),
             CustomTextFormField(
-              // controller: localPincodeController,
+              controller: responsibleReference1Controller,
               iconWidget: Icon(Icons.person, color: Colors.green, size: 30,),
               labelText: 'Reference within Company/Org',
               onChanged: (value) {
@@ -697,29 +870,6 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
     }
   }
 
-  // Future<void> _pickImage(ImageSource source) async {
-  //   final XFile? photo = await _picker.pickImage(source: source,
-  //     maxWidth: 1920,
-  //     maxHeight: 1080,
-  //   );
-  //
-  //   if (photo != null) {
-  //     final File selectedFile = File(photo.path);
-  //
-  //     final compressedImage = await FlutterImageCompress.compressWithFile(
-  //       selectedFile.path, quality: 80,
-  //     );
-  //
-  //     if (compressedImage != null) {
-  //       final base64String = base64Encode(compressedImage);
-  //
-  //       setState(() {
-  //         _passBookImage = base64String;
-  //       });
-  //     }
-  //   }
-  // }
-
   void _deleteImage() async {
     final shouldDelete = await showDialog<bool>(
       context: context,
@@ -746,6 +896,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
     if (shouldDelete ?? false) {
       setState(() {
         _passBookImage = '';
+        bankDocsController.text = '';
       });
     }
   }
@@ -905,7 +1056,12 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
               );
             },
             child: Text(
-              selectedBank.isEmpty ? 'Select Bank' : selectedBank,
+              selectedBank.isNotEmpty
+                ? selectedBank
+                : (bankNameController.text.isNotEmpty
+                ? bankNameController.text
+                : 'Select Bank'
+              ),
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 16,
@@ -1011,13 +1167,23 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
                             }
                             final state = filterStateListData[index];
                             return ListTile(
-                              title: Text(state['text'] ?? ''),
+                              // title: Text(state['text'] ?? localSelectedStateText),
+                              title: Text(
+                                state['text'] ??
+                                    (isLocalStateSelected
+                                        ? localSelectedStateText
+                                        : permanentSelectedStateText),
+                              ),
                               onTap: () {
                                 setState(() {
-                                  selectedState = state['text'] ?? '';
+                                  // selectedState = state['text'] ?? localSelectedStateText;
+                                  selectedState = state['text'] ??
+                                      (isLocalStateSelected
+                                          ? localSelectedStateText
+                                          : permanentSelectedStateText);
                                   if (isLocalStateSelected) {
                                     localStateController.text = selectedState;
-                                    localSelectedStateId = state['value'];
+                                    localSelectedStateId = state['value'] ;
                                   } else {
                                     permanentStateController.text = selectedState;
                                     permanentSelectedStateId = state['value'];
@@ -1154,10 +1320,21 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
                             }
                             final city = filterCityListData[index];
                             return ListTile(
-                              title: Text(city['text'] ?? ''),
+                              // title: Text(city['text'] ?? ''),
+                              title: Text(city['text'] ??
+                                  (isLocalCitySelected
+                                    ? localSelectedCityText
+                                    : permanentSelectedCityText
+                                  ),
+                              ),
                               onTap: () {
                                 setState(() {
-                                  selectedCity = city['text'] ?? '';
+                                  // selectedCity = city['text'] ?? '';
+                                  selectedCity = city['text'] ??
+                                      (isLocalCitySelected
+                                          ? localSelectedCityText
+                                          : permanentSelectedCityText
+                                      );
                                   if (isLocalCitySelected) {
                                     localCityController.text = selectedCity;
                                     localSelectedCityId = city['value'];
@@ -1203,5 +1380,24 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    // Dispose controllers to free resources
+    localLine1AddressController.dispose();
+    localPincodeController.dispose();
+    localPoliceStationController.dispose();
+    localPostOfficeController.dispose();
+    localStateController.dispose();
+    localCityController.dispose();
+
+    permanentLine1AddressController.dispose();
+    permanentPincodeController.dispose();
+    permanentPoliceStationController.dispose();
+    permanentPostOfficeController.dispose();
+    permanentStateController.dispose();
+    permanentCityController.dispose();
+    super.dispose();
   }
 }

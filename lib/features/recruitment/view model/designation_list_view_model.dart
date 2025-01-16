@@ -23,7 +23,7 @@ class DesignationListViewModel{
       if (response.statusCode == 200) {
         final responseData = DesignationListResponse.fromJson(response.data);
         assignDesignationList = responseData.table;
-        debugPrint('$response');
+        // debugPrint('$response');
       } else {
         debugPrint(
             'Error :: ${response.statusCode} - ${response.statusMessage}');

@@ -12,7 +12,7 @@ class PreRecruitmentByIdModel {
   String? currentAddress;
   String? currentPin;
   String? currentStateId;
-  String? currentCityId;
+  String? currentCityid;
   String? currentPoliceStation;
   String? currentPostOffice;
   String? permanentPin;
@@ -55,7 +55,7 @@ class PreRecruitmentByIdModel {
   String? nomineeRelation;
   String? oldCompany;
   String? oldDesignation;
-  String? oldExperience;
+  String? oldExperiance;
   String? oldCompanyAdd;
   String? oldCompanyLeavingDate;
   String? oldCompanyLeavingDate1;
@@ -93,7 +93,7 @@ class PreRecruitmentByIdModel {
     this.currentAddress,
     this.currentPin,
     this.currentStateId,
-    this.currentCityId,
+    this.currentCityid,
     this.currentPoliceStation,
     this.currentPostOffice,
     this.permanentPin,
@@ -136,7 +136,7 @@ class PreRecruitmentByIdModel {
     this.nomineeRelation,
     this.oldCompany,
     this.oldDesignation,
-    this.oldExperience,
+    this.oldExperiance,
     this.oldCompanyAdd,
     this.oldCompanyLeavingDate,
     this.oldCompanyLeavingDate1,
@@ -176,7 +176,7 @@ class PreRecruitmentByIdModel {
       currentAddress: json['currentAddress']?.toString() ?? '',
       currentPin: json['currentPin']?.toString() ?? '',
       currentStateId: json['currentStateId']?.toString() ?? '',
-      currentCityId: json['currentCityId']?.toString() ?? '',
+      currentCityid: json['currentCityid']?.toString() ?? '',
       currentPoliceStation: json['currentPoliceStation']?.toString() ?? '',
       currentPostOffice: json['currentPostOffice']?.toString() ?? '',
       permanentPin: json['permanentPin']?.toString() ?? '',
@@ -219,7 +219,7 @@ class PreRecruitmentByIdModel {
       nomineeRelation: json['nomineeRelation']?.toString() ?? '',
       oldCompany: json['oldCompany']?.toString() ?? '',
       oldDesignation: json['oldDesignation']?.toString() ?? '',
-      oldExperience: json['oldExperience']?.toString() ?? '',
+      oldExperiance: json['oldExperiance']?.toString() ?? '',
       oldCompanyAdd: json['oldCompanyAdd']?.toString() ?? '',
       oldCompanyLeavingDate: json['oldCompanyLeavingDate']?.toString() ?? '',
       oldCompanyLeavingDate1: json['oldCompanyLeavingDate1']?.toString() ?? '',
@@ -260,7 +260,7 @@ class PreRecruitmentByIdModel {
       'currentAddress': currentAddress,
       'currentPin': currentPin,
       'currentStateId': currentStateId,
-      'currentCityId': currentCityId,
+      'currentCityid': currentCityid,
       'currentPoliceStation': currentPoliceStation,
       'currentPostOffice': currentPostOffice,
       'permanentPin': permanentPin,
@@ -303,7 +303,7 @@ class PreRecruitmentByIdModel {
       'nomineeRelation': nomineeRelation,
       'oldCompany': oldCompany,
       'oldDesignation': oldDesignation,
-      'oldExperience': oldExperience,
+      'oldExperience': oldExperiance,
       'oldCompanyAdd': oldCompanyAdd,
       'oldCompanyLeavingDate': oldCompanyLeavingDate,
       'oldCompanyLeavingDate1': oldCompanyLeavingDate1,
