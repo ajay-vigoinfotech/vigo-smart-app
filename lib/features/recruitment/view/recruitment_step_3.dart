@@ -37,6 +37,18 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
   TextEditingController experienceController = TextEditingController();
   TextEditingController userIdController = TextEditingController();
 
+  String formatDate(String date, {String inputFormat = 'dd-MM-yyyy', String outputFormat = 'yyyy-MM-dd'}) {
+    try {
+      final inputFormatter = DateFormat(inputFormat);
+      final outputFormatter = DateFormat(outputFormat);
+      final parsedDate = inputFormatter.parse(date);
+      return outputFormatter.format(parsedDate);
+    } catch (e) {
+      debugPrint('Error formatting date: $e');
+      return date; // Return the original date if parsing fails
+    }
+  }
+
   //PreRecruitment By ID
   PreRecruitmentByIdViewModel preRecruitmentByIdViewModel = PreRecruitmentByIdViewModel();
   List<Map<String, dynamic>> preRecruitmentByIdData = [];
@@ -67,12 +79,13 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
               .toList();
           if (preRecruitmentByIdData.isNotEmpty) {
             userIdController.text = preRecruitmentByIdData[0]["userId"] ?? "";
-            // recruitedUserId = preRecruitmentByIdData[0]["userId"];
-            // debugPrint("Assigned userId: ${userIdController.text}");
-            // debugPrint("Assigned recruitedUserId: $recruitedUserId");
+
+            // dateOfJoin = preRecruitmentByIdData[0]["doj"] ?? "";
+            // dojController.text = dateOfJoin;
 
             dateOfJoin = preRecruitmentByIdData[0]["doj"] ?? "";
-            dojController.text = dateOfJoin;
+            dateOfJoin = formatDate(dateOfJoin);
+            dojController.text = formatDate(dateOfJoin, inputFormat: 'yyyy-MM-dd', outputFormat: 'dd-MM-yyyy');
 
             uan = preRecruitmentByIdData[0]["uanNo"];
             uanController.text = uan;
@@ -86,8 +99,12 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
             nomineename = preRecruitmentByIdData[0]["nomineeName"];
             nomineenameController.text = nomineename;
 
+            // nomineeage = preRecruitmentByIdData[0]["nomineeAge"] ?? "";
+            // nomineeageController.text = nomineeage;
+
             nomineeage = preRecruitmentByIdData[0]["nomineeAge"] ?? "";
-            nomineeageController.text = nomineeage;
+            nomineeage = formatDate(nomineeage);
+            nomineenameController.text = formatDate(nomineeage, inputFormat: 'yyyy-MM-dd', outputFormat: 'dd-MM-yyyy');
 
             nomineeRelation = preRecruitmentByIdData[0]["nomineeRelation"] ?? "";
             nomineeRelationController.text = nomineeRelation;
@@ -102,8 +119,12 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
             experience = preRecruitmentByIdData[0]["oldExperiance"] ?? "";
             experienceController.text = experience;
 
+            // companyLeavingDate = preRecruitmentByIdData[0]["oldCompanyLeavingDate"] ?? "";
+            // companyLeavingDateController.text = companyLeavingDate;
+
             companyLeavingDate = preRecruitmentByIdData[0]["oldCompanyLeavingDate"] ?? "";
-            companyLeavingDateController.text = companyLeavingDate;
+            companyLeavingDate = formatDate(companyLeavingDate);
+            companyLeavingDateController.text = formatDate(nomineeage, inputFormat: 'yyyy-MM-dd', outputFormat: 'dd-MM-yyyy');
           }
         });
       }
@@ -168,8 +189,6 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
 
 
   String dateOfJoin = '';
-  String formattedDateOfJoin = '';
-
   String uan = '';
   String esic = '';
   String pf = '';
@@ -221,19 +240,6 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
     }
   }
 
-  String formatDate(String? date) {
-    if (date == null || date.isEmpty) return '';
-    try {
-      DateTime parsedDate = DateTime.parse(date);
-      String formattedDate = DateFormat('yyyy-MM-dd').format(parsedDate);
-      debugPrint('Successfully formatted date: $formattedDate');
-      return formattedDate;
-    } catch (e) {
-      debugPrint('Error parsing date: $e');
-      return '';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -258,7 +264,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
               _contactDetails(),
               _previousJobDetails(),
               _familyDetails(),
-              Text('${widget.recruitedUserId}'),
+              Text('-${widget.recruitedUserId}'),
               Text('${widget.userId}'),
               SizedBox(height: 10),
               Row(
@@ -276,27 +282,21 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                         String? token = await sessionManager.getToken();
                         UpdateRecruitment03ViewModel updateRecruitment03ViewModel = UpdateRecruitment03ViewModel();
 
-                        String formattedDateOfJoin = formatDate(dateOfJoin);
-                        String formattednomineeage = formatDate(nomineeage);
-                        String formattedcompanyLeavingDate = formatDate(companyLeavingDate);
-
-                        debugPrint('${widget.recruitedUserId}');
-
                         Map<String,dynamic> response = await updateRecruitment03ViewModel.updateRecruitment03(token!,
                             UpdateRecruitment03Model(
                               userId: widget.recruitedUserId ?? widget.userId,
-                              dateOfJoin: formattedDateOfJoin,
+                              dateOfJoin: dateOfJoin,
                               UAN: uan,
                               ESIC: esic,
                               PF: pf,
                               nomineename: nomineename,
-                              nomineeage: formattednomineeage,
+                              nomineeage: nomineeage,
                               nomineeRelation: nomineeRelation,
                               company_name: companyName,
                               Designation: designation,
                               experience: experience,
                               company_address: '',
-                              company_leavingDate: formattedcompanyLeavingDate,
+                              company_leavingDate: companyLeavingDate,
                               familyDetails: jsonOutput,
                             )
                         );
@@ -380,32 +380,23 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
               child: Column(
                 children: [
                   CustomTextFormField(
-                    iconWidget: Icon(Icons.calendar_month, color: Colors.red, size: 30,),
-                    // icon: Icons.calendar_month,
+                    iconWidget: Icon(Icons.calendar_month, color: Colors.blue),
                     labelText: 'Date of Join',
                     isDatePicker: true,
                     controller: dojController,
                     onChanged: (value) {
                       setState(() {
                         if (value != null && value.isNotEmpty) {
-                          try {
-                            final inputFormat = DateFormat('dd-MM-yyyy');
-                            final parsedDate = inputFormat.parse(value);
-
-                            final outputFormat = DateFormat('yyyy-MM-dd');
-                            dateOfJoin = outputFormat.format(parsedDate);
-
-                            dojController.text = value;
-                          } catch (e) {
-                            debugPrint('Error parsing date: $e');
-                          }
+                          dateOfJoin = formatDate(value, inputFormat: 'dd-MM-yyyy', outputFormat: 'yyyy-MM-dd'); // Format for API
+                          dojController.text = value; // Keep the display format
                         }
                       });
                     },
                   ),
                   // CustomTextFormField(
-                  //   iconWidget: Icon(Icons.calendar_month, color: Colors.red, size: 30,),
-                  //   labelText: 'Date of Joining',
+                  //   iconWidget: Icon(Icons.calendar_month, color: Colors.blue),
+                  //   // icon: Icons.calendar_month,
+                  //   labelText: 'Date of Join',
                   //   isDatePicker: true,
                   //   controller: dojController,
                   //   onChanged: (value) {
@@ -458,29 +449,44 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                       nomineename = value!;
                     },
                   ),
+
                   CustomTextFormField(
-                    iconWidget: Icon(Icons.calendar_month, color: Colors.green, size: 30,),
+                    iconWidget: Icon(Icons.calendar_month, color: Colors.blue),
                     labelText: 'Nominee DOB',
                     isDatePicker: true,
                     controller: nomineeageController,
                     onChanged: (value) {
                       setState(() {
                         if (value != null && value.isNotEmpty) {
-                          try {
-                            final inputFormat = DateFormat('dd-MM-yyyy');
-                            final parsedDate = inputFormat.parse(value);
-
-                            final outputFormat = DateFormat('yyyy-MM-dd');
-                            nomineeage = outputFormat.format(parsedDate);
-
-                            nomineeageController.text = value;
-                          } catch (e) {
-                            debugPrint('Error parsing date: $e');
-                          }
+                          nomineeage = formatDate(value, inputFormat: 'dd-MM-yyyy', outputFormat: 'yyyy-MM-dd'); // Format for API
+                          nomineeageController.text = value; // Keep the display format
                         }
                       });
                     },
                   ),
+                  // CustomTextFormField(
+                  //   iconWidget: Icon(Icons.calendar_month, color: Colors.green, size: 30,),
+                  //   labelText: 'Nominee DOB',
+                  //   isDatePicker: true,
+                  //   controller: nomineeageController,
+                  //   onChanged: (value) {
+                  //     setState(() {
+                  //       if (value != null && value.isNotEmpty) {
+                  //         try {
+                  //           final inputFormat = DateFormat('dd-MM-yyyy');
+                  //           final parsedDate = inputFormat.parse(value);
+                  //
+                  //           final outputFormat = DateFormat('yyyy-MM-dd');
+                  //           nomineeage = outputFormat.format(parsedDate);
+                  //
+                  //           nomineeageController.text = value;
+                  //         } catch (e) {
+                  //           debugPrint('Error parsing date: $e');
+                  //         }
+                  //       }
+                  //     });
+                  //   },
+                  // ),
                   CustomTextFormField(
                     iconWidget: Icon(Icons.credit_card, color: Colors.green, size: 30,),
                     labelText: 'Relation with Nominee',
@@ -543,28 +549,42 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                     },
                   ),
                   CustomTextFormField(
-                    iconWidget: Icon(Icons.calendar_month, color: Colors.green, size: 30,),
-                    labelText: 'Date of Leaving',
+                    iconWidget: Icon(Icons.calendar_month, color: Colors.blue),
+                    labelText: 'Date of Join',
                     isDatePicker: true,
-                    controller: companyLeavingDateController,
+                    controller: dojController,
                     onChanged: (value) {
                       setState(() {
                         if (value != null && value.isNotEmpty) {
-                          try {
-                            final inputFormat = DateFormat('dd-MM-yyyy');
-                            final parsedDate = inputFormat.parse(value);
-
-                            final outputFormat = DateFormat('yyyy-MM-dd');
-                            companyLeavingDate = outputFormat.format(parsedDate);
-
-                            companyLeavingDateController.text = value;
-                          } catch (e) {
-                            debugPrint('Error parsing date: $e');
-                          }
+                          companyLeavingDate = formatDate(value, inputFormat: 'dd-MM-yyyy', outputFormat: 'yyyy-MM-dd'); // Format for API
+                          companyLeavingDateController.text = value; // Keep the display format
                         }
                       });
                     },
                   ),
+                  // CustomTextFormField(
+                  //   iconWidget: Icon(Icons.calendar_month, color: Colors.green, size: 30,),
+                  //   labelText: 'Date of Leaving',
+                  //   isDatePicker: true,
+                  //   controller: companyLeavingDateController,
+                  //   onChanged: (value) {
+                  //     setState(() {
+                  //       if (value != null && value.isNotEmpty) {
+                  //         try {
+                  //           final inputFormat = DateFormat('dd-MM-yyyy');
+                  //           final parsedDate = inputFormat.parse(value);
+                  //
+                  //           final outputFormat = DateFormat('yyyy-MM-dd');
+                  //           companyLeavingDate = outputFormat.format(parsedDate);
+                  //
+                  //           companyLeavingDateController.text = value;
+                  //         } catch (e) {
+                  //           debugPrint('Error parsing date: $e');
+                  //         }
+                  //       }
+                  //     });
+                  //   },
+                  // ),
                 ],
               ),
             )

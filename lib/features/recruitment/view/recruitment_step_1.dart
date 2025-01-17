@@ -58,6 +58,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
   String selectedSiteId = '';
   String selectedSiteName = '';
   String selectedDesignationId = '';
+  String selectedDesignationName = '';
   String selectedBranchId = '';
 
   final panRegex = RegExp(r'^[A-Z]{5}[0-9]{4}[A-Z]$');
@@ -79,6 +80,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
   TextEditingController panController = TextEditingController();
   TextEditingController siteIdController = TextEditingController();
   TextEditingController siteNameController = TextEditingController();
+  TextEditingController designationIdController = TextEditingController();
   TextEditingController designationNameController = TextEditingController();
   TextEditingController branchController = TextEditingController();
   TextEditingController userIdController = TextEditingController();
@@ -86,6 +88,18 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
   //PreRecruitment By ID
   PreRecruitmentByIdViewModel preRecruitmentByIdViewModel = PreRecruitmentByIdViewModel();
   List<Map<String, dynamic>> preRecruitmentByIdData = [];
+
+  String formatDate(String date, {String inputFormat = 'dd-MM-yyyy', String outputFormat = 'yyyy-MM-dd'}) {
+    try {
+      final inputFormatter = DateFormat(inputFormat);
+      final outputFormatter = DateFormat(outputFormat);
+      final parsedDate = inputFormatter.parse(date);
+      return outputFormatter.format(parsedDate);
+    } catch (e) {
+      debugPrint('Error formatting date: $e');
+      return date; // Return the original date if parsing fails
+    }
+  }
 
   Future<void> fetchPreRecruitmentByIdData() async {
     String? token = await preRecruitmentByIdViewModel.sessionManager.getToken();
@@ -116,6 +130,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                         "siteId": entry.siteId,
                         "siteCode": entry.siteCode,
                         "siteName": entry.siteName,
+                        "designationId" : entry.designationId,
                         "designationName": entry.designationName,
                         "branch": entry.branch,
                       })
@@ -151,8 +166,14 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
             spouseNameController.text = spouseName;
             mobNo = preRecruitmentByIdData[0]["mobilePIN"] ?? "";
             mobileNoController.text = mobNo;
+
+            // dob = preRecruitmentByIdData[0]["dob"] ?? "";
+            // dobController.text = dob;
+
             dob = preRecruitmentByIdData[0]["dob"] ?? "";
-            dobController.text = dob;
+            dob = formatDate(dob);
+            dobController.text = formatDate(dob, inputFormat: 'yyyy-MM-dd', outputFormat: 'dd-MM-yyyy');
+
             selectedGenderCode = preRecruitmentByIdData[0]["gender"] ?? "";
             genderController.text = selectedGenderCode;
             selectedGenderCode == '1' ? 'Male' : 'Female';
@@ -172,43 +193,35 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
             _base64Signature = preRecruitmentByIdData[0]["signature"] ?? "";
             signatureController.text = _base64Signature;
 
+            //deployment details
+            selectedSiteId = preRecruitmentByIdData[0]["siteId"] ?? "";
+            siteIdController.text = selectedSiteId;
 
+            selectedSiteName = preRecruitmentByIdData[0]["siteName"] ?? "";
+            siteNameController.text = selectedSiteName;
+
+            selectedDesignationId = preRecruitmentByIdData[0]["designationId"] ?? "";
+            designationIdController.text = selectedDesignationId;
+
+            selectedDesignationName = preRecruitmentByIdData[0]["designationName"] ?? "";
+            designationNameController.text = selectedDesignationName;
+
+            branchController.text = preRecruitmentByIdData[0]["branch"] ?? "";
+            userIdController.text = preRecruitmentByIdData[0]["userId"] ?? "";
+            recruitedUserId = preRecruitmentByIdData[0]["userId"] ?? "";
           }
         });
       }
     }
   }
 
-  // @override
-  // void initState() {
-  //   fetchSiteListData();
-  //   fetchDesignationListData();
-  //   fetchBranchListData();
-  //   fetchPreRecruitmentByIdData();
-  //   super.initState();
-  // }
-
   @override
   void initState() {
+    fetchSiteListData();
+    fetchDesignationListData();
+    fetchBranchListData();
+    fetchPreRecruitmentByIdData();
     super.initState();
-    fetchPreRecruitmentByIdData().then((_) {
-      fetchSiteListData().then((_) {
-        fetchDesignationListData().then((_) {
-          fetchBranchListData().then((_) {
-            setState(() {
-              //deployment details
-              siteIdController.text = preRecruitmentByIdData[0]["siteId"] ?? "";
-              selectedSiteName = preRecruitmentByIdData[0]["siteName"] ?? "";
-              siteNameController.text = selectedSiteName;
-              designationNameController.text = preRecruitmentByIdData[0]["designationName"] ?? "";
-              branchController.text = preRecruitmentByIdData[0]["branch"] ?? "";
-              userIdController.text = preRecruitmentByIdData[0]["userId"] ?? "";
-              recruitedUserId = preRecruitmentByIdData[0]["userId"] ?? "";
-            });
-          });
-        });
-      });
-    });
   }
 
   @override
@@ -307,7 +320,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                                   motherName: motherName,
                                   spouseName: spouseName,
                                   contactNo: mobNo,
-                                  dob: dob,
+                                  dob: dob ,
                                   gender: selectedGenderCode,
                                   marritalStatus: selectedMaritalCode,
                                   branchId: selectedBranchId,
@@ -547,8 +560,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                                         title: Text(site['unitName'] ?? ''),
                                         onTap: () {
                                           setState(() {
-                                            selectedSite = site['unitName'] ?? '';
-                                            selectedSiteId = site['siteId'];
+                                            selectedSite = site['unitName'];
+                                            selectedSiteId = site['siteId'] ;
                                           });
                                           Navigator.pop(context);
                                         },
@@ -604,16 +617,6 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-
-            // child: Text(
-            //   selectedSite.isEmpty ? 'Select Site' : selectedSite,
-            //   style: TextStyle(
-            //     color: Colors.white,
-            //     fontSize: 16,
-            //     fontWeight: FontWeight.w500,
-            //   ),
-            //   maxLines: 1,
-            // ),
           ),
         ),
       ),
@@ -700,19 +703,13 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                                           filterDesignationListData.length) {
                                         return SizedBox.shrink();
                                       }
-                                      final designation =
-                                          filterDesignationListData[index];
+                                      final designation = filterDesignationListData[index];
                                       return ListTile(
-                                        title: Text(
-                                            designation['designationName'] ??
-                                                ''),
+                                        title: Text(designation['designationName'] ?? ''),
                                         onTap: () {
                                           setState(() {
-                                            selectedDesignation = designation[
-                                                    'designationName'] ??
-                                                '';
-                                            selectedDesignationId =
-                                                designation['designationId'];
+                                            selectedDesignation = designation['designationName'];
+                                            selectedDesignationId = designation['designationId'];
                                           });
                                           Navigator.pop(context);
                                         },
@@ -757,8 +754,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
             child: Text(
               selectedDesignation.isNotEmpty
                   ? selectedDesignation
-                  : (designationNameController.text.isNotEmpty
-                      ? designationNameController.text
+                  : (selectedDesignationName.isNotEmpty
+                      ? selectedDesignationName
                       : 'Select Designation'),
               style: TextStyle(
                 color: Colors.white,
@@ -869,8 +866,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                                         title: Text(branch['branchName'] ?? ''),
                                         onTap: () {
                                           setState(() {
-                                            selectedBranch =
-                                                branch['branchName'] ?? '';
+                                            selectedBranch = branch['branchName'] ?? '';
                                             selectedBranchId = branch[''] ?? '';
                                           });
                                           Navigator.pop(context);
@@ -1631,6 +1627,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
   String spouseName = '';
   String mobNo = '';
   String dob = '';
+
   String selectedGenderCode = '1';
   String selectedMaritalCode = '';
 
@@ -1737,30 +1734,48 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                     },
                   ),
 
+
+
+                  // CustomTextFormField(
+                  //   iconWidget: Icon(Icons.calendar_month, color: Colors.blue),
+                  //   // icon: Icons.calendar_month,
+                  //   labelText: 'DOB',
+                  //   isDatePicker: true,
+                  //   controller: dobController,
+                  //   onChanged: (value) {
+                  //     setState(() {
+                  //       if (value != null && value.isNotEmpty) {
+                  //         try {
+                  //           final inputFormat = DateFormat('dd-MM-yyyy');
+                  //           final parsedDate = inputFormat.parse(value);
+                  //
+                  //           final outputFormat = DateFormat('yyyy-MM-dd');
+                  //           dob = outputFormat.format(parsedDate);
+                  //
+                  //           dobController.text = value;
+                  //         } catch (e) {
+                  //           debugPrint('Error parsing date: $e');
+                  //         }
+                  //       }
+                  //     });
+                  //   },
+                  // ),
+
                   CustomTextFormField(
                     iconWidget: Icon(Icons.calendar_month, color: Colors.blue),
-                    // icon: Icons.calendar_month,
                     labelText: 'DOB',
                     isDatePicker: true,
                     controller: dobController,
                     onChanged: (value) {
                       setState(() {
                         if (value != null && value.isNotEmpty) {
-                          try {
-                            final inputFormat = DateFormat('dd-MM-yyyy');
-                            final parsedDate = inputFormat.parse(value);
-
-                            final outputFormat = DateFormat('yyyy-MM-dd');
-                            dob = outputFormat.format(parsedDate);
-
-                            dobController.text = value;
-                          } catch (e) {
-                            debugPrint('Error parsing date: $e');
-                          }
+                          dob = formatDate(value, inputFormat: 'dd-MM-yyyy', outputFormat: 'yyyy-MM-dd'); // Format for API
+                          dobController.text = value; // Keep the display format
                         }
                       });
                     },
                   ),
+
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

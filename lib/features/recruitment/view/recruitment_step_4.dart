@@ -152,7 +152,7 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
 
                       Map<String, dynamic> response = await updateRecruitment04ViewModel.updateRecruitment04(token!,
                           UpdateRecruitment04Model(
-                              userId: widget.recruitedUserId ?? widget.userId,
+                              userId:  widget.recruitedUserId ?? widget.userId,
                               Height: height,
                               Weight: weight,
                               physical_waist: waist,

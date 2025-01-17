@@ -23,8 +23,8 @@ class RecruitmentStep2 extends StatefulWidget {
   final dynamic userId;
   final dynamic recruitedUserId;
 
-  const RecruitmentStep2({super.key,
-    required this.userId, this.recruitedUserId});
+  const RecruitmentStep2(
+      {super.key, required this.userId, this.recruitedUserId});
 
   @override
   State<RecruitmentStep2> createState() => _RecruitmentStep2State();
@@ -56,25 +56,34 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
   String responsibleReference1 = '';
 
   //local address
-  final TextEditingController localLine1AddressController = TextEditingController();
+  final TextEditingController localLine1AddressController =
+      TextEditingController();
   final TextEditingController localPincodeController = TextEditingController();
   final TextEditingController localStateController = TextEditingController();
   final TextEditingController localCityController = TextEditingController();
-  final TextEditingController localPoliceStationController = TextEditingController();
-  final TextEditingController localPostOfficeController = TextEditingController();
+  final TextEditingController localPoliceStationController =
+      TextEditingController();
+  final TextEditingController localPostOfficeController =
+      TextEditingController();
 
   //permanent address
-  final TextEditingController permanentLine1AddressController = TextEditingController();
-  final TextEditingController permanentPincodeController = TextEditingController();
-  final TextEditingController permanentPoliceStationController = TextEditingController();
-  final TextEditingController permanentPostOfficeController = TextEditingController();
-  final TextEditingController permanentStateController = TextEditingController();
+  final TextEditingController permanentLine1AddressController =
+      TextEditingController();
+  final TextEditingController permanentPincodeController =
+      TextEditingController();
+  final TextEditingController permanentPoliceStationController =
+      TextEditingController();
+  final TextEditingController permanentPostOfficeController =
+      TextEditingController();
+  final TextEditingController permanentStateController =
+      TextEditingController();
   final TextEditingController permanentCityController = TextEditingController();
 
   //user id
   TextEditingController userIdController = TextEditingController();
   //bank details
   TextEditingController bankNameController = TextEditingController();
+  TextEditingController bankIdController = TextEditingController();
   TextEditingController accHolderNameController = TextEditingController();
   TextEditingController accNumController = TextEditingController();
   TextEditingController ifscCodeController = TextEditingController();
@@ -84,7 +93,8 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
   TextEditingController responsibleEmail1Controller = TextEditingController();
   TextEditingController responsiblePerson1Controller = TextEditingController();
   TextEditingController responsibleAdd1Controller = TextEditingController();
-  TextEditingController responsibleReference1Controller = TextEditingController();
+  TextEditingController responsibleReference1Controller =
+      TextEditingController();
 
   // Checkbox state
   bool isPermanentSameAsLocal = false;
@@ -93,7 +103,8 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
   bool wasCheckboxPreviouslyChecked = false;
 
   //PreRecruitment By ID
-  PreRecruitmentByIdViewModel preRecruitmentByIdViewModel = PreRecruitmentByIdViewModel();
+  PreRecruitmentByIdViewModel preRecruitmentByIdViewModel =
+      PreRecruitmentByIdViewModel();
   List<Map<String, dynamic>> preRecruitmentByIdData = [];
 
   String localSelectedStateText = '';
@@ -105,37 +116,41 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
     String? token = await preRecruitmentByIdViewModel.sessionManager.getToken();
 
     if (token != null) {
-      await preRecruitmentByIdViewModel.fetchPreRecruitmentByIdList(token, widget.recruitedUserId);
+      await preRecruitmentByIdViewModel.fetchPreRecruitmentByIdList(
+          token, widget.recruitedUserId);
 
       if (preRecruitmentByIdViewModel.getPreRecruitmentByIdList != null) {
         setState(() {
-          preRecruitmentByIdData = preRecruitmentByIdViewModel.getPreRecruitmentByIdList!
-              .map((entry) => {
-            "userId": entry.userId,
-            "currentAddress" : entry.currentAddress,
-            "currentPin" : entry.currentPin,
-            "currentStateId" : entry.currentStateId,
-            "currentCityid" : entry.currentCityid,
-            "currentPoliceStation" : entry.currentPoliceStation,
-            "currentPostOffice" : entry.currentPostOffice,
-
-            "permanentAddress" : entry.permanentAddress,
-            "permanentPin" : entry.permanentPin,
-            "permanentStateId" : entry.permanentStateId,
-            "permanentCityId" : entry.permanentCityId,
-            "permanentPoliceStation" : entry.permanentPoliceStation,
-            "permanentPostOffice" : entry.permanentPostOffice,
-            "bankName" : entry.bankName,
-            "accountHolderName" : entry.accountHolderName,
-            "accntNo" : entry.accntNo,
-            "ifscCode" : entry.ifscCode,
-            "bankDocs" : entry.bankDocs,
-            "emergencyEmail1" : entry.emergencyEmail1,
-            "emergencyName1" : entry.emergencyName1,
-            "emergencyContactDetails1" : entry.emergencyContactDetails1,
-            "emergencyContactReferenceDetails1" : entry.emergencyContactReferenceDetails1,
-          })
-              .toList();
+          preRecruitmentByIdData =
+              preRecruitmentByIdViewModel.getPreRecruitmentByIdList!
+                  .map((entry) => {
+                        "userId": entry.userId,
+                        "currentAddress": entry.currentAddress,
+                        "currentPin": entry.currentPin,
+                        "currentStateId": entry.currentStateId,
+                        "currentCityid": entry.currentCityid,
+                        "currentPoliceStation": entry.currentPoliceStation,
+                        "currentPostOffice": entry.currentPostOffice,
+                        "permanentAddress": entry.permanentAddress,
+                        "permanentPin": entry.permanentPin,
+                        "permanentStateId": entry.permanentStateId,
+                        "permanentCityId": entry.permanentCityId,
+                        "permanentPoliceStation": entry.permanentPoliceStation,
+                        "permanentPostOffice": entry.permanentPostOffice,
+                        "bankName": entry.bankName,
+                        "bankId": entry.bankId,
+                        "accountHolderName": entry.accountHolderName,
+                        "accntNo": entry.accntNo,
+                        "ifscCode": entry.ifscCode,
+                        "bankDocs": entry.bankDocs,
+                        "emergencyEmail1": entry.emergencyEmail1,
+                        "emergencyName1": entry.emergencyName1,
+                        "emergencyContactDetails1":
+                            entry.emergencyContactDetails1,
+                        "emergencyContactReferenceDetails1":
+                            entry.emergencyContactReferenceDetails1,
+                      })
+                  .toList();
           if (preRecruitmentByIdData.isNotEmpty) {
             userIdController.text = preRecruitmentByIdData[0]["userId"] ?? "";
             recruitedUserId = preRecruitmentByIdData[0]["userId"] ?? "";
@@ -152,12 +167,14 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
             localPostOfficeController.text = cPostOffice;
 
             //permanent address
-            permanentAddress = preRecruitmentByIdData[0]["permanentAddress"] ?? "";
+            permanentAddress =
+                preRecruitmentByIdData[0]["permanentAddress"] ?? "";
             permanentLine1AddressController.text = permanentAddress;
             pPIN = preRecruitmentByIdData[0]["permanentPin"] ?? "";
             permanentPincodeController.text = pPIN;
 
-            pPoliceStation = preRecruitmentByIdData[0]["permanentPoliceStation"];
+            pPoliceStation =
+                preRecruitmentByIdData[0]["permanentPoliceStation"];
             permanentPoliceStationController.text = pPoliceStation;
             pPostOffice = preRecruitmentByIdData[0]["permanentPostOffice"];
             permanentPostOfficeController.text = pPostOffice;
@@ -167,10 +184,28 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
             responsibleEmail1Controller.text = responsibleEmail1;
             responsiblePerson1 = preRecruitmentByIdData[0]["emergencyName1"];
             responsiblePerson1Controller.text = responsiblePerson1;
-            responsibleAdd1 = preRecruitmentByIdData[0]["emergencyContactDetails1"];
+            responsibleAdd1 =
+                preRecruitmentByIdData[0]["emergencyContactDetails1"];
             responsibleAdd1Controller.text = responsibleAdd1;
-            responsibleReference1 = preRecruitmentByIdData[0]["emergencyContactReferenceDetails1"];
+            responsibleReference1 =
+                preRecruitmentByIdData[0]["emergencyContactReferenceDetails1"];
             responsibleReference1Controller.text = responsibleReference1;
+
+            //bank
+            selectedBankName = preRecruitmentByIdData[0]["bankName"] ?? "";
+            bankNameController.text = selectedBankName;
+
+            selectedBankId = preRecruitmentByIdData[0]["bankId"] ?? "";
+            bankIdController.text = selectedBankId;
+
+            accountHolderName = preRecruitmentByIdData[0]["accountHolderName"];
+            accHolderNameController.text = accountHolderName;
+            accountNo = preRecruitmentByIdData[0]["accntNo"];
+            accNumController.text = accountNo;
+            ifscCode = preRecruitmentByIdData[0]["ifscCode"];
+            ifscCodeController.text = ifscCode;
+            bankDocsController.text =
+                preRecruitmentByIdData[0]["bankDocs"] ?? "";
           }
         });
       }
@@ -179,7 +214,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
 
   String getCityTextFromId(String cityId) {
     var city = filterCityListData.firstWhere(
-          (city) => city['value'] == cityId,
+      (city) => city['value'] == cityId,
       orElse: () => {'text': 'Unknown City'},
     );
     return city['text'] ?? 'Unknown City';
@@ -187,7 +222,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
 
   String getStateTextFromId(String stateId) {
     var state = filterStateListData.firstWhere(
-          (state) => state['value'] == stateId,
+      (state) => state['value'] == stateId,
       orElse: () => {'text': 'Unknown State'},
     );
     return state['text'] ?? 'Unknown State';
@@ -232,26 +267,12 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
               };
               permanentSelectedCityText = permanentCityMap[permanentSelectedCityId] ?? '';
               permanentCityController.text = permanentCityMap[permanentSelectedCityId] ?? '';
-
-              //bank
-              selectedBankName = preRecruitmentByIdData[0]["bankName"] ?? "";
-              bankNameController.text = selectedBankName;
-
-              accountHolderName = preRecruitmentByIdData[0]["accountHolderName"];
-              accHolderNameController.text = accountHolderName;
-              accountNo = preRecruitmentByIdData[0]["accntNo"];
-              accNumController.text = accountNo;
-              ifscCode = preRecruitmentByIdData[0]["ifscCode"];
-              ifscCodeController.text = ifscCode;
-              bankDocsController.text = preRecruitmentByIdData[0]["bankDocs"] ?? "";
             });
           });
         });
       });
     });
   }
-
-
 
   // @override
   // void initState() {
@@ -306,39 +327,44 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
                       onPressed: () async {
                         try {
                           String? token = await sessionManager.getToken();
-                          UpdateRecruitment02ViewModel updateRecruitment02ViewModel = UpdateRecruitment02ViewModel();
+                          UpdateRecruitment02ViewModel
+                              updateRecruitment02ViewModel =
+                              UpdateRecruitment02ViewModel();
 
-                          Map<String,dynamic> response = await updateRecruitment02ViewModel.updateRecruitment02(token!,
-                              UpdateRecruitment02Model(
-                                  userId: widget.userId ?? widget.recruitedUserId,
-                                  currentAddress: currentAddress,
-                                  CPin: pinCode,
-                                  CState: localSelectedStateId,
-                                  CCity: localSelectedCityId,
-                                  CPoliceStation: cPoliceStation,
-                                  CPostOffice: cPostOffice,
-                                  PermanentAddress: permanentAddress,
-                                  PPIN: pPIN,
-                                  PState: permanentSelectedStateId,
-                                  Pcity: permanentSelectedCityId,
-                                  PPoliceStation: pPoliceStation,
-                                  PPostOffice: pPostOffice,
-                                  bankId: selectedBankId,
-                                  bank_name: selectedBank,
-                                  accountHolderName: accountHolderName,
-                                  account_no: accountNo,
-                                  IFSC_code: ifscCode,
-                                  bankProofImage: _passBookImage,
-                                  responsible_email1: responsibleEmail1,
-                                  responsible_person1: responsiblePerson1,
-                                  responsible_add1: responsibleAdd1,
-                                  responsible_Reference1: responsibleReference1,
-                              ),
+                          Map<String, dynamic> response =
+                              await updateRecruitment02ViewModel
+                                  .updateRecruitment02(
+                            token!,
+                            UpdateRecruitment02Model(
+                              userId: widget.userId ?? widget.recruitedUserId,
+                              currentAddress: currentAddress,
+                              CPin: pinCode,
+                              CState: localSelectedStateId,
+                              CCity: localSelectedCityId,
+                              CPoliceStation: cPoliceStation,
+                              CPostOffice: cPostOffice,
+                              PermanentAddress: permanentAddress,
+                              PPIN: pPIN,
+                              PState: permanentSelectedStateId,
+                              Pcity: permanentSelectedCityId,
+                              PPoliceStation: pPoliceStation,
+                              PPostOffice: pPostOffice,
+                              bankId: selectedBankId,
+                              bank_name: selectedBank,
+                              accountHolderName: accountHolderName,
+                              account_no: accountNo,
+                              IFSC_code: ifscCode,
+                              bankProofImage: _passBookImage,
+                              responsible_email1: responsibleEmail1,
+                              responsible_person1: responsiblePerson1,
+                              responsible_add1: responsibleAdd1,
+                              responsible_Reference1: responsibleReference1,
+                            ),
                           );
 
                           if (response['code'] == 200) {
                             QuickAlert.show(
-                              barrierDismissible: false,
+                                barrierDismissible: false,
                                 context: context,
                                 type: QuickAlertType.success,
                                 text: '${response['status']}',
@@ -349,8 +375,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
                                     MaterialPageRoute(
                                       builder: (context) => RecruitmentStep3(
                                         userId: '${widget.userId}',
-                                        recruitedUserId : widget.recruitedUserId,
-
+                                        recruitedUserId: widget.recruitedUserId,
                                       ),
                                     ),
                                   );
@@ -362,23 +387,24 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
                               context: context,
                               type: QuickAlertType.error,
                               text:
-                              '${response['message'] ?? 'Something went wrong'}',
+                                  '${response['message'] ?? 'Something went wrong'}',
                             );
                           }
                         } catch (error) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                                content: Text('An error occurred. Please try again later.')),
+                                content: Text(
+                                    'An error occurred. Please try again later.')),
                           );
                         }
                       },
-                      child: Text('Submit and Next',
+                      child: Text(
+                        'Submit and Next',
                         style: TextStyle(
                             color: Colors.white,
                             fontSize: 18,
                             fontWeight: FontWeight.bold),
                       )),
-
                   ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.teal.shade400,
@@ -391,18 +417,23 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
                         elevation: 5,
                       ),
                       onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                        RecruitmentStep3(
-                          userId: widget.userId,
-                            recruitedUserId : widget.recruitedUserId,),
-                    ),
-                    );
-                  }, child: Text('Next',
-                    style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold),
-                  )),
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => RecruitmentStep3(
+                              userId: widget.userId,
+                              recruitedUserId: widget.recruitedUserId,
+                            ),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        'Next',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold),
+                      )),
                 ],
               ),
               SizedBox(height: 30),
@@ -431,7 +462,11 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
           ),
           children: [
             CustomTextFormField(
-              iconWidget: Icon(Icons.location_on, color: Colors.green, size: 30,),
+              iconWidget: Icon(
+                Icons.location_on,
+                color: Colors.green,
+                size: 30,
+              ),
               controller: localLine1AddressController,
               labelText: 'Line 1',
               onChanged: (value) {
@@ -440,7 +475,11 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
             ),
             CustomTextFormField(
               controller: localPincodeController,
-              iconWidget: Icon(Icons.location_on, color: Colors.green, size: 30,),
+              iconWidget: Icon(
+                Icons.location_on,
+                color: Colors.green,
+                size: 30,
+              ),
               labelText: 'Pincode',
               onChanged: (value) {
                 pinCode = value!;
@@ -457,10 +496,9 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
                     child: TextFormField(
                       controller: localStateController,
                       readOnly: true,
-                      onTap: () => showStateDialog('local'),
+                      onTap: () => showStateDialog('local'),  // Open state dialog
                       decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 10),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                         labelText: 'State',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -468,6 +506,22 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
                       ),
                     ),
                   ),
+                  // Expanded(
+                  //   child: TextFormField(
+                  //     controller: localStateController,
+                  //     readOnly: true,
+                  //     // onTap: () => showStateDialog('local'),
+                  //     onTap: () => showStateDialog(),
+                  //     decoration: InputDecoration(
+                  //       contentPadding: const EdgeInsets.symmetric(
+                  //           horizontal: 10, vertical: 10),
+                  //       labelText: 'State',
+                  //       border: OutlineInputBorder(
+                  //         borderRadius: BorderRadius.circular(8),
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
             ),
@@ -482,10 +536,9 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
                     child: TextFormField(
                       controller: localCityController,
                       readOnly: true,
-                      onTap: () => showCityDialog('local'),
+                      onTap: () => showCityDialog('local'),  // Open city dialog
                       decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 10),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                         labelText: 'District',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(8),
@@ -493,12 +546,32 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
                       ),
                     ),
                   ),
+                  // Expanded(
+                  //   child: TextFormField(
+                  //     controller: localCityController,
+                  //     readOnly: true,
+                  //     // onTap: () => showCityDialog('local'),
+                  //     onTap: () => showCityDialog(),
+                  //     decoration: InputDecoration(
+                  //       contentPadding: const EdgeInsets.symmetric(
+                  //           horizontal: 10, vertical: 10),
+                  //       labelText: 'District',
+                  //       border: OutlineInputBorder(
+                  //         borderRadius: BorderRadius.circular(8),
+                  //       ),
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
             ),
             CustomTextFormField(
               controller: localPoliceStationController,
-              iconWidget: Icon(Icons.location_on, color: Colors.green, size: 30,),
+              iconWidget: Icon(
+                Icons.location_on,
+                color: Colors.green,
+                size: 30,
+              ),
               labelText: 'Police Station',
               onChanged: (value) {
                 cPoliceStation = value!;
@@ -506,7 +579,11 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
             ),
             CustomTextFormField(
               controller: localPostOfficeController,
-              iconWidget: Icon(Icons.location_on, color: Colors.green, size: 30,),
+              iconWidget: Icon(
+                Icons.location_on,
+                color: Colors.green,
+                size: 30,
+              ),
               labelText: 'Post Office',
               onChanged: (value) {
                 cPostOffice = value!;
@@ -569,7 +646,11 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
             ),
             CustomTextFormField(
               controller: permanentLine1AddressController,
-              iconWidget: Icon(Icons.location_on, color: Colors.green, size: 30,),
+              iconWidget: Icon(
+                Icons.location_on,
+                color: Colors.green,
+                size: 30,
+              ),
               labelText: 'Line 1',
               enabled: !isPermanentSameAsLocal,
               onChanged: (value) {
@@ -578,7 +659,11 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
             ),
             CustomTextFormField(
               controller: permanentPincodeController,
-              iconWidget: Icon(Icons.location_on, color: Colors.green, size: 30,),
+              iconWidget: Icon(
+                Icons.location_on,
+                color: Colors.green,
+                size: 30,
+              ),
               labelText: 'Pincode',
               enabled: !isPermanentSameAsLocal,
               onChanged: (value) {
@@ -598,6 +683,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
                       enabled: !isPermanentSameAsLocal,
                       readOnly: true,
                       onTap: () => showStateDialog('permanent'),
+                      // onTap: () => {},
                       decoration: InputDecoration(
                         contentPadding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 10),
@@ -624,6 +710,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
                       enabled: !isPermanentSameAsLocal,
                       readOnly: true,
                       onTap: () => showCityDialog('permanent'),
+                      // onTap: () => {},
                       decoration: InputDecoration(
                         contentPadding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 10),
@@ -639,7 +726,11 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
             ),
             CustomTextFormField(
               controller: permanentPoliceStationController,
-              iconWidget: Icon(Icons.location_on, color: Colors.green, size: 30,),
+              iconWidget: Icon(
+                Icons.location_on,
+                color: Colors.green,
+                size: 30,
+              ),
               labelText: 'Police Station',
               enabled: !isPermanentSameAsLocal,
               onChanged: (value) {
@@ -648,7 +739,11 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
             ),
             CustomTextFormField(
               controller: permanentPostOfficeController,
-              iconWidget: Icon(Icons.location_on, color: Colors.green, size: 30,),
+              iconWidget: Icon(
+                Icons.location_on,
+                color: Colors.green,
+                size: 30,
+              ),
               labelText: 'Post Office',
               enabled: !isPermanentSameAsLocal,
               onChanged: (value) {
@@ -688,7 +783,11 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
             ),
             CustomTextFormField(
               controller: accHolderNameController,
-              iconWidget: Icon(Icons.person, color: Colors.green, size: 30,),
+              iconWidget: Icon(
+                Icons.person,
+                color: Colors.green,
+                size: 30,
+              ),
               labelText: 'Account holder name',
               onChanged: (value) {
                 accountHolderName = value!;
@@ -696,7 +795,11 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
             ),
             CustomTextFormField(
               controller: accNumController,
-              iconWidget: Icon(Icons.credit_card, color: Colors.green, size: 30,),
+              iconWidget: Icon(
+                Icons.credit_card,
+                color: Colors.green,
+                size: 30,
+              ),
               labelText: 'Account no',
               onChanged: (value) {
                 accountNo = value!;
@@ -704,15 +807,20 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
             ),
             CustomTextFormField(
               controller: ifscCodeController,
-              iconWidget: Icon(Icons.credit_card, color: Colors.green, size: 30,),
+              iconWidget: Icon(
+                Icons.credit_card,
+                color: Colors.green,
+                size: 30,
+              ),
               labelText: 'IFSC Code',
               onChanged: (value) {
                 ifscCode = value!;
               },
             ),
-
             SizedBox(height: 20),
-            Text('Click to Upload PassBook Image',),
+            Text(
+              'Click to Upload PassBook Image',
+            ),
             SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -723,24 +831,23 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
                       onTap: () => _selectImage(),
                       child: _passBookImage.isEmpty
                           ? (bankDocsController.text.isNotEmpty
-                          ? Image.network(
-                        '${AppConstants.baseUrl}/${bankDocsController.text}',
-                        fit: BoxFit.cover,
-                        height: 100,
-                        width: 100,
-                      )
-                          : Icon(
-                        Icons.add_photo_alternate_outlined,
-                        size: 50,
-                      ))
+                              ? Image.network(
+                                  '${AppConstants.baseUrl}/${bankDocsController.text}',
+                                  fit: BoxFit.cover,
+                                  height: 100,
+                                  width: 100,
+                                )
+                              : Icon(
+                                  Icons.add_photo_alternate_outlined,
+                                  size: 50,
+                                ))
                           : Image.memory(
-                        base64Decode(_passBookImage),
-                        height: 100,
-                        width: 100,
-                        fit: BoxFit.cover,
-                      ),
+                              base64Decode(_passBookImage),
+                              height: 100,
+                              width: 100,
+                              fit: BoxFit.cover,
+                            ),
                     ),
-
                     SizedBox(height: 5),
                     GestureDetector(
                       onTap: () => _deleteImage(),
@@ -778,7 +885,11 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
           children: [
             CustomTextFormField(
               controller: responsibleEmail1Controller,
-              iconWidget: Icon(Icons.email_sharp, color: Colors.green, size: 30,),
+              iconWidget: Icon(
+                Icons.email_sharp,
+                color: Colors.green,
+                size: 30,
+              ),
               labelText: 'Email id',
               onChanged: (value) {
                 responsibleEmail1 = value!;
@@ -786,7 +897,11 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
             ),
             CustomTextFormField(
               controller: responsiblePerson1Controller,
-              iconWidget: Icon(Icons.person, color: Colors.green, size: 30,),
+              iconWidget: Icon(
+                Icons.person,
+                color: Colors.green,
+                size: 30,
+              ),
               labelText: 'Emergency Contact Name',
               onChanged: (value) {
                 responsiblePerson1 = value!;
@@ -794,7 +909,11 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
             ),
             CustomTextFormField(
               controller: responsibleAdd1Controller,
-              iconWidget: Icon(Icons.add_alert, color: Colors.green, size: 30,),
+              iconWidget: Icon(
+                Icons.add_alert,
+                color: Colors.green,
+                size: 30,
+              ),
               labelText: 'Emergency Contact Number',
               onChanged: (value) {
                 responsibleAdd1 = value!;
@@ -802,7 +921,11 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
             ),
             CustomTextFormField(
               controller: responsibleReference1Controller,
-              iconWidget: Icon(Icons.person, color: Colors.green, size: 30,),
+              iconWidget: Icon(
+                Icons.person,
+                color: Colors.green,
+                size: 30,
+              ),
               labelText: 'Reference within Company/Org',
               onChanged: (value) {
                 responsibleReference1 = value!;
@@ -858,7 +981,8 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
       final decodedImage = img.decodeImage(imageBytes);
 
       if (decodedImage != null) {
-        final resizedImage = img.copyResize(decodedImage, width: 1920, height: 1080);
+        final resizedImage =
+            img.copyResize(decodedImage, width: 1920, height: 1080);
         final compressedImage = img.encodeJpg(resizedImage, quality: 80);
 
         final base64String = base64Encode(compressedImage);
@@ -1012,8 +1136,10 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
                                         title: Text(bank['bankName'] ?? ''),
                                         onTap: () {
                                           setState(() {
-                                            selectedBank =bank['bankName'] ?? '';
-                                            selectedBankId = bank['bankId'] ?? '';
+                                            selectedBank =
+                                                bank['bankName'] ?? '';
+                                            selectedBankId =
+                                                bank['bankId'] ?? '';
                                           });
                                           Navigator.pop(context);
                                         },
@@ -1057,11 +1183,10 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
             },
             child: Text(
               selectedBank.isNotEmpty
-                ? selectedBank
-                : (bankNameController.text.isNotEmpty
-                ? bankNameController.text
-                : 'Select Bank'
-              ),
+                  ? selectedBank
+                  : (bankNameController.text.isNotEmpty
+                      ? bankNameController.text
+                      : 'Select Bank'),
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 16,
@@ -1101,13 +1226,12 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
               .toList();
         });
       }
-      setState(() {
-        filterStateListData = stateListData;
-      });
     }
   }
 
-  void showStateDialog(String fieldType) async {
+  String selectedStatePrefixValue = '';  // Initialize with an empty string
+
+  Future<void> showStateDialog(String fieldType) async {
     isLocalStateSelected = fieldType == 'local';
     return showDialog(
       context: context,
@@ -1141,10 +1265,10 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
                       setDialogState(() {
                         filterStateListData = stateListData
                             .where((state) =>
-                                state['text']
-                                    ?.toLowerCase()
-                                    .contains(value.toLowerCase()) ??
-                                false)
+                        state['text']
+                            ?.toLowerCase()
+                            .contains(value.toLowerCase()) ??
+                            false)
                             .toList();
                       });
                     },
@@ -1155,49 +1279,79 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
                     ),
                   ),
                 ),
+                // Expanded(
+                //   child: filterStateListData.isNotEmpty
+                //       ? ListView.separated(
+                //           itemCount: filterStateListData.length,
+                //           separatorBuilder: (context, index) => Divider(
+                //               color: Colors.grey.shade900, thickness: 1),
+                //           itemBuilder: (context, index) {
+                //             if (index >= filterStateListData.length) {
+                //               return SizedBox.shrink();
+                //             }
+                //             final state = filterStateListData[index];
+                //             return ListTile(
+                //               // title: Text(state['text'] ?? localSelectedStateText),
+                //               title: Text(
+                //                 state['text'] ??
+                //                     (isLocalStateSelected
+                //                         ? localSelectedStateText
+                //                         : permanentSelectedStateText),
+                //               ),
+                //               onTap: () {
+                //                 setState(() {
+                //                   // selectedState = state['text'] ?? localSelectedStateText;
+                //                   selectedState = state['text'] ??
+                //                       (isLocalStateSelected
+                //                           ? localSelectedStateText
+                //                           : permanentSelectedStateText);
+                //                   if (isLocalStateSelected) {
+                //                     localStateController.text = selectedState;
+                //                     localSelectedStateId = state['value'] ;
+                //                   } else {
+                //                     permanentStateController.text = selectedState;
+                //                     permanentSelectedStateId = state['value'];
+                //                   }
+                //                 });
+                //
+                //                 Navigator.pop(context);
+                //               },
+                //             );
+                //           },
+                //         )
+                //       : const Center(
+                //           child: Text('No records found',
+                //               style: TextStyle(fontSize: 16)),
+                //         ),
+                // ),
                 Expanded(
-                  child: filterStateListData.isNotEmpty
-                      ? ListView.separated(
-                          itemCount: filterStateListData.length,
-                          separatorBuilder: (context, index) => Divider(
-                              color: Colors.grey.shade900, thickness: 1),
-                          itemBuilder: (context, index) {
-                            if (index >= filterStateListData.length) {
-                              return SizedBox.shrink();
+                  child: ListView.builder(
+                    itemCount: stateListData.length,
+                    itemBuilder: (context, index) {
+                      final state = stateListData[index];
+                      return ListTile(
+                        title: Text(state['text']),
+                        onTap: () {
+                          String selectedStateValue = state['value'];
+
+                          Navigator.pop(context);
+                          String selectedStatePrefix = selectedStateValue.split('-').first.trim();
+
+                          setState(() {
+                            if(isLocalStateSelected)  {
+                              localStateController.text = state['text'];
+                              localSelectedStateId = state['value'] ;
+                            } else {
+                              permanentStateController.text = state['text'];
+                              permanentSelectedStateId = state['value'];
                             }
-                            final state = filterStateListData[index];
-                            return ListTile(
-                              // title: Text(state['text'] ?? localSelectedStateText),
-                              title: Text(
-                                state['text'] ??
-                                    (isLocalStateSelected
-                                        ? localSelectedStateText
-                                        : permanentSelectedStateText),
-                              ),
-                              onTap: () {
-                                setState(() {
-                                  // selectedState = state['text'] ?? localSelectedStateText;
-                                  selectedState = state['text'] ??
-                                      (isLocalStateSelected
-                                          ? localSelectedStateText
-                                          : permanentSelectedStateText);
-                                  if (isLocalStateSelected) {
-                                    localStateController.text = selectedState;
-                                    localSelectedStateId = state['value'] ;
-                                  } else {
-                                    permanentStateController.text = selectedState;
-                                    permanentSelectedStateId = state['value'];
-                                  }
-                                });
-                                Navigator.pop(context);
-                              },
-                            );
-                          },
-                        )
-                      : const Center(
-                          child: Text('No records found',
-                              style: TextStyle(fontSize: 16)),
-                        ),
+                            selectedState = state['text'] ?? localSelectedStateText;
+                            selectedStatePrefixValue = selectedStatePrefix;
+                          });
+                        },
+                      );
+                    },
+                  ),
                 ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -1228,6 +1382,11 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
     );
   }
 
+  String extractPrefix(String stateText) {
+    final match = RegExp(r'^\d+').firstMatch(stateText);
+    return match?.group(0) ?? '';
+  }
+
   //Get City List
   GetCityViewModel getCityViewModel = GetCityViewModel();
   List<Map<String, dynamic>> cityListData = [];
@@ -1254,13 +1413,11 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
               .toList();
         });
       }
-      setState(() {
-        filterCityListData = cityListData;
-      });
     }
   }
 
-  void showCityDialog(String fieldType) async {
+
+  Future<void> showCityDialog(String fieldType) async {
     isLocalCitySelected = fieldType == 'local';
     return showDialog(
       context: context,
@@ -1294,10 +1451,10 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
                       setDialogState(() {
                         filterCityListData = cityListData
                             .where((city) =>
-                                city['text']
-                                    ?.toLowerCase()
-                                    .contains(value.toLowerCase()) ??
-                                false)
+                        city['text']
+                            ?.toLowerCase()
+                            .contains(value.toLowerCase()) ??
+                            false)
                             .toList();
                       });
                     },
@@ -1309,50 +1466,81 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
                   ),
                 ),
                 Expanded(
-                  child: filterCityListData.isNotEmpty
-                      ? ListView.separated(
-                          itemCount: filterCityListData.length,
-                          separatorBuilder: (context, index) => Divider(
-                              color: Colors.grey.shade900, thickness: 1),
-                          itemBuilder: (context, index) {
-                            if (index >= filterCityListData.length) {
-                              return SizedBox.shrink();
-                            }
-                            final city = filterCityListData[index];
-                            return ListTile(
-                              // title: Text(city['text'] ?? ''),
-                              title: Text(city['text'] ??
-                                  (isLocalCitySelected
-                                    ? localSelectedCityText
-                                    : permanentSelectedCityText
-                                  ),
-                              ),
-                              onTap: () {
-                                setState(() {
-                                  // selectedCity = city['text'] ?? '';
-                                  selectedCity = city['text'] ??
-                                      (isLocalCitySelected
-                                          ? localSelectedCityText
-                                          : permanentSelectedCityText
-                                      );
-                                  if (isLocalCitySelected) {
-                                    localCityController.text = selectedCity;
-                                    localSelectedCityId = city['value'];
-                                  } else {
-                                    permanentCityController.text = selectedCity;
-                                    permanentSelectedCityId = city['value'];
-                                  }
-                                });
-                                Navigator.pop(context);
-                              },
-                            );
+                  child: ListView.builder(
+                    itemCount: getCityViewModel.cityList!.length,
+
+                    itemBuilder: (context, index) {
+                      final city = getCityViewModel.cityList![index];
+
+                      if (city.parentId!.startsWith(selectedStatePrefixValue)) {
+                        return ListTile(
+                          title: Text(city.text!),
+                          onTap: () {
+                            setState(() {
+                              if(isLocalCitySelected) {
+                                localCityController.text = city.text!;
+                                localSelectedCityId = city.value!;
+                              } else {
+                                permanentCityController.text = city.text!;
+                                permanentSelectedCityId = city.value!;
+                              }
+                            });
+                            debugPrint("Selected City: ${city.text}");
+                            Navigator.pop(context);
+
                           },
-                        )
-                      : const Center(
-                          child: Text('No records found',
-                              style: TextStyle(fontSize: 16)),
-                        ),
+                        );
+                      } else {
+                        return Container();
+                      }
+                    },
+                  ),
                 ),
+                // Expanded(
+                //   child: filterCityListData.isNotEmpty
+                //       ? ListView.separated(
+                //           itemCount: filterCityListData.length,
+                //           separatorBuilder: (context, index) =>
+                //               Divider(color: Colors.grey.shade900, thickness: 1),
+                //           itemBuilder: (context, index) {
+                //             if (index >= filterCityListData.length) {
+                //               return SizedBox.shrink();
+                //             }
+                //             final city = filterCityListData[index];
+                //             return ListTile(
+                //               // title: Text(city['text'] ?? ''),
+                //               title: Text(city['text'] ??
+                //                   (isLocalCitySelected
+                //                     ? localSelectedCityText
+                //                     : permanentSelectedCityText
+                //                   ),
+                //               ),
+                //               onTap: () {
+                //                 setState(() {
+                //                   // selectedCity = city['text'] ?? '';
+                //                   selectedCity = city['text'] ??
+                //                       (isLocalCitySelected
+                //                           ? localSelectedCityText
+                //                           : permanentSelectedCityText
+                //                       );
+                //                   if (isLocalCitySelected) {
+                //                     localCityController.text = selectedCity;
+                //                     localSelectedCityId = city['value'];
+                //                   } else {
+                //                     permanentCityController.text = selectedCity;
+                //                     permanentSelectedCityId = city['value'];
+                //                   }
+                //                 });
+                //                 Navigator.pop(context);
+                //               },
+                //             );
+                //           },
+                //         )
+                //       : const Center(
+                //           child: Text('No records found',
+                //               style: TextStyle(fontSize: 16)),
+                //         ),
+                // ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Row(
@@ -1381,6 +1569,310 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
       ),
     );
   }
+
+
+
+  // Future<void> showStateDialog(String fieldType) async {
+  //   isLocalStateSelected = fieldType == 'local';
+  //   return showDialog(
+  //     context: context,
+  //     builder: (context) => Dialog(
+  //       shape: RoundedRectangleBorder(
+  //         borderRadius: BorderRadius.circular(15),
+  //       ),
+  //       elevation: 10,
+  //       insetPadding: EdgeInsets.all(20),
+  //       child: StatefulBuilder(
+  //         builder: (dialogContext, setDialogState) => Container(
+  //           padding: const EdgeInsets.all(16),
+  //           constraints: BoxConstraints(
+  //             maxHeight: MediaQuery.of(context).size.height * 0.8,
+  //             maxWidth: 500,
+  //           ),
+  //           child: Column(
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             children: [
+  //               Padding(
+  //                 padding: const EdgeInsets.all(8.0),
+  //                 child: Text(
+  //                   'Select State',
+  //                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+  //                 ),
+  //               ),
+  //               Padding(
+  //                 padding: const EdgeInsets.all(8.0),
+  //                 child: TextField(
+  //                   onChanged: (value) {
+  //                     setDialogState(() {
+  //                       filterStateListData = stateListData
+  //                           .where((state) =>
+  //                               state['text']
+  //                                   ?.toLowerCase()
+  //                                   .contains(value.toLowerCase()) ??
+  //                               false)
+  //                           .toList();
+  //                     });
+  //                   },
+  //                   decoration: InputDecoration(
+  //                     hintText: 'Search...',
+  //                     prefixIcon: Icon(Icons.search),
+  //                     border: OutlineInputBorder(),
+  //                   ),
+  //                 ),
+  //               ),
+  //               // Expanded(
+  //               //   child: filterStateListData.isNotEmpty
+  //               //       ? ListView.separated(
+  //               //           itemCount: filterStateListData.length,
+  //               //           separatorBuilder: (context, index) => Divider(
+  //               //               color: Colors.grey.shade900, thickness: 1),
+  //               //           itemBuilder: (context, index) {
+  //               //             if (index >= filterStateListData.length) {
+  //               //               return SizedBox.shrink();
+  //               //             }
+  //               //             final state = filterStateListData[index];
+  //               //             return ListTile(
+  //               //               // title: Text(state['text'] ?? localSelectedStateText),
+  //               //               title: Text(
+  //               //                 state['text'] ??
+  //               //                     (isLocalStateSelected
+  //               //                         ? localSelectedStateText
+  //               //                         : permanentSelectedStateText),
+  //               //               ),
+  //               //               onTap: () {
+  //               //                 setState(() {
+  //               //                   // selectedState = state['text'] ?? localSelectedStateText;
+  //               //                   selectedState = state['text'] ??
+  //               //                       (isLocalStateSelected
+  //               //                           ? localSelectedStateText
+  //               //                           : permanentSelectedStateText);
+  //               //                   if (isLocalStateSelected) {
+  //               //                     localStateController.text = selectedState;
+  //               //                     localSelectedStateId = state['value'] ;
+  //               //                   } else {
+  //               //                     permanentStateController.text = selectedState;
+  //               //                     permanentSelectedStateId = state['value'];
+  //               //                   }
+  //               //
+  //               //                   final prefix = extractPrefix(state['text'] ?? '');
+  //               //                   filterCityListData = cityListData
+  //               //                       .where((city) => city['parentId'] == prefix)
+  //               //                       .toList();
+  //               //                 });
+  //               //
+  //               //                 Navigator.pop(context);
+  //               //               },
+  //               //             );
+  //               //           },
+  //               //         )
+  //               //       : const Center(
+  //               //           child: Text('No records found',
+  //               //               style: TextStyle(fontSize: 16)),
+  //               //         ),
+  //               // ),
+  //               Expanded(
+  //                 child: ListView.builder(
+  //                   itemCount: stateListData.length,
+  //                   itemBuilder: (context, index) {
+  //                     final state = stateListData[index];
+  //                     return ListTile(
+  //                       title: Text(state['text']),
+  //                       onTap: () {
+  //                         // When a state is selected, we store the prefix and show cities
+  //                         debugPrint("Selected State: ${state['text']}");
+  //                         String selectedStateValue = state['value'];
+  //                         localStateController.text = state['text'];  // Update state TextFormField
+  //
+  //                         // Close the dialog
+  //                         Navigator.pop(context);
+  //                         // Store the selected state value (prefix) for city filtering
+  //                         // String selectedStatePrefix = selectedStateValue.substring(0, 2); // Extract prefix
+  //                         String selectedStatePrefix = selectedStateValue.split('-').first.trim();
+  //
+  //
+  //                         // Store the prefix in a variable so it can be used in the city dialog
+  //                         setState(() {
+  //                           selectedStatePrefixValue = selectedStatePrefix;
+  //                         });
+  //                       },
+  //                     );
+  //                   },
+  //                 ),
+  //               ),
+  //               Padding(
+  //                 padding: const EdgeInsets.all(8.0),
+  //                 child: Row(
+  //                   mainAxisAlignment: MainAxisAlignment.end,
+  //                   children: [
+  //                     TextButton(
+  //                       onPressed: () {
+  //                         Navigator.pop(context);
+  //                       },
+  //                       child: Text(
+  //                         'Cancel',
+  //                         style: TextStyle(
+  //                           fontSize: 16,
+  //                           color: Colors.redAccent,
+  //                           fontWeight: FontWeight.w600,
+  //                         ),
+  //                       ),
+  //                     ),
+  //                   ],
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
+
+
+  // Future<void> showCityDialog(String fieldType) async {
+  //   isLocalCitySelected = fieldType == 'local';
+  //   return showDialog(
+  //     context: context,
+  //     builder: (context) => Dialog(
+  //       shape: RoundedRectangleBorder(
+  //         borderRadius: BorderRadius.circular(15),
+  //       ),
+  //       elevation: 10,
+  //       insetPadding: EdgeInsets.all(20),
+  //       child: StatefulBuilder(
+  //         builder: (dialogContext, setDialogState) => Container(
+  //           padding: const EdgeInsets.all(16),
+  //           constraints: BoxConstraints(
+  //             maxHeight: MediaQuery.of(context).size.height * 0.8,
+  //             maxWidth: 500,
+  //           ),
+  //           child: Column(
+  //             crossAxisAlignment: CrossAxisAlignment.start,
+  //             children: [
+  //               Padding(
+  //                 padding: const EdgeInsets.all(8.0),
+  //                 child: Text(
+  //                   'Select District',
+  //                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+  //                 ),
+  //               ),
+  //               Padding(
+  //                 padding: const EdgeInsets.all(8.0),
+  //                 child: TextField(
+  //                   onChanged: (value) {
+  //                     setDialogState(() {
+  //                       filterCityListData = cityListData
+  //                           .where((city) =>
+  //                               city['text']
+  //                                   ?.toLowerCase()
+  //                                   .contains(value.toLowerCase()) ??
+  //                               false)
+  //                           .toList();
+  //                     });
+  //                   },
+  //                   decoration: InputDecoration(
+  //                     hintText: 'Search...',
+  //                     prefixIcon: Icon(Icons.search),
+  //                     border: OutlineInputBorder(),
+  //                   ),
+  //                 ),
+  //               ),
+  //               Expanded(
+  //                 child: ListView.builder(
+  //                   itemCount: getCityViewModel.cityList!.length,
+  //                   itemBuilder: (context, index) {
+  //                     final city = getCityViewModel.cityList![index];
+  //
+  //                     if (city.parentId!.startsWith(selectedStatePrefixValue)) {
+  //                       return ListTile(
+  //                         title: Text(city.text!),
+  //                         onTap: () {
+  //
+  //                           debugPrint("Selected City: ${city.text}");
+  //                           Navigator.pop(context);
+  //
+  //                           localCityController.text = city.text!;
+  //                         },
+  //                       );
+  //                     } else {
+  //                       return Container();
+  //                     }
+  //                   },
+  //                 ),
+  //               ),
+  //               // Expanded(
+  //               //   child: filterCityListData.isNotEmpty
+  //               //       ? ListView.separated(
+  //               //           itemCount: filterCityListData.length,
+  //               //           separatorBuilder: (context, index) =>
+  //               //               Divider(color: Colors.grey.shade900, thickness: 1),
+  //               //           itemBuilder: (context, index) {
+  //               //             if (index >= filterCityListData.length) {
+  //               //               return SizedBox.shrink();
+  //               //             }
+  //               //             final city = filterCityListData[index];
+  //               //             return ListTile(
+  //               //               // title: Text(city['text'] ?? ''),
+  //               //               title: Text(city['text'] ??
+  //               //                   (isLocalCitySelected
+  //               //                     ? localSelectedCityText
+  //               //                     : permanentSelectedCityText
+  //               //                   ),
+  //               //               ),
+  //               //               onTap: () {
+  //               //                 setState(() {
+  //               //                   // selectedCity = city['text'] ?? '';
+  //               //                   selectedCity = city['text'] ??
+  //               //                       (isLocalCitySelected
+  //               //                           ? localSelectedCityText
+  //               //                           : permanentSelectedCityText
+  //               //                       );
+  //               //                   if (isLocalCitySelected) {
+  //               //                     localCityController.text = selectedCity;
+  //               //                     localSelectedCityId = city['value'];
+  //               //                   } else {
+  //               //                     permanentCityController.text = selectedCity;
+  //               //                     permanentSelectedCityId = city['value'];
+  //               //                   }
+  //               //                 });
+  //               //                 Navigator.pop(context);
+  //               //               },
+  //               //             );
+  //               //           },
+  //               //         )
+  //               //       : const Center(
+  //               //           child: Text('No records found',
+  //               //               style: TextStyle(fontSize: 16)),
+  //               //         ),
+  //               // ),
+  //               Padding(
+  //                 padding: const EdgeInsets.all(8.0),
+  //                 child: Row(
+  //                   mainAxisAlignment: MainAxisAlignment.end,
+  //                   children: [
+  //                     TextButton(
+  //                       onPressed: () {
+  //                         Navigator.pop(context);
+  //                       },
+  //                       child: Text(
+  //                         'Cancel',
+  //                         style: TextStyle(
+  //                           fontSize: 16,
+  //                           color: Colors.redAccent,
+  //                           fontWeight: FontWeight.w600,
+  //                         ),
+  //                       ),
+  //                     ),
+  //                   ],
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   @override
   void dispose() {
