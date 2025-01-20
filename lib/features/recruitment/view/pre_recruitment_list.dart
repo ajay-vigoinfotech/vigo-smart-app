@@ -3,6 +3,7 @@ import 'package:vigo_smart_app/features/recruitment/view/recruitment_step_1.dart
 
 import '../../../core/constants/constants.dart';
 import '../view model/pre_recruitment_list_view_model.dart';
+import 'active_employee_details.dart';
 
 class PreRecruitmentList extends StatefulWidget {
   const PreRecruitmentList({super.key});
@@ -64,15 +65,35 @@ class _PreRecruitmentListState extends State<PreRecruitmentList> {
                               final data = filteredData[index];
                               return GestureDetector(
                                 onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          RecruitmentStep1(
-                                            recruitedUserId: filteredData[index]['userId'],
-                                          ),
-                                    ),
-                                  );
+                                  // Navigator.push(
+                                  //   context,
+                                  //   MaterialPageRoute(
+                                  //     builder: (context) =>
+                                  //         RecruitmentStep1(
+                                  //           recruitedUserId: filteredData[index]['userId'],
+                                  //         ),
+                                  //   ),
+                                  // );
+
+                                  if (data['statusId'] == "1") {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => RecruitmentStep1(
+                                          recruitedUserId: data['userId'],
+                                        ),
+                                      ),
+                                    );
+                                  } else if(data['statusId'] == "6") {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => ActiveEmployeeDetails(
+                                          recruitedUserId: data['userId'],
+                                        ),
+                                      ),
+                                    );
+                                  }
                                 },
                                 child: IntrinsicHeight(
                                   child: Row(
@@ -86,6 +107,7 @@ class _PreRecruitmentListState extends State<PreRecruitmentList> {
                                         empCode: data['employeeCode'],
                                         name: data['fullName'],
                                         mobileNo: data['mobilePIN'],
+                                        statusId: data['statusId'],
                                       ),
                                     ],
                                   ),
@@ -136,38 +158,6 @@ class _PreRecruitmentListState extends State<PreRecruitmentList> {
     }
   }
 
-  // Future<void> fetchPreRecruitmentListData() async {
-  //   String? token = await preRecruitmentListViewModel.sessionManager.getToken();
-  //
-  //   if (token != null) {
-  //     await preRecruitmentListViewModel.fetchPreRecruitmentList(token);
-  //
-  //     if (preRecruitmentListViewModel.getPreRecruitmentList != null) {
-  //       setState(() {
-  //         preRecruitmentListData =
-  //             preRecruitmentListViewModel.getPreRecruitmentList!
-  //                 .map((entry) => {
-  //               "userId": entry.userId,
-  //               "employeeCode": entry.employeeCode,
-  //               "fullName": entry.fullName,
-  //               "mobilePIN": entry.mobilePIN,
-  //               "image": entry.image,
-  //               "createDate": entry.createDate,
-  //               "statusId": entry.statusId,
-  //               "statusCode": entry.statusCode,
-  //               "statusName": entry.statusName,
-  //               "designationName": entry.designationName,
-  //             })
-  //                 .toList();
-  //         filteredData = preRecruitmentListData;
-  //       });
-  //     }
-  //   }
-  //   setState(() {
-  //     isLoading = false;
-  //   });
-  // }
-
   void filterSearchResults(String query) {
     if (query.isEmpty) {
       setState(() {
@@ -210,15 +200,15 @@ class _PreRecruitmentListState extends State<PreRecruitmentList> {
     required String empCode,
     required String name,
     required String mobileNo,
+    required String statusId,
   }) {
+
+    LinearGradient gradient = _getGradientForStatus(statusId);
+
     return Expanded(
       child: Container(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.white70, Colors.indigo.shade50],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          gradient: gradient,
           border: Border.all(color: Colors.grey, width: 1.5),
           borderRadius: BorderRadius.circular(8),
         ),
@@ -309,5 +299,34 @@ class _PreRecruitmentListState extends State<PreRecruitmentList> {
         ),
       ),
     );
+  }
+}
+
+LinearGradient _getGradientForStatus(String statusId) {
+  switch (statusId) {
+    case "1":
+      return LinearGradient(
+        colors: [Colors.white70, Colors.yellow.shade200],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
+    case "6":
+      return LinearGradient(
+        colors: [Colors.white70, Colors.green.shade200],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
+    case "2":
+      return LinearGradient(
+        colors: [Colors.white70, Colors.red.shade200],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
+    default:
+      return LinearGradient(
+        colors: [Colors.white70, Colors.indigo.shade50],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
   }
 }

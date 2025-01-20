@@ -19,13 +19,14 @@ class RecruitmentStep4 extends StatefulWidget {
   final dynamic userId;
   final dynamic recruitedUserId;
 
-  const RecruitmentStep4({super.key, required this.userId,this.recruitedUserId});
+  const RecruitmentStep4({super.key, required this.userId, this.recruitedUserId});
 
   @override
   State<RecruitmentStep4> createState() => _RecruitmentStep4State();
 }
 
 class _RecruitmentStep4State extends State<RecruitmentStep4> {
+  String? recruitedUserId;
 
   List<Map<String, dynamic>> otherDocx = [
     {"base64": "", "documentType": "", "documentTypeId": ""},
@@ -61,6 +62,7 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
   TextEditingController chestController = TextEditingController();
   TextEditingController identificationMarkController = TextEditingController();
   TextEditingController bloodGroupController = TextEditingController();
+  TextEditingController userIdController = TextEditingController();
 
   //PreRecruitment By ID
   PreRecruitmentByIdViewModel preRecruitmentByIdViewModel = PreRecruitmentByIdViewModel();
@@ -86,10 +88,7 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
           })
               .toList();
           if (preRecruitmentByIdData.isNotEmpty) {
-            // userIdController.text = preRecruitmentByIdData[0]["userId"] ?? "";
-            // recruitedUserId = preRecruitmentByIdData[0]["userId"];
-            // debugPrint("Assigned userId: ${userIdController.text}");
-            // debugPrint("Assigned recruitedUserId: $recruitedUserId");
+            recruitedUserId = preRecruitmentByIdData[0]["userId"] ?? "";
 
             height = preRecruitmentByIdData[0]["height"] ?? "";
             heightController.text = height;
@@ -136,6 +135,7 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
               _physicalDetails(),
               _otherDocuments(),
               Text('${widget.recruitedUserId}'),
+              Text('${widget.userId}'),
               SizedBox(height: 10,),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -152,7 +152,7 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
 
                       Map<String, dynamic> response = await updateRecruitment04ViewModel.updateRecruitment04(token!,
                           UpdateRecruitment04Model(
-                              userId:  widget.recruitedUserId ?? widget.userId,
+                              userId: widget.userId ?? widget.recruitedUserId,
                               Height: height,
                               Weight: weight,
                               physical_waist: waist,
@@ -170,6 +170,10 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
                             text: '${response['status']}',
                             onConfirmBtnTap: () {
                               Navigator.pop(context);
+                              Navigator.pushAndRemoveUntil(this.context,
+                                MaterialPageRoute(builder: (context) => HomePage()),
+                                    (route) => false,
+                              );
                             });
                       } else {
                         QuickAlert.show(

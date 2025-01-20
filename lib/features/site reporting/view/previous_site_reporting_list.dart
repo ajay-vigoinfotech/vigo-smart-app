@@ -396,14 +396,11 @@ class _PreviousSiteReportingListState extends State<PreviousSiteReportingList> {
       await previousSiteReportingListViewModel
           .fetchPreviousSiteReportingListData(token, widget.checkinId);
 
-      if (previousSiteReportingListViewModel.previousSiteReportingList !=
-          null) {
+      if (previousSiteReportingListViewModel.previousSiteReportingList != null) {
         setState(() {
           final uniqueEntries = <String, Map<String, dynamic>>{};
-          for (var entry in previousSiteReportingListViewModel
-              .previousSiteReportingList!) {
-            final uniqueKey =
-                "${entry.latLong}_${entry.datetime}_${entry.dateTimeIn}_${entry.clientName}_${entry.checkintypename}";
+          for (var entry in previousSiteReportingListViewModel.previousSiteReportingList!) {
+            final uniqueKey = "${entry.latLong}_${entry.datetime}_${entry.dateTimeIn}_${entry.clientName}_${entry.checkintypename}";
             if (!uniqueEntries.containsKey(uniqueKey)) {
               uniqueEntries[uniqueKey] = {
                 "latLong": entry.latLong,
@@ -432,7 +429,7 @@ class _PreviousSiteReportingListState extends State<PreviousSiteReportingList> {
         });
       }
       setState(() {
-        isLoading = false; // Update loading state
+        isLoading = false;
       });
     }
   }

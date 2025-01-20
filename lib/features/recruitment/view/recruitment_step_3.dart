@@ -17,8 +17,7 @@ class RecruitmentStep3 extends StatefulWidget {
   final dynamic recruitedUserId;
 
   const RecruitmentStep3({
-    super.key,
-    required this.userId, this.recruitedUserId,
+    super.key, required this.userId, this.recruitedUserId,
   });
 
   @override
@@ -26,6 +25,7 @@ class RecruitmentStep3 extends StatefulWidget {
 }
 
 class _RecruitmentStep3State extends State<RecruitmentStep3> {
+  String? recruitedUserId;
 
   TextEditingController dojController = TextEditingController();
   TextEditingController uanNoController = TextEditingController();
@@ -45,7 +45,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
       return outputFormatter.format(parsedDate);
     } catch (e) {
       debugPrint('Error formatting date: $e');
-      return date; // Return the original date if parsing fails
+      return date;
     }
   }
 
@@ -78,10 +78,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
           })
               .toList();
           if (preRecruitmentByIdData.isNotEmpty) {
-            userIdController.text = preRecruitmentByIdData[0]["userId"] ?? "";
-
-            // dateOfJoin = preRecruitmentByIdData[0]["doj"] ?? "";
-            // dojController.text = dateOfJoin;
+            recruitedUserId = preRecruitmentByIdData[0]["userId"] ?? "";
 
             dateOfJoin = preRecruitmentByIdData[0]["doj"] ?? "";
             dateOfJoin = formatDate(dateOfJoin);
@@ -99,12 +96,9 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
             nomineename = preRecruitmentByIdData[0]["nomineeName"];
             nomineenameController.text = nomineename;
 
-            // nomineeage = preRecruitmentByIdData[0]["nomineeAge"] ?? "";
-            // nomineeageController.text = nomineeage;
-
             nomineeage = preRecruitmentByIdData[0]["nomineeAge"] ?? "";
             nomineeage = formatDate(nomineeage);
-            nomineenameController.text = formatDate(nomineeage, inputFormat: 'yyyy-MM-dd', outputFormat: 'dd-MM-yyyy');
+            nomineeageController.text = formatDate(nomineeage, inputFormat: 'yyyy-MM-dd', outputFormat: 'dd-MM-yyyy');
 
             nomineeRelation = preRecruitmentByIdData[0]["nomineeRelation"] ?? "";
             nomineeRelationController.text = nomineeRelation;
@@ -118,9 +112,6 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
 
             experience = preRecruitmentByIdData[0]["oldExperiance"] ?? "";
             experienceController.text = experience;
-
-            // companyLeavingDate = preRecruitmentByIdData[0]["oldCompanyLeavingDate"] ?? "";
-            // companyLeavingDateController.text = companyLeavingDate;
 
             companyLeavingDate = preRecruitmentByIdData[0]["oldCompanyLeavingDate"] ?? "";
             companyLeavingDate = formatDate(companyLeavingDate);
@@ -284,7 +275,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
 
                         Map<String,dynamic> response = await updateRecruitment03ViewModel.updateRecruitment03(token!,
                             UpdateRecruitment03Model(
-                              userId: widget.recruitedUserId ?? widget.userId,
+                              userId: widget.userId ?? widget.recruitedUserId,
                               dateOfJoin: dateOfJoin,
                               UAN: uan,
                               ESIC: esic,
@@ -313,8 +304,8 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => RecruitmentStep4(
-                                      userId: '${widget.userId}',
-                                        recruitedUserId :'${widget.recruitedUserId}'
+                                      userId: widget.userId,
+                                        recruitedUserId : widget.recruitedUserId,
                                     ),
                                   ),
                                 );
@@ -345,7 +336,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                     Navigator.push(context, MaterialPageRoute(builder: (context) =>
                         RecruitmentStep4(
                             userId: widget.userId,
-                            recruitedUserId : widget.recruitedUserId
+                            recruitedUserId :widget.recruitedUserId
                         ),
                     ),
                     );
