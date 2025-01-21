@@ -111,6 +111,7 @@ class CustomTextFormField extends StatelessWidget {
   final int? maxLength;
   final bool? enabled;
   final dynamic validator;
+  final TextCapitalization textCapitalization;
 
   const CustomTextFormField({
     super.key,
@@ -126,6 +127,7 @@ class CustomTextFormField extends StatelessWidget {
     this.enabled,
     this.onTap,
     this.validator,
+    this.textCapitalization = TextCapitalization.none,
   });
 
   @override
@@ -168,6 +170,7 @@ class CustomTextFormField extends StatelessWidget {
                   controller: controller,
                   keyboardType: keyboardType,
                   inputFormatters: inputFormatters,
+                  textCapitalization: textCapitalization,
                   decoration: InputDecoration(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 10),
                     labelText: labelText,

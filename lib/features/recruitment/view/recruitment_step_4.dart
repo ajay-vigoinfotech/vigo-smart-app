@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
@@ -19,7 +20,8 @@ class RecruitmentStep4 extends StatefulWidget {
   final dynamic userId;
   final dynamic recruitedUserId;
 
-  const RecruitmentStep4({super.key, required this.userId, this.recruitedUserId});
+  const RecruitmentStep4(
+      {super.key, required this.userId, this.recruitedUserId});
 
   @override
   State<RecruitmentStep4> createState() => _RecruitmentStep4State();
@@ -34,7 +36,8 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
 
   Map<String, dynamic> otherDocxJson() {
     // Filter out entries with empty base64
-    final filteredOtherDocx = otherDocx.where((doc) => doc["base64"]!.isNotEmpty).toList();
+    final filteredOtherDocx =
+        otherDocx.where((doc) => doc["base64"]!.isNotEmpty).toList();
 
     return filteredOtherDocx.isNotEmpty ? {"otherDocx": filteredOtherDocx} : {};
   }
@@ -48,12 +51,16 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
   String identificationMark = '';
   String bloodGroup = '';
 
-
   @override
   void initState() {
-    fetchBankListData();
-    fetchPreRecruitmentByIdData();
     super.initState();
+    if (widget.recruitedUserId != null) {
+      fetchPreRecruitmentByIdData().then((_) {
+        fetchDocumentListData().then((_) {});
+      });
+    } else if (widget.userId != null) {
+      fetchDocumentListData();
+    }
   }
 
   TextEditingController heightController = TextEditingController();
@@ -65,28 +72,31 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
   TextEditingController userIdController = TextEditingController();
 
   //PreRecruitment By ID
-  PreRecruitmentByIdViewModel preRecruitmentByIdViewModel = PreRecruitmentByIdViewModel();
+  PreRecruitmentByIdViewModel preRecruitmentByIdViewModel =
+      PreRecruitmentByIdViewModel();
   List<Map<String, dynamic>> preRecruitmentByIdData = [];
 
   Future<void> fetchPreRecruitmentByIdData() async {
     String? token = await preRecruitmentByIdViewModel.sessionManager.getToken();
 
     if (token != null) {
-      await preRecruitmentByIdViewModel.fetchPreRecruitmentByIdList(token, widget.recruitedUserId);
+      await preRecruitmentByIdViewModel.fetchPreRecruitmentByIdList(
+          token, widget.recruitedUserId);
 
       if (preRecruitmentByIdViewModel.getPreRecruitmentByIdList != null) {
         setState(() {
-          preRecruitmentByIdData = preRecruitmentByIdViewModel.getPreRecruitmentByIdList!
-              .map((entry) => {
-                "userId" : entry.userId,
-                "height" : entry.height,
-                "weight" : entry.weight,
-                "waist" : entry.waist,
-                "chest" : entry.chest,
-                "identificationMark" : entry.identificationMark,
-                "bloodGroup" : entry.bloodGroup,
-          })
-              .toList();
+          preRecruitmentByIdData =
+              preRecruitmentByIdViewModel.getPreRecruitmentByIdList!
+                  .map((entry) => {
+                        "userId": entry.userId,
+                        "height": entry.height,
+                        "weight": entry.weight,
+                        "waist": entry.waist,
+                        "chest": entry.chest,
+                        "identificationMark": entry.identificationMark,
+                        "bloodGroup": entry.bloodGroup,
+                      })
+                  .toList();
           if (preRecruitmentByIdData.isNotEmpty) {
             recruitedUserId = preRecruitmentByIdData[0]["userId"] ?? "";
 
@@ -102,7 +112,8 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
             chest = preRecruitmentByIdData[0]["chest"] ?? "";
             chestController.text = chest;
 
-            identificationMark = preRecruitmentByIdData[0]["identificationMark"] ?? "";
+            identificationMark =
+                preRecruitmentByIdData[0]["identificationMark"] ?? "";
             identificationMarkController.text = identificationMark;
 
             bloodGroup = preRecruitmentByIdData[0]["bloodGroup"] ?? "";
@@ -113,17 +124,20 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
     }
   }
 
+  final bloodGroupRegex = RegExp(r'^(A|B|AB|O)[+-]$');
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Recruitment Step 4'),
         actions: [
-          IconButton(onPressed: () {
-            setState(() {
-              _expandAll = !_expandAll;
-            });
-          },
+          IconButton(
+              onPressed: () {
+                setState(() {
+                  _expandAll = !_expandAll;
+                });
+              },
               icon: Icon(_expandAll ? Icons.unfold_less : Icons.unfold_more))
         ],
       ),
@@ -134,89 +148,125 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
             children: [
               _physicalDetails(),
               _otherDocuments(),
-              Text('${widget.recruitedUserId}'),
-              Text('${widget.userId}'),
-              SizedBox(height: 10,),
+              SizedBox(
+                height: 10,
+              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ElevatedButton(onPressed: () async {
-                    String jsonOutput = jsonEncode(otherDocxJson());
-                    if (jsonOutput == '{}' || jsonOutput.isEmpty) {
-                      jsonOutput = '';
-                    }
-                    // debugPrint(jsonOutput);
-                    try{
-                      String? token = await sessionManager.getToken();
-                      UpdateRecruitment04ViewModel updateRecruitment04ViewModel = UpdateRecruitment04ViewModel();
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.teal.shade400,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 30, vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.zero,
+                      ),
+                      elevation: 5,
+                    ),
+                    onPressed: () async {
+                      String jsonOutput = jsonEncode(otherDocxJson());
+                      if (jsonOutput == '{}' || jsonOutput.isEmpty) {
+                        jsonOutput = '';
+                      }
+                      // debugPrint(jsonOutput);
+                      try {
+                        String? token = await sessionManager.getToken();
+                        UpdateRecruitment04ViewModel
+                            updateRecruitment04ViewModel =
+                            UpdateRecruitment04ViewModel();
 
-                      Map<String, dynamic> response = await updateRecruitment04ViewModel.updateRecruitment04(token!,
+                        Map<String, dynamic> response =
+                            await updateRecruitment04ViewModel
+                                .updateRecruitment04(
+                          token!,
                           UpdateRecruitment04Model(
-                              userId: widget.userId ?? widget.recruitedUserId,
-                              Height: height,
-                              Weight: weight,
-                              physical_waist: waist,
-                              physical_chest: chest,
-                              physical_shoe: identificationMark,
-                              physical_blood: bloodGroup,
-                              DocumentsList: jsonOutput,
+                            userId: widget.userId ?? widget.recruitedUserId,
+                            Height: height,
+                            Weight: weight,
+                            physical_waist: waist,
+                            physical_chest: chest,
+                            physical_shoe: identificationMark,
+                            physical_blood: bloodGroup,
+                            DocumentsList: jsonOutput,
                           ),
-                      );
-                      if (response['code'] == 200) {
-                        QuickAlert.show(
+                        );
+                        if (response['code'] == 200) {
+                          QuickAlert.show(
+                              barrierDismissible: false,
+                              context: context,
+                              type: QuickAlertType.success,
+                              text: '${response['status']}',
+                              onConfirmBtnTap: () {
+                                Navigator.pop(context);
+                                Navigator.pushAndRemoveUntil(
+                                  this.context,
+                                  MaterialPageRoute(
+                                      builder: (context) => HomePage()),
+                                  (route) => false,
+                                );
+                              });
+                        } else {
+                          QuickAlert.show(
                             barrierDismissible: false,
+                            confirmBtnText: 'Retry',
                             context: context,
-                            type: QuickAlertType.success,
-                            text: '${response['status']}',
-                            onConfirmBtnTap: () {
-                              Navigator.pop(context);
-                              Navigator.pushAndRemoveUntil(this.context,
-                                MaterialPageRoute(builder: (context) => HomePage()),
-                                    (route) => false,
-                              );
-                            });
-                      } else {
-                        QuickAlert.show(
-                          barrierDismissible: false,
-                          confirmBtnText: 'Retry',
-                          context: context,
-                          type: QuickAlertType.error,
-                          text:
-                          '${response['message'] ?? 'Something went wrong'}',
+                            type: QuickAlertType.error,
+                            text:
+                                '${response['message'] ?? 'Something went wrong'}',
+                          );
+                        }
+                      } catch (error) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text(
+                                  'An error occurred. Please try again later.')),
                         );
                       }
-                    } catch (error) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                            content: Text(
-                                'An error occurred. Please try again later.')),
-                      );
-                    }
-                  },
-                      child: Text('Save and Submit'), ),
-
-                  ElevatedButton(onPressed: () {
-                    Navigator.pushAndRemoveUntil(this.context,
-                      MaterialPageRoute(builder: (context) => HomePage()),
+                    },
+                    child: Text(
+                      'Save and Submit',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.teal.shade400,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 30, vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero,
+                        ),
+                        elevation: 5,
+                      ),
+                      onPressed: () {
+                        Navigator.pushAndRemoveUntil(
+                          this.context,
+                          MaterialPageRoute(builder: (context) => HomePage()),
                           (route) => false,
-                    );
-                  },
-                      child: Text('Finish',))
+                        );
+                      },
+                      child: Text(
+                        'Finish',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold),
+                      ))
                 ],
               ),
+              SizedBox(height: 30),
             ],
           ),
         ),
       ),
     );
   }
-
-//   onConfirmBtnTap: () {
-//   Navigator.pushAndRemoveUntil(this.context,
-//   MaterialPageRoute(builder: (context) => HomePage()),
-//   (route) => false,
-//   );
-// },
 
   Widget _physicalDetails() {
     return Card(
@@ -238,10 +288,12 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
               child: Column(
                 children: [
                   CustomTextFormField(
-                    iconWidget: Image.asset('assets/images/height.png', color: Colors.blue.shade900,),
-                    keyboardType: TextInputType.numberWithOptions(
-                      decimal: true
+                    iconWidget: Image.asset(
+                      'assets/images/height.png',
+                      color: Colors.blue.shade900,
                     ),
+                    keyboardType:
+                        TextInputType.numberWithOptions(decimal: true),
                     controller: heightController,
                     labelText: "Height (in CMs)",
                     onChanged: (value) {
@@ -249,10 +301,12 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
                     },
                   ),
                   CustomTextFormField(
-                    iconWidget: Image.asset('assets/images/scale.png', color: Colors.teal.shade900,),
-                    keyboardType: TextInputType.numberWithOptions(
-                        decimal: true
+                    iconWidget: Image.asset(
+                      'assets/images/scale.png',
+                      color: Colors.teal.shade900,
                     ),
+                    keyboardType:
+                        TextInputType.numberWithOptions(decimal: true),
                     controller: weightController,
                     labelText: "Weight (in KGs)",
                     onChanged: (value) {
@@ -260,13 +314,13 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
                     },
                   ),
                   CustomTextFormField(
-                    iconWidget: Image.asset('assets/images/waist.png',
-                    color: Colors.green.shade900,
+                    iconWidget: Image.asset(
+                      'assets/images/waist.png',
+                      color: Colors.green.shade900,
                     ),
 
-                    keyboardType: TextInputType.numberWithOptions(
-                        decimal: true
-                    ),
+                    keyboardType:
+                        TextInputType.numberWithOptions(decimal: true),
                     controller: waistController,
                     // icon: Icons.fitness_center,
                     labelText: "Waist (in inches)",
@@ -275,11 +329,13 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
                     },
                   ),
                   CustomTextFormField(
-                    iconWidget: Image.asset('assets/images/chest.png', color: Colors.brown.shade900,),
-
-                    keyboardType: TextInputType.numberWithOptions(
-                        decimal: true
+                    iconWidget: Image.asset(
+                      'assets/images/chest.png',
+                      color: Colors.brown.shade900,
                     ),
+
+                    keyboardType:
+                        TextInputType.numberWithOptions(decimal: true),
                     controller: chestController,
                     // icon: Icons.archive,
                     labelText: "Chest (in inches)",
@@ -288,17 +344,36 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
                     },
                   ),
                   CustomTextFormField(
-                    iconWidget: Icon(Icons.accessibility_new, color: Colors.indigo.shade900, size: 30,),
+                    iconWidget: Icon(
+                      Icons.accessibility_new,
+                      color: Colors.indigo.shade900,
+                      size: 30,
+                    ),
                     labelText: 'Identification Mark',
                     controller: identificationMarkController,
                     onChanged: (value) {
                       identificationMark = value!;
                     },
                   ),
+                  // CustomTextFormField(
+                  //   iconWidget: Icon(Icons.bloodtype, color: Colors.red, size: 30,),
+                  //   labelText: 'Blood Group',
+                  //   controller: bloodGroupController,
+                  //   onChanged: (value) {
+                  //     bloodGroup = value!;
+                  //   },
+                  // ),
+
                   CustomTextFormField(
-                    iconWidget: Icon(Icons.bloodtype, color: Colors.red, size: 30,),
+                    iconWidget: Icon(Icons.bloodtype, color: Colors.red, size: 30),
                     labelText: 'Blood Group',
                     controller: bloodGroupController,
+                    keyboardType: TextInputType.text,
+                    textCapitalization: TextCapitalization.characters,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[ABO+-]')),
+                    ],
+                    maxLength: 3,
                     onChanged: (value) {
                       bloodGroup = value!;
                     },
@@ -318,7 +393,7 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
   String selectedDocumentType = '';
   String selectedDocumentTypeId = '';
 
-  Future<void> fetchBankListData() async {
+  Future<void> fetchDocumentListData() async {
     String? token = await documentTypeViewModel.sessionManager.getToken();
     if (token != null) {
       await documentTypeViewModel.fetchDocumentType(token);
@@ -327,10 +402,10 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
         if (documentTypeViewModel.documentTypeList != null) {
           documentTypeData = documentTypeViewModel.documentTypeList!
               .map((entry) => {
-            "value": entry.value,
-            "text": entry.text,
-            "parentId": entry.parentId,
-          })
+                    "value": entry.value,
+                    "text": entry.text,
+                    "parentId": entry.parentId,
+                  })
               .toList();
         }
       });
@@ -387,7 +462,8 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
 
         setState(() {
           // _documentImage = base64String; // Update the class-level variable
-          otherDocx[index]["base64"] = base64String; // Update the specific JSON entry
+          otherDocx[index]["base64"] =
+              base64String; // Update the specific JSON entry
         });
       }
     }
@@ -417,11 +493,11 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
     if (shouldDelete ?? false) {
       setState(() {
         // _documentImage = '';
-        otherDocx[index]["base64"] = ''; // Clear the base64 for the specific document
+        otherDocx[index]["base64"] =
+            ''; // Clear the base64 for the specific document
       });
     }
   }
-
 
   Widget _otherDocuments() {
     return Card(
@@ -460,7 +536,9 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
                                   });
                                 } else {
                                   ToastHelper.showToast(
-                                    message: "You can add a maximum of 7 documents.",
+                                    message:
+                                        "You can add a maximum of 7 documents.",
+                                    context: context,
                                   );
                                 }
                               },
@@ -487,48 +565,64 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
                                   child: Padding(
                                     padding: const EdgeInsets.all(8.0),
                                     child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12.0, vertical: 8.0),
                                       decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        border: Border.all(color: Colors.grey, width: 1),
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
+                                        border: Border.all(
+                                            color: Colors.grey, width: 1),
                                       ),
                                       child: DropdownButton<String>(
                                         isExpanded: true,
                                         value: type['documentTypeId'].isNotEmpty
                                             ? type['documentTypeId']
                                             : documentTypeData.isNotEmpty
-                                            ? documentTypeData[0]["value"].toString()
-                                            : null,
-                                        hint: type['documentTypeId'].isEmpty && documentTypeData.isNotEmpty
+                                                ? documentTypeData[0]["value"]
+                                                    .toString()
+                                                : null,
+                                        hint: type['documentTypeId'].isEmpty &&
+                                                documentTypeData.isNotEmpty
                                             ? Text(
-                                          documentTypeData[0]["text"] ?? '',
-                                          style: const TextStyle(color: Colors.black54),
-                                        )
+                                                documentTypeData[0]["text"] ??
+                                                    '',
+                                                style: const TextStyle(
+                                                    color: Colors.black54),
+                                              )
                                             : null,
                                         items: documentTypeData.isNotEmpty
-                                            ? documentTypeData.map((/*document*/type) {
-                                          return DropdownMenuItem<String>(
-                                            value: type["value"].toString(),
-                                            child: Text(type["text"] ?? ""),
-                                          );
-                                        }).toList()
+                                            ? documentTypeData
+                                                .map((/*document*/ type) {
+                                                return DropdownMenuItem<String>(
+                                                  value:
+                                                      type["value"].toString(),
+                                                  child:
+                                                      Text(type["text"] ?? ""),
+                                                );
+                                              }).toList()
                                             : [],
                                         onChanged: (String? newValue) {
                                           setState(() {
-                                            final selectedDocument = documentTypeData.firstWhere(
-                                                  (document) => document["value"].toString() == newValue,
+                                            final selectedDocument =
+                                                documentTypeData.firstWhere(
+                                              (document) =>
+                                                  document["value"]
+                                                      .toString() ==
+                                                  newValue,
                                             );
-                                            type['documentType'] = selectedDocument["text"];
-                                            type['documentTypeId'] = newValue ?? '';
+                                            type['documentType'] =
+                                                selectedDocument["text"];
+                                            type['documentTypeId'] =
+                                                newValue ?? '';
                                           });
                                         },
                                         underline: const SizedBox(),
-                                        icon: const Icon(Icons.arrow_drop_down, color: Colors.black),
+                                        icon: const Icon(Icons.arrow_drop_down,
+                                            color: Colors.black),
                                       ),
                                     ),
                                   ),
                                 ),
-
                                 Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Column(
@@ -541,19 +635,24 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
                                             maxHeight: 400,
                                           ),
                                           decoration: BoxDecoration(
-                                            border: Border.all(color: Colors.grey),
-                                            borderRadius: BorderRadius.circular(8),
+                                            border:
+                                                Border.all(color: Colors.grey),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
                                             color: Colors.grey[200],
                                           ),
                                           child: type["base64"]!.isEmpty
-                                              ? Image.asset('assets/images/add_docs_placeholder.webp')
+                                              ? Image.asset(
+                                                  'assets/images/add_docs_placeholder.webp')
                                               : ClipRRect(
-                                            borderRadius: BorderRadius.circular(8),
-                                            child: Image.memory(
-                                              base64Decode(type["base64"]!),
-                                              fit: BoxFit.contain,
-                                            ),
-                                          ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  child: Image.memory(
+                                                    base64Decode(
+                                                        type["base64"]!),
+                                                    fit: BoxFit.contain,
+                                                  ),
+                                                ),
                                         ),
                                       ),
                                       SizedBox(height: 5),
@@ -561,13 +660,13 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
                                         onTap: () => _deleteImage(index),
                                         child: Text(
                                           'Remove Image',
-                                          style: TextStyle(fontSize: 17, color: Colors.red),
+                                          style: TextStyle(
+                                              fontSize: 17, color: Colors.red),
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
-
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [

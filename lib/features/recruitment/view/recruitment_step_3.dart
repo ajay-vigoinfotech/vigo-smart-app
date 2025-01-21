@@ -49,6 +49,19 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
     }
   }
 
+  @override
+  void initState() {
+    super.initState();
+    if (widget.recruitedUserId != null) {
+      fetchPreRecruitmentByIdData().then((_) {
+        fetchFamilyListData().then((_) {
+        });
+      });
+    } else if (widget.userId != null) {
+      fetchFamilyListData();
+    }
+  }
+
   //PreRecruitment By ID
   PreRecruitmentByIdViewModel preRecruitmentByIdViewModel = PreRecruitmentByIdViewModel();
   List<Map<String, dynamic>> preRecruitmentByIdData = [];
@@ -197,13 +210,6 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
 
   SessionManager sessionManager = SessionManager();
 
-  @override
-  void initState() {
-    fetchBankListData();
-    fetchPreRecruitmentByIdData();
-    super.initState();
-  }
-
   bool _expandAll = true;
 
   //Get Family Relation
@@ -212,7 +218,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
   String selectedFamilyRelationName = '';
   String selectedFamilyRelationNameId = '';
 
-  Future<void> fetchBankListData() async {
+  Future<void> fetchFamilyListData() async {
     String? token = await familyRelationViewModel.sessionManager.getToken();
     if (token != null) {
       await familyRelationViewModel.fetchFamilyRelationList(token);
@@ -252,16 +258,25 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [
-              _contactDetails(),
+              _companyDetails(),
               _previousJobDetails(),
               _familyDetails(),
-              Text('-${widget.recruitedUserId}'),
-              Text('${widget.userId}'),
               SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ElevatedButton(onPressed: () async {
+                  ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.teal.shade400,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 30, vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero,
+                        ),
+                        elevation: 5,
+                      ),
+                      onPressed: () async {
                     if (_formKey.currentState!.validate()) {
                       String jsonOutput = jsonEncode(getFamilyDetailsJson());
                       debugPrint(jsonOutput);
@@ -327,12 +342,28 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                       }
                     } else {
                       ToastHelper.showToast(
-                        message: "Please correct the errors in the form.",
+                        message: "Please correct the errors in the form.", context: context,
                       );
                     }
                   },
-                      child : Text('Submit and Next')),
-                  ElevatedButton(onPressed: (){
+                      child : Text('Submit and Next',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold),
+                      )),
+                  ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.teal.shade400,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 30, vertical: 10),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero,
+                        ),
+                        elevation: 5,
+                      ),
+                      onPressed: (){
                     Navigator.push(context, MaterialPageRoute(builder: (context) =>
                         RecruitmentStep4(
                             userId: widget.userId,
@@ -341,9 +372,15 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                     ),
                     );
                   },
-                      child: Text('Next',))
+                      child: Text('Next',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold),
+                      ),),
                 ],
               ),
+              SizedBox(height: 30),
             ],
           ),
         ),
@@ -351,7 +388,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
     );
   }
 
-  Widget _contactDetails() {
+  Widget _companyDetails() {
     return Card(
       color: Colors.white,
       elevation: 5,
@@ -364,53 +401,31 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
         child: ExpansionTile(
           key: ValueKey(_expandAll),
           initiallyExpanded: _expandAll,
-          title: Text('Company Details'),
+          title: Text('Company Details',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(
                 children: [
                   CustomTextFormField(
-                    iconWidget: Icon(Icons.calendar_month, color: Colors.blue),
+                    iconWidget: Icon(Icons.calendar_month, color: Colors.indigo, size: 30,),
                     labelText: 'Date of Join',
                     isDatePicker: true,
                     controller: dojController,
                     onChanged: (value) {
                       setState(() {
                         if (value != null && value.isNotEmpty) {
-                          dateOfJoin = formatDate(value, inputFormat: 'dd-MM-yyyy', outputFormat: 'yyyy-MM-dd'); // Format for API
+                          dateOfJoin = formatDate(value, inputFormat: 'dd-MM-yyyy', outputFormat: 'yyyy-MM-dd');
                           dojController.text = value; // Keep the display format
                         }
                       });
                     },
                   ),
-                  // CustomTextFormField(
-                  //   iconWidget: Icon(Icons.calendar_month, color: Colors.blue),
-                  //   // icon: Icons.calendar_month,
-                  //   labelText: 'Date of Join',
-                  //   isDatePicker: true,
-                  //   controller: dojController,
-                  //   onChanged: (value) {
-                  //     setState(() {
-                  //       if (value != null && value.isNotEmpty) {
-                  //         try {
-                  //           final inputFormat = DateFormat('dd-MM-yyyy');
-                  //           final parsedDate = inputFormat.parse(value);
-                  //
-                  //           final outputFormat = DateFormat('yyyy-MM-dd');
-                  //           dateOfJoin = outputFormat.format(parsedDate);
-                  //
-                  //           dojController.text = value;
-                  //         } catch (e) {
-                  //           debugPrint('Error parsing date: $e');
-                  //         }
-                  //       }
-                  //     });
-                  //   },
-                  // ),
                   CustomTextFormField(
                     controller: uanController,
-                    iconWidget: Icon(Icons.credit_card, color: Colors.green, size: 30,),
+                    iconWidget: Icon(Icons.credit_card, color: Colors.indigo, size: 30,),
                     labelText: "UAN Number",
                     onChanged: (value) {
                       uan = value!;
@@ -418,7 +433,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                   ),
                   CustomTextFormField(
                     controller: esicController,
-                    iconWidget: Icon(Icons.credit_card, color: Colors.green, size: 30,),
+                    iconWidget: Icon(Icons.credit_card, color: Colors.indigo, size: 30,),
                     labelText: "ESIC Number",
                     onChanged: (value) {
                       esic = value!;
@@ -426,7 +441,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                   ),
                   CustomTextFormField(
                     controller: pfController,
-                    iconWidget: Icon(Icons.credit_card, color: Colors.green, size: 30,),
+                    iconWidget: Icon(Icons.credit_card, color: Colors.indigo, size: 30,),
                     labelText: 'PF Number',
                     onChanged: (value) {
                       pf = value!;
@@ -442,7 +457,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                   ),
 
                   CustomTextFormField(
-                    iconWidget: Icon(Icons.calendar_month, color: Colors.blue),
+                    iconWidget: Icon(Icons.calendar_month, color: Colors.indigo, size: 30,),
                     labelText: 'Nominee DOB',
                     isDatePicker: true,
                     controller: nomineeageController,
@@ -455,31 +470,8 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                       });
                     },
                   ),
-                  // CustomTextFormField(
-                  //   iconWidget: Icon(Icons.calendar_month, color: Colors.green, size: 30,),
-                  //   labelText: 'Nominee DOB',
-                  //   isDatePicker: true,
-                  //   controller: nomineeageController,
-                  //   onChanged: (value) {
-                  //     setState(() {
-                  //       if (value != null && value.isNotEmpty) {
-                  //         try {
-                  //           final inputFormat = DateFormat('dd-MM-yyyy');
-                  //           final parsedDate = inputFormat.parse(value);
-                  //
-                  //           final outputFormat = DateFormat('yyyy-MM-dd');
-                  //           nomineeage = outputFormat.format(parsedDate);
-                  //
-                  //           nomineeageController.text = value;
-                  //         } catch (e) {
-                  //           debugPrint('Error parsing date: $e');
-                  //         }
-                  //       }
-                  //     });
-                  //   },
-                  // ),
                   CustomTextFormField(
-                    iconWidget: Icon(Icons.credit_card, color: Colors.green, size: 30,),
+                    iconWidget: Icon(Icons.credit_card, color: Colors.indigo, size: 30,),
                     labelText: 'Relation with Nominee',
                     controller: nomineeRelationController,
                     onChanged: (value) {
@@ -508,14 +500,16 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
         child: ExpansionTile(
           key: ValueKey(_expandAll),
           initiallyExpanded: _expandAll,
-          title: Text('Previous Job Details'),
+          title: Text('Previous Job Details',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Column(
                 children: [
                   CustomTextFormField(
-                    iconWidget: Icon(Icons.business_sharp, color: Colors.green, size: 30,),
+                    iconWidget: Icon(Icons.business_sharp, color: Colors.indigo, size: 30,),
                     labelText: 'Company Name',
                     controller: companyNameController,
                     onChanged: (value) {
@@ -523,7 +517,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                     },
                   ),
                   CustomTextFormField(
-                    iconWidget: Icon(Icons.person, color: Colors.green, size: 30,),
+                    iconWidget: Icon(Icons.person, color: Colors.indigo, size: 30,),
                     labelText: 'Designation',
                     controller: designationController,
                     onChanged: (value) {
@@ -531,7 +525,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                     },
                   ),
                   CustomTextFormField(
-                    iconWidget: Icon(Icons.person, color: Colors.green, size: 30,),
+                    iconWidget: Icon(Icons.person, color: Colors.indigo, size: 30,),
                     labelText: 'Year of Experience',
                     controller: experienceController,
                     keyboardType: TextInputType.number,
@@ -540,42 +534,19 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                     },
                   ),
                   CustomTextFormField(
-                    iconWidget: Icon(Icons.calendar_month, color: Colors.blue),
-                    labelText: 'Date of Join',
+                    iconWidget: Icon(Icons.calendar_month, color: Colors.indigo, size: 30,),
+                    labelText: 'Date of Leaving',
                     isDatePicker: true,
-                    controller: dojController,
+                    controller: companyLeavingDateController,
                     onChanged: (value) {
                       setState(() {
                         if (value != null && value.isNotEmpty) {
-                          companyLeavingDate = formatDate(value, inputFormat: 'dd-MM-yyyy', outputFormat: 'yyyy-MM-dd'); // Format for API
-                          companyLeavingDateController.text = value; // Keep the display format
+                          companyLeavingDate = formatDate(value, inputFormat: 'dd-MM-yyyy', outputFormat: 'yyyy-MM-dd');
+                          companyLeavingDateController.text = value;
                         }
                       });
                     },
                   ),
-                  // CustomTextFormField(
-                  //   iconWidget: Icon(Icons.calendar_month, color: Colors.green, size: 30,),
-                  //   labelText: 'Date of Leaving',
-                  //   isDatePicker: true,
-                  //   controller: companyLeavingDateController,
-                  //   onChanged: (value) {
-                  //     setState(() {
-                  //       if (value != null && value.isNotEmpty) {
-                  //         try {
-                  //           final inputFormat = DateFormat('dd-MM-yyyy');
-                  //           final parsedDate = inputFormat.parse(value);
-                  //
-                  //           final outputFormat = DateFormat('yyyy-MM-dd');
-                  //           companyLeavingDate = outputFormat.format(parsedDate);
-                  //
-                  //           companyLeavingDateController.text = value;
-                  //         } catch (e) {
-                  //           debugPrint('Error parsing date: $e');
-                  //         }
-                  //       }
-                  //     });
-                  //   },
-                  // ),
                 ],
               ),
             )
@@ -597,7 +568,9 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
         child: ExpansionTile(
           key: ValueKey(_expandAll),
           initiallyExpanded: _expandAll,
-          title: Text('Family Details'),
+          title: Text('Family Details',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -619,7 +592,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                             });
                         } else {
                             ToastHelper.showToast(
-                              message: "You can add a maximum of 7 family members.",);
+                              message: "You can add a maximum of 7 family members.", context: context,);
                             return;
                           }
                           },
@@ -648,7 +621,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                               children: [
                                 Expanded(
                                   child: CustomTextFormField(
-                                    iconWidget: Icon(Icons.person, color: Colors.green, size: 30,),
+                                    iconWidget: Icon(Icons.person, color: Colors.indigo, size: 30,),
                                     labelText: 'Name (As Per Aadhaar)',
                                     onChanged: (value) {
                                       setState(() {
@@ -666,7 +639,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
                               ],
                             ),
                             CustomTextFormField(
-                              iconWidget: Icon(Icons.calendar_month, color: Colors.green, size: 30,),
+                              iconWidget: Icon(Icons.calendar_month, color: Colors.indigo, size: 30,),
                               labelText: 'Date of Birth',
                               isDatePicker: true,
                               onChanged: (formattedDate) {

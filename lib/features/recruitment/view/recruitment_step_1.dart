@@ -85,6 +85,24 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
   TextEditingController branchController = TextEditingController();
   TextEditingController userIdController = TextEditingController();
 
+  @override
+  void initState() {
+    super.initState();
+    if (widget.recruitedUserId != null) {
+      fetchPreRecruitmentByIdData().then((_) {
+        fetchSiteListData().then((_) {
+          fetchDesignationListData().then((_) {
+            fetchBranchListData().then((_) {});
+          });
+        });
+      });
+    } else if (userId != null) {
+      fetchSiteListData();
+      fetchDesignationListData();
+      fetchBranchListData();
+    }
+  }
+
   //PreRecruitment By ID
   PreRecruitmentByIdViewModel preRecruitmentByIdViewModel = PreRecruitmentByIdViewModel();
   List<Map<String, dynamic>> preRecruitmentByIdData = [];
@@ -97,7 +115,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
       return outputFormatter.format(parsedDate);
     } catch (e) {
       debugPrint('Error formatting date: $e');
-      return date; // Return the original date if parsing fails
+      return date;
     }
   }
 
@@ -167,9 +185,6 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
             mobNo = preRecruitmentByIdData[0]["mobilePIN"] ?? "";
             mobileNoController.text = mobNo;
 
-            // dob = preRecruitmentByIdData[0]["dob"] ?? "";
-            // dobController.text = dob;
-
             dob = preRecruitmentByIdData[0]["dob"] ?? "";
             dob = formatDate(dob);
             dobController.text = formatDate(dob, inputFormat: 'yyyy-MM-dd', outputFormat: 'dd-MM-yyyy');
@@ -216,15 +231,6 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
   }
 
   @override
-  void initState() {
-    fetchSiteListData();
-    fetchDesignationListData();
-    fetchBranchListData();
-    fetchPreRecruitmentByIdData();
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -259,8 +265,6 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
               _personalDetails(),
               _personalDocuments(),
               _deploymentDetails(),
-              // Text('${widget.recruitedUserId}'),
-              // Text(''),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -301,7 +305,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
 
                             for (var validation in validations) {
                               if (validation.keys.first) {
-                                ToastHelper.showToast(message: validation.values.first);
+                                ToastHelper.showToast(message: validation.values.first, context: context);
                                 return;
                               }
                             }
@@ -367,7 +371,6 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                               }
                             } else {
                               UpdateRecruitment01ViewModel updateRecruitment01ViewModel = UpdateRecruitment01ViewModel();
-
                               Map<String, dynamic> response = await updateRecruitment01ViewModel.updateRecruitment01(
                                 token!,
                                 UpdateRecruitment01Model(
@@ -945,16 +948,69 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
 
   void _handleClearButtonPressed() {
     _signaturePadKey.currentState?.clear();
-    _isSigned = false;
+    setState(() {
+      _isSigned = false;
+      _signatureData = Uint8List(0); // Reset the signature data to an empty value
+      _base64Signature = ''; // Clear the base64 signature
+    });
+    debugPrint('Signature removed');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Signature removed successfully.'),
+        backgroundColor: Colors.green,
+      ),
+    );
   }
 
+
+  // void _handleClearButtonPressed() {
+  //   _signaturePadKey.currentState?.clear();
+  //   _isSigned = false;
+  // }
+
+  // Future<void> _handleSaveButtonPressed() async {
+  //   try {
+  //     final ui.Image image =
+  //         await _signaturePadKey.currentState!.toImage(pixelRatio: 3.0);
+  //
+  //     final ByteData? byteData =
+  //         await image.toByteData(format: ui.ImageByteFormat.png);
+  //     if (byteData != null) {
+  //       final Uint8List data = byteData.buffer.asUint8List();
+  //       final String base64Image = base64Encode(data);
+  //
+  //       setState(() {
+  //         _signatureData = data;
+  //         _base64Signature = base64Image;
+  //         _isSigned = true;
+  //       });
+  //       // debugPrint("Signature saved successfully!");
+  //     } else {
+  //       throw Exception("Failed to convert signature to PNG data.");
+  //     }
+  //   } catch (e) {
+  //     debugPrint("Error saving signature: $e");
+  //   }
+  // }
+
   Future<void> _handleSaveButtonPressed() async {
+    if (!_isSigned) {
+      debugPrint("No signature detected. Please draw a signature.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please sign before saving.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     try {
       final ui.Image image =
-          await _signaturePadKey.currentState!.toImage(pixelRatio: 3.0);
+      await _signaturePadKey.currentState!.toImage(pixelRatio: 3.0);
 
       final ByteData? byteData =
-          await image.toByteData(format: ui.ImageByteFormat.png);
+      await image.toByteData(format: ui.ImageByteFormat.png);
       if (byteData != null) {
         final Uint8List data = byteData.buffer.asUint8List();
         final String base64Image = base64Encode(data);
@@ -962,9 +1018,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
         setState(() {
           _signatureData = data;
           _base64Signature = base64Image;
-          _isSigned = true;
         });
-        // debugPrint("Signature saved successfully!");
+        debugPrint("Signature saved successfully!");
       } else {
         throw Exception("Failed to convert signature to PNG data.");
       }
@@ -1091,50 +1146,96 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
             ),
             child: _isSigned
                 ? Image.memory(
-                    _signatureData,
-                    width: 500,
-                    height: 500,
-                    fit: BoxFit.contain,
-                  )
+              _signatureData,
+              width: 500,
+              height: 500,
+              fit: BoxFit.contain,
+            )
                 : (signatureUrl.isNotEmpty
-                    ? Image.network(
-                        signatureUrl,
-                        width: double.infinity,
-                        height: 200,
-                        fit: BoxFit.contain,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Center(
-                            child: CircularProgressIndicator(
-                              value: loadingProgress.expectedTotalBytes != null
-                                  ? loadingProgress.cumulativeBytesLoaded /
-                                      (loadingProgress.expectedTotalBytes ?? 1)
-                                  : null,
-                            ),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return Center(
-                            child: Text(
-                              'Tap here to sign',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: 20),
-                            ),
-                          );
-                        },
-                      )
-                    : Center(
-                        child: Text(
-                          'Tap here to sign',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 20),
-                        ),
-                      )),
+                ? Image.network(
+              signatureUrl,
+              width: double.infinity,
+              height: 200,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return Center(
+                  child: Text(
+                    'Tap here to sign',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 20),
+                  ),
+                );
+              },
+            )
+                : Center(
+              child: Text(
+                'Tap here to sign',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 20),
+              ),
+            )),
           ),
         ),
       ),
     );
   }
+
+
+  // Widget _digitalSignature() {
+  //   String signatureUrl = signatureController.text.isNotEmpty
+  //       ? '${AppConstants.baseUrl}/${signatureController.text}'
+  //       : '';
+  //
+  //   return InkWell(
+  //     splashColor: Colors.transparent,
+  //     highlightColor: Colors.transparent,
+  //     onTap: () {
+  //       _showPopup();
+  //     },
+  //     child: Center(
+  //       child: Padding(
+  //         padding: const EdgeInsets.all(8.0),
+  //         child: Container(
+  //           width: double.infinity,
+  //           height: 200,
+  //           decoration: BoxDecoration(
+  //             border: Border.all(color: Colors.grey),
+  //           ),
+  //           child: _isSigned
+  //               ? Image.memory(
+  //                   _signatureData,
+  //                   width: 500,
+  //                   height: 500,
+  //                   fit: BoxFit.contain,
+  //                 )
+  //               : (signatureUrl.isNotEmpty
+  //                   ? Image.network(
+  //                       signatureUrl,
+  //                       width: double.infinity,
+  //                       height: 200,
+  //                       fit: BoxFit.contain,
+  //                       errorBuilder: (context, error, stackTrace) {
+  //                         return Center(
+  //                           child: Text(
+  //                             'Tap here to sign',
+  //                             textAlign: TextAlign.center,
+  //                             style: TextStyle(fontSize: 20),
+  //                           ),
+  //                         );
+  //                       },
+  //                     )
+  //                   : Center(
+  //                       child: Text(
+  //                         'Tap here to sign',
+  //                         textAlign: TextAlign.center,
+  //                         style: TextStyle(fontSize: 20),
+  //                       ),
+  //                     )),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
   // Widget _digitalSignature() {
   //   return InkWell(
@@ -1405,7 +1506,9 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
           initiallyExpanded: _expandAll,
           title: Row(
             children: [
-              Text('Aadhaar Details'),
+              Text('Aadhaar Details',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold,
+              ),),
             ],
           ),
           children: <Widget>[
@@ -1658,7 +1761,9 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
         child: ExpansionTile(
           key: ValueKey(_expandAll),
           initiallyExpanded: _expandAll,
-          title: Text('Personal Information'),
+          title: Text('Personal Information',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold,),
+          ),
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -1880,7 +1985,9 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
         child: ExpansionTile(
           key: ValueKey(_expandAll),
           initiallyExpanded: _expandAll,
-          title: Text('Personal Documents'),
+          title: Text('Personal Documents',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold,),
+          ),
           children: <Widget>[
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1913,17 +2020,6 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                                         fit: BoxFit.cover,
                                         height: 200,
                                         width: 200,
-                                        // loadingBuilder: (context, child, loadingProgress) {
-                                        //   if (loadingProgress == null) return child;
-                                        //   return Center(
-                                        //     child: CircularProgressIndicator(
-                                        //       value: loadingProgress.expectedTotalBytes != null
-                                        //           ? loadingProgress.cumulativeBytesLoaded /
-                                        //           (loadingProgress.expectedTotalBytes ?? 1)
-                                        //           : null,
-                                        //     ),
-                                        //   );
-                                        // },
                                         errorBuilder: (context, error, stackTrace) {
                                           return Image.asset(
                                             'assets/images/user_camera.png',
@@ -2012,8 +2108,13 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
               setState(() {
                 signatureController.text = '';
                 _signaturePadKey.currentState?.clear();
-                _isSigned = false;
+                // _isSigned = false;
                 // _signatureData = Uint8List(0);
+
+                _isSigned = false;
+                _signatureData = Uint8List(0); // Reset the signature data to an empty value
+                _base64Signature = ''; // Clear the base64 signature
+
               });
               Navigator.pop(context);
             },
@@ -2033,7 +2134,9 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
         child: ExpansionTile(
           key: ValueKey(_expandAll),
           initiallyExpanded: _expandAll,
-          title: Text('Deployment Details'),
+          title: Text('Deployment Details',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold,),
+          ),
           children: <Widget>[
             _selectSite(),
             _selectDesignation(),

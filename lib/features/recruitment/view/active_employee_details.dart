@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:vigo_smart_app/core/constants/constants.dart';
 
 import '../view model/pre_recruitment_by_id_view_model.dart';
 
@@ -37,25 +38,34 @@ class _ActiveEmployeeDetailsState extends State<ActiveEmployeeDetails> {
                         "userId": entry.userId,
                         "aadharNum": entry.aadharNum,
                         "pan": entry.pan,
+                        "employeeCode": entry.employeeCode,
                         "aadhaarDocs": entry.aadhaarDocs,
                         "fullName": entry.fullName,
                         "firstName": entry.firstName,
                         "lastName": entry.lastName,
+                        "email": entry.email,
                         "fatherName": entry.fatherName,
                         "motherName": entry.motherName,
                         "spouseName": entry.spouseName,
                         "mobilePIN": entry.mobilePIN,
-                        "image": entry.image,
-                        "signature": entry.signature,
                         "dob": entry.dob,
                         "gender": entry.gender,
-                        "marritalStatus": entry.marritalStatus,
-                        "siteId": entry.siteId,
-                        "siteCode": entry.siteCode,
-                        "siteName": entry.siteName,
-                        "designationId": entry.designationId,
+                        "ifscCode": entry.ifscCode,
+                        "accntNo": entry.accntNo,
+                        "bankName": entry.bankName,
+                        "uanNo": entry.uanNo,
+                        "esicNo": entry.esicNo,
+                        "pfNo": entry.pfNo,
+                        "doj": entry.doj,
+                        "createDate": entry.createDate,
+                        "emergencyName1": entry.emergencyName1,
+                        "emergencyContactDetails1": entry.emergencyContactDetails1,
+                        "bloodGroup": entry.bloodGroup,
+                        "image": entry.image,
                         "designationName": entry.designationName,
-                        "branch": entry.branch,
+                        "currentAddress": entry.currentAddress,
+                        "permanentAddress": entry.permanentAddress,
+                        "spouseAge": entry.spouseAge,
                       })
                   .toList();
           isLoading = false;
@@ -85,7 +95,7 @@ class _ActiveEmployeeDetailsState extends State<ActiveEmployeeDetails> {
                       Center(
                         child: ClipOval(
                           child: Image.network(
-                            'http://ios.smarterp.live/${data['image']}',
+                            '${AppConstants.baseUrl}/${data['image']}',
                             width: 100,
                             height: 100,
                             fit: BoxFit.cover,
@@ -96,27 +106,58 @@ class _ActiveEmployeeDetailsState extends State<ActiveEmployeeDetails> {
                       ),
                       const SizedBox(height: 12),
                       Center(
-                        child: Text(
-                          '${data['fullName']}',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            InfoText(
+                              value: data['fullName'],
+                              fallback: '-',
+                              style: const TextStyle(color: Colors.black, fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                            InfoText(
+                              value: data['email'],
+                              fallback: '-',
+                              style: const TextStyle(color: Colors.black, fontSize: 16),
+                            ),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 8),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('${data['designationName']}'),
-                          const VerticalDivider(
-                            width: 1,
-                            thickness: 1,
+                          Flexible(
+                            flex: 1,
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: InfoText(
+                                value: data['designationName'],
+                                fallback: '-',
+                                style: const TextStyle(color: Colors.blue, fontSize: 18),
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                          Container(
+                            height: 20,
+                            width: 2,
                             color: Colors.grey,
                           ),
-                          Text('${data['mobilePIN']}'),
+                          SizedBox(width: 10),
+                          Flexible(
+                            flex: 1,
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: InfoText(
+                                value: data['mobilePIN'],
+                                fallback: '-',
+                                style: const TextStyle(color: Colors.blue, fontSize: 18),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
+
                       const Divider(thickness: 4),
                       SizedBox(height: 5,),
                       Card(
@@ -127,16 +168,16 @@ class _ActiveEmployeeDetailsState extends State<ActiveEmployeeDetails> {
                           child: ExpansionTile(
                             leading: Image.asset(
                               'assets/images/personal_details.webp',
-                              width: 50,
-                              height: 50,
+                              width: 60,
+                              height: 60,
                             ),
                             title: const Text(
                               'Basic Information',
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                             ),
                             subtitle: const Text(
                               'See Employee Personal Details',
-                              style: TextStyle(color: Colors.grey),
+                              style: TextStyle(color: Colors.black54),
                             ),
                             children: [
                               Padding(
@@ -146,9 +187,61 @@ class _ActiveEmployeeDetailsState extends State<ActiveEmployeeDetails> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text('Emp Code : ${data['fullName']}'),
-                                      Text('Emp Code : ${data['employeeCode']}'),
-                                      Text('Emp Code : ${data['employeeCode']}'),
+                                      InfoText(
+                                        value: 'Emp Code : ${data['employeeCode']}',
+                                        fallback: '-',
+                                        style: const TextStyle(color: Colors.black, fontSize: 15),
+                                      ),
+                                      InfoText(
+                                        value: 'Fathers\'s Name : ${data['fatherName']}',
+                                        fallback: '-',
+                                        style: const TextStyle(color: Colors.black, fontSize: 15),
+                                      ),
+                                      InfoText(
+                                        value: 'Date of birth : ${data['dob']}',
+                                        fallback: '-',
+                                        style: const TextStyle(color: Colors.black, fontSize: 15),
+                                      ),
+                                      InfoText(
+                                        value: 'Gender : ${data['gender'] == "1" ? "Male" : data['gender'] == "2" ? "Female" : "-"}',
+                                        fallback: '-',
+                                        style: const TextStyle(color: Colors.black, fontSize: 15),
+                                      ),
+                                      InfoText(
+                                        value: 'Current Address : ${data['currentAddress']}',
+                                        fallback: '-',
+                                        style: const TextStyle(color: Colors.black, fontSize: 15),
+                                      ),
+                                      InfoText(
+                                        value: 'Permanent Address : ${data['permanentAddress']}',
+                                        fallback: '-',
+                                        style: const TextStyle(color: Colors.black, fontSize: 15),
+                                      ),
+                                      InfoText(
+                                        value: 'Spouse Name : ${data['spouseName']}',
+                                        fallback: '-',
+                                        style: const TextStyle(color: Colors.black, fontSize: 15),
+                                      ),
+                                      InfoText(
+                                        value: 'Spouse DOB : ${data['spouseAge']}',
+                                        fallback: 'test test',
+                                        style: const TextStyle(color: Colors.black, fontSize: 15),
+                                      ),
+                                      InfoText(
+                                        value: 'Blood Group : ${data['bloodGroup']}',
+                                        fallback: '-',
+                                        style: const TextStyle(color: Colors.black, fontSize: 15),
+                                      ),
+                                      InfoText(
+                                        value: 'Emergency Contact Person : ${data['emergencyName1']}',
+                                        fallback: '-',
+                                        style: const TextStyle(color: Colors.black, fontSize: 15),
+                                      ),
+                                      InfoText(
+                                        value: 'Emergency Contact Number : ${data['emergencyContactDetails1']}',
+                                        fallback: '-',
+                                        style: const TextStyle(color: Colors.black, fontSize: 15),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -165,16 +258,16 @@ class _ActiveEmployeeDetailsState extends State<ActiveEmployeeDetails> {
                           child: ExpansionTile(
                             leading: Image.asset(
                               'assets/images/office_building.webp',
-                              width: 50,
-                              height: 50,
+                              width: 60,
+                              height: 60,
                             ),
                             title: const Text(
-                              'Basic Information',
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              'Company Details',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                             ),
                             subtitle: const Text(
-                              'See Employee Personal Details',
-                              style: TextStyle(color: Colors.grey),
+                              'See company details of Employee',
+                              style: TextStyle(color: Colors.black54),
                             ),
                             children: [
                               Padding(
@@ -184,9 +277,16 @@ class _ActiveEmployeeDetailsState extends State<ActiveEmployeeDetails> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text('Emp Code : ${data['fullName']}'),
-                                      Text('Emp Code : ${data['employeeCode']}'),
-                                      Text('Emp Code : ${data['employeeCode']}'),
+                                      InfoText(
+                                        value: 'Date of Joining : ${data['doj']}',
+                                        fallback: '-',
+                                        style: const TextStyle(color: Colors.black, fontSize: 15),
+                                      ),
+                                      InfoText(
+                                        value: 'Create Date : ${data['createDate']}',
+                                        fallback: '-',
+                                        style: const TextStyle(color: Colors.black, fontSize: 15),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -203,16 +303,16 @@ class _ActiveEmployeeDetailsState extends State<ActiveEmployeeDetails> {
                           child: ExpansionTile(
                             leading: Image.asset(
                               'assets/images/document.webp',
-                              width: 50,
-                              height: 50,
+                              width: 60,
+                              height: 60,
                             ),
                             title: const Text(
-                              'Basic Information',
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              'Documents',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                             ),
                             subtitle: const Text(
-                              'See Employee Personal Details',
-                              style: TextStyle(color: Colors.grey),
+                              'See Documents submitted',
+                              style: TextStyle(color: Colors.black54),
                             ),
                             children: [
                               Padding(
@@ -222,9 +322,31 @@ class _ActiveEmployeeDetailsState extends State<ActiveEmployeeDetails> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text('Emp Code : ${data['fullName']}'),
-                                      Text('Emp Code : ${data['employeeCode']}'),
-                                      Text('Emp Code : ${data['employeeCode']}'),
+                                      InfoText(
+                                        value: 'Aadhaar Number : ${data['aadharNum']}',
+                                        fallback: '-',
+                                        style: const TextStyle(color: Colors.black, fontSize: 15),
+                                      ),
+                                      InfoText(
+                                        value: 'Pan Number : ${data['pan']}',
+                                        fallback: '-',
+                                        style: const TextStyle(color: Colors.black, fontSize: 15),
+                                      ),
+                                      InfoText(
+                                        value: 'PF Number : ${data['pfNo']}',
+                                        fallback: '-',
+                                        style: const TextStyle(color: Colors.black, fontSize: 15),
+                                      ),
+                                      InfoText(
+                                        value: 'ESIC Number : ${data['esicNo']}',
+                                        fallback: '-',
+                                        style: const TextStyle(color: Colors.black, fontSize: 15),
+                                      ),
+                                      InfoText(
+                                        value: 'UAN Number : ${data['uanNo']}',
+                                        fallback: '-',
+                                        style: const TextStyle(color: Colors.black, fontSize: 15),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -233,6 +355,7 @@ class _ActiveEmployeeDetailsState extends State<ActiveEmployeeDetails> {
                           ),
                         ),
                       ),
+
                       Card(
                         elevation: 5,
                         color: Colors.white,
@@ -241,16 +364,16 @@ class _ActiveEmployeeDetailsState extends State<ActiveEmployeeDetails> {
                           child: ExpansionTile(
                             leading: Image.asset(
                               'assets/images/bank.webp',
-                              width: 50,
-                              height: 50,
+                              width: 60,
+                              height: 60,
                             ),
                             title: const Text(
-                              'Basic Information',
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              'Bank Details',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                             ),
                             subtitle: const Text(
-                              'See Employee Personal Details',
-                              style: TextStyle(color: Colors.grey),
+                              'See Employee bank details',
+                              style: TextStyle(color: Colors.black54),
                             ),
                             children: [
                               Padding(
@@ -260,9 +383,21 @@ class _ActiveEmployeeDetailsState extends State<ActiveEmployeeDetails> {
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text('Emp Code : ${data['fullName']}'),
-                                      Text('Emp Code : ${data['employeeCode']}'),
-                                      Text('Emp Code : ${data['employeeCode']}'),
+                                      InfoText(
+                                        value: 'Bank Name : ${data['bankName']}',
+                                        fallback: '-',
+                                        style: const TextStyle(color: Colors.black, fontSize: 15),
+                                      ),
+                                      InfoText(
+                                        value: 'Account Number : ${data['accntNo']}',
+                                        fallback: '-',
+                                        style: const TextStyle(color: Colors.black, fontSize: 15),
+                                      ),
+                                      InfoText(
+                                        value: 'IFSC Number : ${data['ifscCode']}',
+                                        fallback: '-',
+                                        style: const TextStyle(color: Colors.black, fontSize: 15),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -271,13 +406,32 @@ class _ActiveEmployeeDetailsState extends State<ActiveEmployeeDetails> {
                           ),
                         ),
                       ),
-
-
                     ],
                   ),
                 );
               },
             ),
+    );
+  }
+}
+
+class InfoText extends StatelessWidget {
+  final String? value;
+  final String fallback;
+  final TextStyle? style;
+
+  const InfoText({
+    super.key,
+    required this.value,
+    this.fallback = 'Not available',
+    this.style,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      (value != null && value!.isNotEmpty) ? value! : fallback,
+      style: style ?? const TextStyle(color: Colors.grey),
     );
   }
 }

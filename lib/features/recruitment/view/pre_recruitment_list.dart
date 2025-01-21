@@ -93,7 +93,18 @@ class _PreRecruitmentListState extends State<PreRecruitmentList> {
                                         ),
                                       ),
                                     );
+                                  } else if(data['statusId'] == "11") {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => ActiveEmployeeDetails(
+                                          recruitedUserId: data['userId'],
+                                        ),
+                                      ),
+                                    );
                                   }
+
+
                                 },
                                 child: IntrinsicHeight(
                                   child: Row(
@@ -106,6 +117,7 @@ class _PreRecruitmentListState extends State<PreRecruitmentList> {
                                         imageUrl: '${AppConstants.baseUrl}/${data["image"]}',
                                         empCode: data['employeeCode'],
                                         name: data['fullName'],
+                                        designation: data['designationName'],
                                         mobileNo: data['mobilePIN'],
                                         statusId: data['statusId'],
                                       ),
@@ -199,6 +211,7 @@ class _PreRecruitmentListState extends State<PreRecruitmentList> {
     required String imageUrl,
     required String empCode,
     required String name,
+    required String? designation,
     required String mobileNo,
     required String statusId,
   }) {
@@ -283,6 +296,14 @@ class _PreRecruitmentListState extends State<PreRecruitmentList> {
                           fontWeight: FontWeight.w500,
                         ),
                       ),
+                      if (designation != null && designation.isNotEmpty)
+                      Text(
+                        'Designation: $designation',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                       Text(
                         'Mobile: $mobileNo',
                         style: TextStyle(
@@ -306,19 +327,19 @@ LinearGradient _getGradientForStatus(String statusId) {
   switch (statusId) {
     case "1":
       return LinearGradient(
-        colors: [Colors.white70, Colors.yellow.shade200],
+        colors: [Colors.white70, Colors.yellow.shade300],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       );
     case "6":
       return LinearGradient(
-        colors: [Colors.white70, Colors.green.shade200],
+        colors: [Colors.white70, Colors.green.shade300],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       );
-    case "2":
+    case "11":
       return LinearGradient(
-        colors: [Colors.white70, Colors.red.shade200],
+        colors: [Colors.white70, Colors.red.shade300],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       );
