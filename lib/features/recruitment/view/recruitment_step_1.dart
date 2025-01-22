@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -88,6 +90,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
   @override
   void initState() {
     super.initState();
+    checkInternetConnection();
     if (widget.recruitedUserId != null) {
       fetchPreRecruitmentByIdData().then((_) {
         fetchSiteListData().then((_) {
@@ -275,8 +278,9 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.teal.shade400,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 30, vertical: 10),
+                          // padding: const EdgeInsets.symmetric(
+                          //     horizontal: 30, vertical: 10),
+                          padding: EdgeInsets.zero,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.zero,
                           ),
@@ -429,45 +433,48 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                             );
                           }
                         },
-                        child: Text(
-                          'Submit and Next',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold),
+                        child: FittedBox(
+                          child: Text(
+                            'Submit and Next',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                  if (widget.recruitedUserId != null && widget.recruitedUserId.isNotEmpty) SizedBox(width: 10),
+                  if (widget.recruitedUserId != null && widget.recruitedUserId.isNotEmpty) SizedBox(width: 5),
                   if (widget.recruitedUserId != null && widget.recruitedUserId.isNotEmpty)
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal.shade400,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 30, vertical: 10),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.zero,
-                        ),
-                        elevation: 5,
-                      ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => RecruitmentStep2(
-                              userId: userId,
-                              recruitedUserId : widget.recruitedUserId,
-                            ),
+                    Expanded(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal.shade400,
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.zero,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.zero,
                           ),
-                        );
-                      },
-                      child: Text('Next',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold
+                          elevation: 5,
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => RecruitmentStep2(
+                                userId: userId,
+                                recruitedUserId : widget.recruitedUserId,
+                              ),
+                            ),
+                          );
+                        },
+                        child: Text('Next',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold
+                          ),
                         ),
                       ),
                     ),
@@ -1334,32 +1341,6 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
     }
   }
 
-  // Future<void> _pickImage(String type, ImageSource source) async {
-  //   final XFile? photo = await _picker.pickImage(source: source);
-  //   if (photo != null) {
-  //     final File selectedFile = File(photo.path);
-  //
-  //     final compressedImage = await FlutterImageCompress.compressWithFile(
-  //       selectedFile.path,
-  //       minWidth: 300,
-  //       minHeight: 300,
-  //       quality: 80,
-  //     );
-  //
-  //     if (compressedImage != null) {
-  //       final base64String = base64Encode(compressedImage);
-  //
-  //       setState(() {
-  //         if (type == 'front') {
-  //           _aadhaarImageFront = base64String;
-  //         } else if (type == 'back') {
-  //           _aadhaarImageBack = base64String;
-  //         }
-  //       });
-  //     }
-  //   }
-  // }
-
   Future<void> _pickAndCropImage(String type, ImageSource source) async {
     // Pick an image using the selected source
     final XFile? photo = await _picker.pickImage(source: source);
@@ -1401,46 +1382,6 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
       }
     }
   }
-
-  // Future<void> _pickAndCropImage(String type, ImageSource source) async {
-  //   // Pick an image using the selected source
-  //   final XFile? photo = await _picker.pickImage(source: source);
-  //   if (photo != null) {
-  //     // Crop the selected image
-  //     CroppedFile? croppedFile = await ImageCropper().cropImage(
-  //       sourcePath: photo.path,
-  //       uiSettings: [
-  //         IOSUiSettings(
-  //           title: 'Edit Photo',
-  //           aspectRatioPresets: [
-  //             CropAspectRatioPreset.original,
-  //             CropAspectRatioPreset.square,
-  //           ],
-  //         ),
-  //       ],
-  //     );
-  //
-  //     if (croppedFile != null) {
-  //       final File croppedImageFile = File(croppedFile.path);
-  //       final compressedImage = await FlutterImageCompress.compressWithFile(
-  //         croppedImageFile.path,
-  //         minWidth: 300, // Adjust resolution
-  //         minHeight: 300,
-  //         quality: 80,
-  //       );
-  //
-  //       if (compressedImage != null) {
-  //         final base64String = base64Encode(compressedImage);
-  //
-  //         setState(() {
-  //           if (type == 'digital_photo') {
-  //             _digitalPhoto = base64String;
-  //           }
-  //         });
-  //       }
-  //     }
-  //   }
-  // }
 
   void _deleteImage(String type) async {
     final shouldDelete = await showDialog<bool>(
@@ -1619,18 +1560,6 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                                         height: 100,
                                         width: 100,
                                         fit: BoxFit.cover,
-                                        // loadingBuilder: (context, child, loadingProgress) {
-                                        //   if (loadingProgress == null) {
-                                        //     return child;
-                                        //   }
-                                        //   return Center(
-                                        //     child: CircularProgressIndicator(
-                                        //       value: loadingProgress.expectedTotalBytes != null
-                                        //           ? loadingProgress.cumulativeBytesLoaded / (loadingProgress.expectedTotalBytes ?? 1)
-                                        //           : null,
-                                        //     ),
-                                        //   );
-                                        // },
                                         errorBuilder:
                                             (context, error, stackTrace) {
                                           return Icon(
@@ -1770,7 +1699,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
               child: Column(
                 children: [
                   CustomTextFormField(
-                    iconWidget: Icon(Icons.person, color: Colors.blue),
+                    iconWidget: Icon(Icons.person, color: Colors.blue, size: 30,),
                     controller: firstNameController,
                     labelText: 'Name (As Per Aadhaar)',
                     inputFormatters: [
@@ -1782,8 +1711,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                   ),
                   CustomTextFormField(
                     controller: lastNameController,
-                    iconWidget: Icon(Icons.person, color: Colors.blue),
-                    // icon: Icons.person,
+                    iconWidget: Icon(Icons.person, color: Colors.blue, size: 30,),
                     labelText: 'Last Name',
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
@@ -1794,7 +1722,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                   ),
                   CustomTextFormField(
                     controller: fatherNameController,
-                    iconWidget: Icon(Icons.person, color: Colors.blue),
+                    iconWidget: Icon(Icons.person, color: Colors.blue, size: 30,),
                     // icon: Icons.person,
                     labelText: "Father's Name",
                     inputFormatters: [
@@ -1806,7 +1734,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                   ),
                   CustomTextFormField(
                     controller: motherNameController,
-                    iconWidget: Icon(Icons.person, color: Colors.blue),
+                    iconWidget: Icon(Icons.person, color: Colors.blue, size: 30,),
                     // icon: Icons.person,
                     labelText: "Mother's Name",
                     inputFormatters: [
@@ -1818,7 +1746,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                   ),
                   CustomTextFormField(
                     controller: spouseNameController,
-                    iconWidget: Icon(Icons.person, color: Colors.blue),
+                    iconWidget: Icon(Icons.person, color: Colors.blue, size: 30,),
                     // icon: Icons.person,
                     labelText: "Spouse's Name",
                     inputFormatters: [
@@ -1830,7 +1758,7 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                   ),
                   CustomTextFormField(
                     controller: mobileNoController,
-                    iconWidget: Icon(Icons.call, color: Colors.blue),
+                    iconWidget: Icon(Icons.call, color: Colors.blue, size: 30,),
                     maxLength: 10,
                     labelText: "Mobile No",
                     keyboardType: TextInputType.number,
@@ -1839,35 +1767,8 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                     },
                   ),
 
-
-
-                  // CustomTextFormField(
-                  //   iconWidget: Icon(Icons.calendar_month, color: Colors.blue),
-                  //   // icon: Icons.calendar_month,
-                  //   labelText: 'DOB',
-                  //   isDatePicker: true,
-                  //   controller: dobController,
-                  //   onChanged: (value) {
-                  //     setState(() {
-                  //       if (value != null && value.isNotEmpty) {
-                  //         try {
-                  //           final inputFormat = DateFormat('dd-MM-yyyy');
-                  //           final parsedDate = inputFormat.parse(value);
-                  //
-                  //           final outputFormat = DateFormat('yyyy-MM-dd');
-                  //           dob = outputFormat.format(parsedDate);
-                  //
-                  //           dobController.text = value;
-                  //         } catch (e) {
-                  //           debugPrint('Error parsing date: $e');
-                  //         }
-                  //       }
-                  //     });
-                  //   },
-                  // ),
-
                   CustomTextFormField(
-                    iconWidget: Icon(Icons.calendar_month, color: Colors.blue),
+                    iconWidget: Icon(Icons.calendar_month, color: Colors.blue, size: 30,),
                     labelText: 'DOB',
                     isDatePicker: true,
                     controller: dobController,
@@ -2308,5 +2209,31 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
         errorMessage = '';
       });
     }
+  }
+
+  Future<bool> checkInternetConnection() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+      // Show dialog to ask user to turn on internet connection
+      showCupertinoDialog(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: const Text("No Internet Connection"),
+          content:
+          const Text("Please turn on the internet connection to proceed."),
+          actions: [
+            CupertinoDialogAction(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pop(context);
+              },
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+      return false;
+    }
+    return true;
   }
 }

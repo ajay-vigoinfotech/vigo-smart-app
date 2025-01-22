@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:quickalert/models/quickalert_type.dart';
@@ -95,6 +97,7 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
   @override
   void initState() {
     super.initState();
+    checkInternetConnection();
     if (widget.recruitedUserId != null) {
       fetchPreRecruitmentByIdData().then((_) {
         fetchCityData().then((_) {
@@ -290,123 +293,145 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal.shade400,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 30, vertical: 10),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.zero,
+                  Expanded(
+                    child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal.shade400,
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.zero,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.zero,
+                          ),
+                          elevation: 5,
                         ),
-                        elevation: 5,
-                      ),
-                      onPressed: () async {
-                        try {
-                          String? token = await sessionManager.getToken();
-                          UpdateRecruitment02ViewModel updateRecruitment02ViewModel = UpdateRecruitment02ViewModel();
+                        onPressed: () async {
+                          try {
+                            final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
 
-                          Map<String, dynamic> response = await updateRecruitment02ViewModel.updateRecruitment02(
-                            token!,
-                            UpdateRecruitment02Model(
-                              userId: widget.userId ?? widget.recruitedUserId,
-                              currentAddress: currentAddress,
-                              CPin: pinCode,
-                              CState: localSelectedStateId,
-                              CCity: localSelectedCityId,
-                              CPoliceStation: cPoliceStation,
-                              CPostOffice: cPostOffice,
-                              PermanentAddress: permanentAddress,
-                              PPIN: pPIN,
-                              PState: permanentSelectedStateId,
-                              Pcity: permanentSelectedCityId,
-                              PPoliceStation: pPoliceStation,
-                              PPostOffice: pPostOffice,
-                              bankId: selectedBankId,
-                              bank_name: selectedBank,
-                              accountHolderName: accountHolderName,
-                              account_no: accountNo,
-                              IFSC_code: ifscCode,
-                              bankProofImage: _passBookImage,
-                              responsible_email1: responsibleEmail1,
-                              responsible_person1: responsiblePerson1,
-                              responsible_add1: responsibleAdd1,
-                              responsible_Reference1: responsibleReference1,
-                            ),
-                          );
+                            final validations = [
+                              {responsibleEmail1.isNotEmpty && !emailRegex.hasMatch(responsibleEmail1Controller.text):
+                                'Please enter a valid email',
+                              },
+                            ];
 
-                          if (response['code'] == 200) {
-                            QuickAlert.show(
-                                barrierDismissible: false,
-                                context: context,
-                                type: QuickAlertType.success,
-                                text: '${response['status']}',
-                                onConfirmBtnTap: () {
-                                  Navigator.pop(context);
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => RecruitmentStep3(
-                                        userId: widget.userId,
-                                        recruitedUserId: widget.recruitedUserId,
+                            for (var validation in validations) {
+                              if (validation.keys.first) {
+                                ToastHelper.showToast(message: validation.values.first, context: context);
+                                return;
+                              }
+                            }
+
+                            String? token = await sessionManager.getToken();
+                            UpdateRecruitment02ViewModel updateRecruitment02ViewModel = UpdateRecruitment02ViewModel();
+                    
+                            Map<String, dynamic> response = await updateRecruitment02ViewModel.updateRecruitment02(
+                              token!,
+                              UpdateRecruitment02Model(
+                                userId: widget.userId ?? widget.recruitedUserId,
+                                currentAddress: currentAddress,
+                                CPin: pinCode,
+                                CState: localSelectedStateId,
+                                CCity: localSelectedCityId,
+                                CPoliceStation: cPoliceStation,
+                                CPostOffice: cPostOffice,
+                                PermanentAddress: permanentAddress,
+                                PPIN: pPIN,
+                                PState: permanentSelectedStateId,
+                                Pcity: permanentSelectedCityId,
+                                PPoliceStation: pPoliceStation,
+                                PPostOffice: pPostOffice,
+                                bankId: selectedBankId,
+                                bank_name: selectedBank,
+                                accountHolderName: accountHolderName,
+                                account_no: accountNo,
+                                IFSC_code: ifscCode,
+                                bankProofImage: _passBookImage,
+                                responsible_email1: responsibleEmail1,
+                                responsible_person1: responsiblePerson1,
+                                responsible_add1: responsibleAdd1,
+                                responsible_Reference1: responsibleReference1,
+                              ),
+                            );
+                    
+                            if (response['code'] == 200) {
+                              QuickAlert.show(
+                                  barrierDismissible: false,
+                                  context: context,
+                                  type: QuickAlertType.success,
+                                  text: '${response['status']}',
+                                  onConfirmBtnTap: () {
+                                    Navigator.pop(context);
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => RecruitmentStep3(
+                                          userId: widget.userId,
+                                          recruitedUserId: widget.recruitedUserId,
+                                        ),
                                       ),
-                                    ),
-                                  );
-                                });
-                          } else {
-                            QuickAlert.show(
-                              barrierDismissible: false,
-                              confirmBtnText: 'Retry',
-                              context: context,
-                              type: QuickAlertType.error,
-                              text:
-                                  '${response['message'] ?? 'Something went wrong'}',
+                                    );
+                                  });
+                            } else {
+                              QuickAlert.show(
+                                barrierDismissible: false,
+                                confirmBtnText: 'Retry',
+                                context: context,
+                                type: QuickAlertType.error,
+                                text:
+                                    '${response['message'] ?? 'Something went wrong'}',
+                              );
+                            }
+                          } catch (error) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content: Text(
+                                      'An error occurred. Please try again later.')),
                             );
                           }
-                        } catch (error) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content: Text(
-                                    'An error occurred. Please try again later.')),
-                          );
-                        }
-                      },
-                      child: Text(
-                        'Submit and Next',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold),
-                      )),
-                  ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal.shade400,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 30, vertical: 10),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.zero,
-                        ),
-                        elevation: 5,
-                      ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => RecruitmentStep3(
-                              userId: widget.userId,
-                              recruitedUserId: widget.recruitedUserId,
-                            ),
+                        },
+                        child: FittedBox(
+                          child: Text(
+                            'Submit and Next',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold),
                           ),
-                        );
-                      },
-                      child: Text(
-                        'Next',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold),
-                      )),
+                        )),
+                  ),
+                  SizedBox(width: 5,),
+                  Expanded(
+                    child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal.shade400,
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.zero,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.zero,
+                          ),
+                          elevation: 5,
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => RecruitmentStep3(
+                                userId: widget.userId,
+                                recruitedUserId: widget.recruitedUserId,
+                              ),
+                            ),
+                          );
+                        },
+                        child: FittedBox(
+                          child: Text(
+                            'Next',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 19,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        )),
+                  ),
                 ],
               ),
               SizedBox(height: 30),
@@ -840,7 +865,6 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
                 responsibleEmail1 = value!;
               },
             ),
-
             CustomTextFormField(
               controller: responsiblePerson1Controller,
               iconWidget: Icon(
@@ -1454,5 +1478,31 @@ class _RecruitmentStep2State extends State<RecruitmentStep2> {
     permanentStateController.dispose();
     permanentCityController.dispose();
     super.dispose();
+  }
+
+  Future<bool> checkInternetConnection() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+      // Show dialog to ask user to turn on internet connection
+      showCupertinoDialog(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: const Text("No Internet Connection"),
+          content:
+          const Text("Please turn on the internet connection to proceed."),
+          actions: [
+            CupertinoDialogAction(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pop(context);
+              },
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+      return false;
+    }
+    return true;
   }
 }

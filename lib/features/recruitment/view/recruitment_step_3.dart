@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:quickalert/models/quickalert_type.dart';
@@ -52,6 +54,7 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
   @override
   void initState() {
     super.initState();
+    checkInternetConnection();
     if (widget.recruitedUserId != null) {
       fetchPreRecruitmentByIdData().then((_) {
         fetchFamilyListData().then((_) {
@@ -265,119 +268,126 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal.shade400,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 30, vertical: 10),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.zero,
+                  Expanded(
+                    child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal.shade400,
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.zero,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.zero,
+                          ),
+                          elevation: 5,
                         ),
-                        elevation: 5,
-                      ),
-                      onPressed: () async {
-                    if (_formKey.currentState!.validate()) {
-                      String jsonOutput = jsonEncode(getFamilyDetailsJson());
-                      debugPrint(jsonOutput);
-                      if (jsonOutput == '{}' || jsonOutput.isEmpty) {
-                        jsonOutput = '';
-                      }
-
-                      try{
-                        String? token = await sessionManager.getToken();
-                        UpdateRecruitment03ViewModel updateRecruitment03ViewModel = UpdateRecruitment03ViewModel();
-
-                        Map<String,dynamic> response = await updateRecruitment03ViewModel.updateRecruitment03(token!,
-                            UpdateRecruitment03Model(
-                              userId: widget.userId ?? widget.recruitedUserId,
-                              dateOfJoin: dateOfJoin,
-                              UAN: uan,
-                              ESIC: esic,
-                              PF: pf,
-                              nomineename: nomineename,
-                              nomineeage: nomineeage,
-                              nomineeRelation: nomineeRelation,
-                              company_name: companyName,
-                              Designation: designation,
-                              experience: experience,
-                              company_address: '',
-                              company_leavingDate: companyLeavingDate,
-                              familyDetails: jsonOutput,
-                            )
-                        );
-
-                        if (response['code'] == 200) {
-                          QuickAlert.show(
-                              barrierDismissible: false,
-                              context: context,
-                              type: QuickAlertType.success,
-                              text: '${response['status']}',
-                              onConfirmBtnTap: () {
-                                Navigator.pop(context);
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => RecruitmentStep4(
-                                      userId: widget.userId,
-                                        recruitedUserId : widget.recruitedUserId,
+                        onPressed: () async {
+                      if (_formKey.currentState!.validate()) {
+                        String jsonOutput = jsonEncode(getFamilyDetailsJson());
+                        debugPrint(jsonOutput);
+                        if (jsonOutput == '{}' || jsonOutput.isEmpty) {
+                          jsonOutput = '';
+                        }
+                    
+                        try{
+                          String? token = await sessionManager.getToken();
+                          UpdateRecruitment03ViewModel updateRecruitment03ViewModel = UpdateRecruitment03ViewModel();
+                    
+                          Map<String,dynamic> response = await updateRecruitment03ViewModel.updateRecruitment03(token!,
+                              UpdateRecruitment03Model(
+                                userId: widget.userId ?? widget.recruitedUserId,
+                                dateOfJoin: dateOfJoin,
+                                UAN: uan,
+                                ESIC: esic,
+                                PF: pf,
+                                nomineename: nomineename,
+                                nomineeage: nomineeage,
+                                nomineeRelation: nomineeRelation,
+                                company_name: companyName,
+                                Designation: designation,
+                                experience: experience,
+                                company_address: '',
+                                company_leavingDate: companyLeavingDate,
+                                familyDetails: jsonOutput,
+                              )
+                          );
+                    
+                          if (response['code'] == 200) {
+                            QuickAlert.show(
+                                barrierDismissible: false,
+                                context: context,
+                                type: QuickAlertType.success,
+                                text: '${response['status']}',
+                                onConfirmBtnTap: () {
+                                  Navigator.pop(context);
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => RecruitmentStep4(
+                                        userId: widget.userId,
+                                          recruitedUserId : widget.recruitedUserId,
+                                      ),
                                     ),
-                                  ),
-                                );
-                              });
-                        } else {
-                          QuickAlert.show(
-                            barrierDismissible: false,
-                            confirmBtnText: 'Retry',
-                            context: context,
-                            type: QuickAlertType.error,
-                            text: '${response['message'] ?? 'Something went wrong'}',
+                                  );
+                                });
+                          } else {
+                            QuickAlert.show(
+                              barrierDismissible: false,
+                              confirmBtnText: 'Retry',
+                              context: context,
+                              type: QuickAlertType.error,
+                              text: '${response['message'] ?? 'Something went wrong'}',
+                            );
+                          }
+                        } catch (error) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text('An error occurred. Please try again later.')),
                           );
                         }
-                      } catch (error) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text('An error occurred. Please try again later.')),
+                      } else {
+                        ToastHelper.showToast(
+                          message: "Please correct the errors in the form.", context: context,
                         );
                       }
-                    } else {
-                      ToastHelper.showToast(
-                        message: "Please correct the errors in the form.", context: context,
-                      );
-                    }
-                  },
-                      child : Text('Submit and Next',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold),
-                      )),
-                  ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal.shade400,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 30, vertical: 10),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.zero,
+                    },
+                        child : FittedBox(
+                          child: Text('Submit and Next',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        )),
+                  ),
+                  SizedBox(width: 5),
+                  Expanded(
+                    child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal.shade400,
+                          foregroundColor: Colors.white,
+                          padding: EdgeInsets.zero,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.zero,
+                          ),
+                          elevation: 5,
                         ),
-                        elevation: 5,
+                        onPressed: (){
+                      Navigator.push(context, MaterialPageRoute(builder: (context) =>
+                          RecruitmentStep4(
+                              userId: widget.userId,
+                              recruitedUserId :widget.recruitedUserId
+                          ),
                       ),
-                      onPressed: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (context) =>
-                        RecruitmentStep4(
-                            userId: widget.userId,
-                            recruitedUserId :widget.recruitedUserId
-                        ),
-                    ),
-                    );
-                  },
-                      child: Text('Next',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold),
-                      ),),
+                      );
+                    },
+                        child: FittedBox(
+                          child: Text('Next',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 19,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),),
+                  ),
                 ],
               ),
               SizedBox(height: 30),
@@ -801,4 +811,29 @@ class _RecruitmentStep3State extends State<RecruitmentStep3> {
         detail['relationId']!.isNotEmpty;
   }
 
+  Future<bool> checkInternetConnection() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+      // Show dialog to ask user to turn on internet connection
+      showCupertinoDialog(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: const Text("No Internet Connection"),
+          content:
+          const Text("Please turn on the internet connection to proceed."),
+          actions: [
+            CupertinoDialogAction(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pop(context);
+              },
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+      return false;
+    }
+    return true;
+  }
 }

@@ -1,24 +1,23 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:vigo_smart_app/features/team%20view/view/team_view_activity_site_report_list.dart';
+import 'package:vigo_smart_app/features/team%20view/view/team_view_activity_recruitment_report_list.dart';
 
 import '../view model/team_view_activity_attendance_view_model.dart';
 
-class TeamViewActivitySiteReport extends StatefulWidget {
-  const TeamViewActivitySiteReport({super.key});
+class TeamViewActivityRecruitmentReport extends StatefulWidget {
+  const TeamViewActivityRecruitmentReport({super.key});
 
   @override
-  State<TeamViewActivitySiteReport> createState() =>
-      _TeamViewActivitySiteReportState();
+  State<TeamViewActivityRecruitmentReport> createState() => _TeamViewActivityRecruitmentReportState();
 }
 
-class _TeamViewActivitySiteReportState
-    extends State<TeamViewActivitySiteReport> {
+class _TeamViewActivityRecruitmentReportState extends State<TeamViewActivityRecruitmentReport> {
+
   TeamViewActivityAttendanceViewModel teamViewActivityAttendanceViewModel = TeamViewActivityAttendanceViewModel();
 
   TextEditingController searchController = TextEditingController();
-  List<Map<String, dynamic>> teamViewActivitySiteReportCountData = [];
+  List<Map<String, dynamic>> teamViewActivityRecruitedCountData = [];
   List<Map<String, dynamic>> filteredData = [];
   bool isLoading = true;
 
@@ -54,63 +53,59 @@ class _TeamViewActivitySiteReportState
           child: isLoading
               ? Center(child: CircularProgressIndicator())
               : RefreshIndicator(
-                  onRefresh: refreshTeamActivitySiteReportData,
-                  child: filteredData.isEmpty
-                      ? Center(child: Text('No Data Available'))
-                      : ListView.builder(
-                          itemCount: filteredData.length,
-                          itemBuilder: (context, index) {
-                            return GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        TeamViewActivitySiteReportList(
-                                      userId: filteredData[index]['userId'],
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: Card(
-                                elevation: 5,
-                                color: Colors.white,
-                                margin: const EdgeInsets.symmetric(
-                                    vertical: 5.0, horizontal: 16.0),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                ),
-                                child: Column(
-                                  children: [
-                                    Container(
-                                      height: 8.0,
-                                      color: Colors.orange,
-                                    ),
-                                    ListTile(
-                                      contentPadding: const EdgeInsets.all(8.0),
-                                      title:
-                                          Text(filteredData[index]['fullName']),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
+            onRefresh: fetchTeamActivityAttendanceCountData,
+            child: filteredData.isEmpty
+                ? Center(child: Text('No Data Available'))
+                : ListView.builder(
+              itemCount: filteredData.length,
+              itemBuilder: (context, index) {
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            TeamViewActivityRecruitmentReportList(
+                              userId: filteredData[index]['userId'],
+                            ),
+                      ),
+                    );
+                  },
+                  child: Card(
+                    elevation: 5,
+                    color: Colors.white,
+                    margin: const EdgeInsets.symmetric(
+                        vertical: 5.0, horizontal: 16.0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          height: 8.0,
+                          color: Colors.orange,
                         ),
-                ),
+                        ListTile(
+                          contentPadding: const EdgeInsets.all(8.0),
+                          title:
+                          Text(filteredData[index]['fullName']),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
         ),
       ]),
     );
   }
 
-  Future<void> refreshTeamActivitySiteReportData() async {
-    await fetchTeamActivityAttendanceCountData();
-    // debugPrint('Team Activity Attendance List Data Refreshed');
-  }
 
   Future<void> fetchTeamActivityAttendanceCountData() async {
     String? token =
-        await teamViewActivityAttendanceViewModel.sessionManager.getToken();
+    await teamViewActivityAttendanceViewModel.sessionManager.getToken();
 
     if (token != null) {
       await teamViewActivityAttendanceViewModel
@@ -119,14 +114,14 @@ class _TeamViewActivitySiteReportState
       if (teamViewActivityAttendanceViewModel.teamActivityAttendanceCount !=
           null) {
         setState(() {
-          teamViewActivitySiteReportCountData =
+          teamViewActivityRecruitedCountData =
               teamViewActivityAttendanceViewModel.teamActivityAttendanceCount!
                   .map((entry) => {
-                        "userId": entry.userId,
-                        "fullName": entry.fullName,
-                      })
+                "userId": entry.userId,
+                "fullName": entry.fullName,
+              })
                   .toList();
-          filteredData = teamViewActivitySiteReportCountData;
+          filteredData = teamViewActivityRecruitedCountData;
         });
       }
     }
@@ -138,11 +133,11 @@ class _TeamViewActivitySiteReportState
   void filterSearchResult(String query) async {
     if (query.isEmpty) {
       setState(() {
-        filteredData = teamViewActivitySiteReportCountData;
+        filteredData = teamViewActivityRecruitedCountData;
       });
     } else {
       setState(() {
-        filteredData = teamViewActivitySiteReportCountData.where((entry) {
+        filteredData = teamViewActivityRecruitedCountData.where((entry) {
           final userId = entry['userId']?.toLowerCase() ?? '';
           final fullName = entry['fullName']?.toLowerCase() ?? '';
 
@@ -179,3 +174,5 @@ class _TeamViewActivitySiteReportState
     return true;
   }
 }
+
+

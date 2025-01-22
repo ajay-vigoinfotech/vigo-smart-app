@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -54,6 +56,7 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
   @override
   void initState() {
     super.initState();
+    checkInternetConnection();
     if (widget.recruitedUserId != null) {
       fetchPreRecruitmentByIdData().then((_) {
         fetchDocumentListData().then((_) {});
@@ -154,110 +157,113 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal.shade400,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 30, vertical: 10),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero,
-                      ),
-                      elevation: 5,
-                    ),
-                    onPressed: () async {
-                      String jsonOutput = jsonEncode(otherDocxJson());
-                      if (jsonOutput == '{}' || jsonOutput.isEmpty) {
-                        jsonOutput = '';
-                      }
-                      // debugPrint(jsonOutput);
-                      try {
-                        String? token = await sessionManager.getToken();
-                        UpdateRecruitment04ViewModel
-                            updateRecruitment04ViewModel =
-                            UpdateRecruitment04ViewModel();
-
-                        Map<String, dynamic> response =
-                            await updateRecruitment04ViewModel
-                                .updateRecruitment04(
-                          token!,
-                          UpdateRecruitment04Model(
-                            userId: widget.userId ?? widget.recruitedUserId,
-                            Height: height,
-                            Weight: weight,
-                            physical_waist: waist,
-                            physical_chest: chest,
-                            physical_shoe: identificationMark,
-                            physical_blood: bloodGroup,
-                            DocumentsList: jsonOutput,
-                          ),
-                        );
-                        if (response['code'] == 200) {
-                          QuickAlert.show(
-                              barrierDismissible: false,
-                              context: context,
-                              type: QuickAlertType.success,
-                              text: '${response['status']}',
-                              onConfirmBtnTap: () {
-                                Navigator.pop(context);
-                                Navigator.pushAndRemoveUntil(
-                                  this.context,
-                                  MaterialPageRoute(
-                                      builder: (context) => HomePage()),
-                                  (route) => false,
-                                );
-                              });
-                        } else {
-                          QuickAlert.show(
-                            barrierDismissible: false,
-                            confirmBtnText: 'Retry',
-                            context: context,
-                            type: QuickAlertType.error,
-                            text:
-                                '${response['message'] ?? 'Something went wrong'}',
-                          );
-                        }
-                      } catch (error) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text(
-                                  'An error occurred. Please try again later.')),
-                        );
-                      }
-                    },
-                    child: Text(
-                      'Save and Submit',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  ElevatedButton(
+                  Expanded(
+                    child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.teal.shade400,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 30, vertical: 10),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.zero,
                         ),
                         elevation: 5,
+                        padding: EdgeInsets.zero,
                       ),
-                      onPressed: () {
-                        Navigator.pushAndRemoveUntil(
-                          this.context,
-                          MaterialPageRoute(builder: (context) => HomePage()),
-                          (route) => false,
-                        );
+                      onPressed: () async {
+                        String jsonOutput = jsonEncode(otherDocxJson());
+                        if (jsonOutput == '{}' || jsonOutput.isEmpty) {
+                          jsonOutput = '';
+                        }
+                        try {
+                          String? token = await sessionManager.getToken();
+                          UpdateRecruitment04ViewModel updateRecruitment04ViewModel = UpdateRecruitment04ViewModel();
+                          Map<String, dynamic> response =
+                              await updateRecruitment04ViewModel
+                                  .updateRecruitment04(
+                            token!,
+                            UpdateRecruitment04Model(
+                              userId: widget.userId ?? widget.recruitedUserId,
+                              Height: height,
+                              Weight: weight,
+                              physical_waist: waist,
+                              physical_chest: chest,
+                              physical_shoe: identificationMark,
+                              physical_blood: bloodGroup,
+                              DocumentsList: jsonOutput,
+                            ),
+                          );
+                          if (response['code'] == 200) {
+                            QuickAlert.show(
+                                barrierDismissible: false,
+                                context: context,
+                                type: QuickAlertType.success,
+                                text: '${response['status']}',
+                                onConfirmBtnTap: () {
+                                  Navigator.pop(context);
+                                  Navigator.pushAndRemoveUntil(
+                                    this.context,
+                                    MaterialPageRoute(
+                                        builder: (context) => HomePage()),
+                                    (route) => false,
+                                  );
+                                });
+                          } else {
+                            QuickAlert.show(
+                              barrierDismissible: false,
+                              confirmBtnText: 'Retry',
+                              context: context,
+                              type: QuickAlertType.error,
+                              text:
+                                  '${response['message'] ?? 'Something went wrong'}',
+                            );
+                          }
+                        } catch (error) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text(
+                                    'An error occurred. Please try again later.')),
+                          );
+                        }
                       },
-                      child: Text(
-                        'Finish',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold),
-                      ))
+                      child: FittedBox(
+                        child: Text(
+                          'Save and Submit',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 5,),
+                  Expanded(
+                    child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.teal.shade400,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.zero,
+                          ),
+                          elevation: 5,
+                          padding: EdgeInsets.zero,
+                        ),
+                        onPressed: () {
+                          Navigator.pushAndRemoveUntil(
+                            this.context,
+                            MaterialPageRoute(builder: (context) => HomePage()),
+                            (route) => false,
+                          );
+                        },
+                        child: FittedBox(
+                          child: Text(
+                            'Finish',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 19,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        )),
+                  )
                 ],
               ),
               SizedBox(height: 30),
@@ -281,7 +287,9 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
         child: ExpansionTile(
           key: ValueKey(_expandAll),
           initiallyExpanded: _expandAll,
-          title: Text('Company Details'),
+          title: Text('Company Details',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -355,15 +363,6 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
                       identificationMark = value!;
                     },
                   ),
-                  // CustomTextFormField(
-                  //   iconWidget: Icon(Icons.bloodtype, color: Colors.red, size: 30,),
-                  //   labelText: 'Blood Group',
-                  //   controller: bloodGroupController,
-                  //   onChanged: (value) {
-                  //     bloodGroup = value!;
-                  //   },
-                  // ),
-
                   CustomTextFormField(
                     iconWidget: Icon(Icons.bloodtype, color: Colors.red, size: 30),
                     labelText: 'Blood Group',
@@ -511,7 +510,9 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
         child: ExpansionTile(
           key: ValueKey(_expandAll),
           initiallyExpanded: _expandAll,
-          title: Text('Other Documents'),
+          title: Text('Other Documents',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -703,5 +704,31 @@ class _RecruitmentStep4State extends State<RecruitmentStep4> {
         ),
       ),
     );
+  }
+
+  Future<bool> checkInternetConnection() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    if (connectivityResult.contains(ConnectivityResult.none)) {
+      // Show dialog to ask user to turn on internet connection
+      showCupertinoDialog(
+        context: context,
+        builder: (context) => CupertinoAlertDialog(
+          title: const Text("No Internet Connection"),
+          content:
+          const Text("Please turn on the internet connection to proceed."),
+          actions: [
+            CupertinoDialogAction(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pop(context);
+              },
+              child: const Text("OK"),
+            ),
+          ],
+        ),
+      );
+      return false;
+    }
+    return true;
   }
 }
