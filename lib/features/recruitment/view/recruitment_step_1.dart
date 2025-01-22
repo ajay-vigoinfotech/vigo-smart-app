@@ -278,8 +278,6 @@ class _RecruitmentStep1State extends State<RecruitmentStep1> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.teal.shade400,
                           foregroundColor: Colors.white,
-                          // padding: const EdgeInsets.symmetric(
-                          //     horizontal: 30, vertical: 10),
                           padding: EdgeInsets.zero,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.zero,
